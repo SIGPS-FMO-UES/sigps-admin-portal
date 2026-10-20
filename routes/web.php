@@ -5,6 +5,7 @@ use App\Http\Controllers\CertificadoController;
 use App\Http\Controllers\EstudianteController;
 use App\Http\Controllers\ProyectoController;
 use App\Http\Controllers\TutorController;
+use App\Http\Controllers\UsuarioController;
 use Illuminate\Support\Facades\Route;
 
 // Ruta principal: muestra el formulario de inicio de sesión como primera pantalla
@@ -31,4 +32,9 @@ Route::middleware('auth')->group(function (): void {
     // 4. Módulo Tutores
     Route::get('/tutores', [TutorController::class, 'index'])->name('tutores.index');
     Route::post('/tutores', [TutorController::class, 'store'])->name('tutores.store');
+
+    // 5. Módulo Administración de Usuarios y Roles
+    Route::get('/usuarios', [UsuarioController::class, 'index'])->name('usuarios.index');
+    Route::post('/usuarios', [UsuarioController::class, 'store'])->name('usuarios.store');
+    Route::put('/usuarios/{usuario}/roles', [UsuarioController::class, 'updateRoles'])->name('usuarios.updateRoles');
 });
