@@ -43,10 +43,10 @@
                 </svg>
             </a>
 
-            <!-- 3. Certificaciones / Auditoría -->
+            <!-- 3. Certificaciones / Documentos -->
             <a
-                href="{{ route('dashboard') }}#certificaciones"
-                class="p-2.5 rounded-xl transition-all {{ $active === 'certificaciones' ? 'bg-[#8B1D2D] text-white shadow-sm shadow-[#8B1D2D]/25' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100' }}"
+                href="{{ route('certificados.index') }}"
+                class="p-2.5 rounded-xl transition-all {{ $active === 'certificados' ? 'bg-[#8B1D2D] text-white shadow-sm shadow-[#8B1D2D]/25' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100' }}"
                 title="Certificaciones y Documentos"
             >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -56,7 +56,7 @@
 
             <!-- 4. Carpetas / Proyectos -->
             <a
-                href="{{ route('dashboard') }}#carpetas"
+                href="{{ route('proyectos.index') }}"
                 class="p-2.5 rounded-xl transition-all {{ $active === 'proyectos' ? 'bg-[#8B1D2D] text-white shadow-sm shadow-[#8B1D2D]/25' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100' }}"
                 title="Proyectos y Carpetas"
             >
@@ -67,7 +67,7 @@
 
             <!-- 5. Responsables / Docentes Tutores -->
             <a
-                href="{{ route('dashboard') }}#docentes"
+                href="{{ route('tutores.index') }}"
                 class="p-2.5 rounded-xl transition-all {{ $active === 'tutores' ? 'bg-[#8B1D2D] text-white shadow-sm shadow-[#8B1D2D]/25' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100' }}"
                 title="Docentes Tutores"
             >
