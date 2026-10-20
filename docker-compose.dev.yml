@@ -1,0 +1,99 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/dev/Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    container_name: sigps-admin-app-dev
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8000}:80"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - PHP_OPCACHE_VALIDATE_TIMESTAMPS=1
+    volumes:
+      - .:/var/www
+      - sigps-admin-vendor:/var/www/vendor
+    networks:
+      - sigps-admin-dev-network
+    depends_on:
+      postgres:
+        condition: service_started
+        required: false
+
+  vite:
+    build:
+      context: .
+      dockerfile: docker/dev/Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    container_name: sigps-admin-vite-dev
+    restart: unless-stopped
+    working_dir: /var/www
+    entrypoint: ["sh", "-c", "npm run dev -- --host 0.0.0.0"]
+    ports:
+      - "${VITE_PORT:-5173}:5173"
+    environment:
+      - VITE_HMR_HOST=localhost
+    volumes:
+      - .:/var/www
+      - sigps-admin-vendor:/var/www/vendor
+    networks:
+      - sigps-admin-dev-network
+    depends_on:
+      - app
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: sigps-admin-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-sigps_admin}
+      POSTGRES_USER: ${DB_USERNAME:-sigps}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+    ports:
+      - "${FORWARD_DB_PORT:-5433}:5432"
+    volumes:
+      - sigps-admin-postgres-data:/var/lib/postgresql/data
+    networks:
+      - sigps-admin-dev-network
+
+  redis:
+    image: redis:alpine
+    container_name: sigps-admin-redis-dev
+    restart: unless-stopped
+    ports:
+      - "${FORWARD_REDIS_PORT:-6379}:6379"
+    volumes:
+      - sigps-admin-redis-data:/data
+    networks:
+      - sigps-admin-dev-network
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: sigps-admin-mailpit-dev
+    restart: unless-stopped
+    ports:
+      - "${FORWARD_MAILPIT_PORT:-1025}:1025"
+      - "${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025"
+    networks:
+      - sigps-admin-dev-network
+
+volumes:
+  sigps-admin-postgres-data:
+    driver: local
+  sigps-admin-redis-data:
+    driver: local
+  sigps-admin-vendor:
+    driver: local
+
+networks:
+  sigps-admin-dev-network:
+    driver: bridge
