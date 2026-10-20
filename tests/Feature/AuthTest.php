@@ -115,7 +115,7 @@ class AuthTest extends TestCase
         $response = $this->actingAs($admin)->get('/dashboard');
 
         $response->assertStatus(200);
-        $response->assertSee('Panel de Control');
+        $response->assertSee('Dashboard Operativo UPS');
         $response->assertSee('Administrador General UPS');
     }
 }

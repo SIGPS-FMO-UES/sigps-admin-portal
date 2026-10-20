@@ -101,12 +101,12 @@
                             type="text"
                             id="login"
                             name="login"
-                            value="{{ old('login', 'admin') }}"
+                            value="{{ old('login') }}"
                             placeholder="carnet@ues.edu.sv"
                             required
                             autofocus
                             autocomplete="username"
-                            class="w-full px-4 py-3 bg-[#F9FAFB] border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#8B1D2D]/20 focus:border-[#8B1D2D] transition-all"
+                            class="w-full px-4 py-3 bg-[#F9FAFB] border @error('login') border-red-400 focus:ring-red-500/20 focus:border-red-500 @else border-gray-200 focus:ring-[#8B1D2D]/20 focus:border-[#8B1D2D] @enderror rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:bg-white focus:outline-none focus:ring-2 transition-all"
                         />
                     </div>
 
@@ -120,11 +120,11 @@
                                 type="password"
                                 id="password"
                                 name="password"
-                                value="password123"
+                                value=""
                                 placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"
                                 required
                                 autocomplete="current-password"
-                                class="w-full px-4 py-3 bg-[#F9FAFB] border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#8B1D2D]/20 focus:border-[#8B1D2D] transition-all pr-11"
+                                class="w-full px-4 py-3 bg-[#F9FAFB] border @error('password') border-red-400 focus:ring-red-500/20 focus:border-red-500 @else border-gray-200 focus:ring-[#8B1D2D]/20 focus:border-[#8B1D2D] @enderror rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:bg-white focus:outline-none focus:ring-2 transition-all pr-11"
                             />
                             <!-- Botón para alternar visibilidad de contraseña -->
                             <button

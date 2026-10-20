@@ -1,206 +1,469 @@
 <!DOCTYPE html>
-<html lang="es" class="h-full bg-gray-50">
+<html lang="es" class="h-full bg-[#F8F9FA]">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Control | SIGPS - Portal Administrativo UES</title>
+    <title>Dashboard Operativo UPS | Sistema de Proyección Social - UES</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
+    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700,800" rel="stylesheet" />
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="h-full font-sans antialiased text-gray-900 bg-gray-50 flex flex-col min-h-screen">
-    <!-- BARRA DE NAVEGACIÓN SUPERIOR -->
-    <header class="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-xs">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <!-- Marca SIGPS -->
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl bg-[#8B1D2D] text-white flex items-center justify-center font-bold text-base shadow-sm">
-                        U
-                    </div>
-                    <div>
-                        <span class="text-base font-bold text-gray-900 tracking-tight">SIGPS</span>
-                        <span class="hidden sm:inline-block text-xs text-gray-500 ml-1.5 font-medium border-l border-gray-200 pl-2">
-                            Portal Administrativo UPS &bull; UES
-                        </span>
-                    </div>
+<body class="h-full font-sans antialiased text-gray-900 bg-[#F8F9FA] flex flex-col lg:flex-row min-h-screen">
+
+    <!-- ================================================================= -->
+    <!-- BARRA LATERAL DE NAVEGACIÓN (ICONOS VERTICALES) -->
+    <!-- ================================================================= -->
+    <aside class="w-full lg:w-20 bg-white border-b lg:border-b-0 lg:border-r border-gray-200/80 shrink-0 flex lg:flex-col justify-between items-center py-3 px-4 lg:py-6 lg:px-0 sticky top-0 z-40 lg:h-screen">
+        <!-- Logo UES Superior -->
+        <div class="flex lg:flex-col items-center gap-4">
+            <a href="{{ route('dashboard') }}" class="group block p-1 transition-transform hover:scale-105" title="Universidad de El Salvador">
+                <!-- Emblema circular rojo UES -->
+                <div class="w-10 h-10 rounded-full bg-[#8B1D2D] p-1.5 flex items-center justify-center shadow-sm shadow-[#8B1D2D]/20">
+                    <svg viewBox="0 0 100 100" class="w-full h-full fill-white" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Escudo heráldico simplificado de la UES -->
+                        <path d="M50 5 L88 22 C88 55 50 92 50 92 C50 92 12 55 12 22 Z" fill="#8B1D2D" stroke="#FFFFFF" stroke-width="5" />
+                        <circle cx="50" cy="38" r="14" fill="#FFFFFF" />
+                        <path d="M42 58 L58 58 L55 78 L45 78 Z" fill="#FFFFFF" />
+                        <circle cx="50" cy="38" r="8" fill="#8B1D2D" />
+                    </svg>
                 </div>
+            </a>
 
-                <!-- Usuario y botón de cerrar sesión -->
-                <div class="flex items-center gap-4">
-                    <div class="text-right hidden sm:block">
-                        <p class="text-xs font-bold text-gray-800 leading-tight">
-                            {{ $usuario->nombre_completo }}
-                        </p>
-                        <p class="text-[11px] text-[#8B1D2D] font-semibold">
-                            {{ $usuario->roles->pluck('nombre_rol')->join(', ') ?: 'Sin Rol' }}
-                        </p>
-                    </div>
+            <!-- Menú de Iconos de Navegación (Desktop vertical, Mobile horizontal) -->
+            <nav class="flex lg:flex-col items-center gap-2 lg:gap-4 lg:mt-6">
+                <!-- 1. Dashboard (Activo / Seleccionado con fondo guinda) -->
+                <a href="{{ route('dashboard') }}" class="p-2.5 rounded-xl bg-[#8B1D2D] text-white shadow-sm shadow-[#8B1D2D]/25 transition-all" title="Dashboard">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M3 4a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V4zM3 12a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zm10 0a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1v-6z" />
+                    </svg>
+                </a>
 
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button
-                            type="submit"
-                            class="px-3.5 py-1.5 bg-gray-100 hover:bg-red-50 text-gray-700 hover:text-[#8B1D2D] border border-gray-200 hover:border-red-200 rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer flex items-center gap-1.5"
-                        >
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                            </svg>
-                            <span>Cerrar sesión</span>
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </header>
+                <!-- 2. Perfil / Usuarios -->
+                <a href="#perfil" class="p-2.5 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors" title="Expedientes">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                </a>
 
-    <!-- CONTENIDO PRINCIPAL DEL DASHBOARD -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Banner de Bienvenida -->
-        <div class="bg-gradient-to-r from-[#8B1D2D] via-[#9E1B32] to-[#721523] rounded-3xl p-6 sm:p-8 text-white shadow-lg shadow-[#8B1D2D]/15 mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div>
-                <span class="inline-block px-2.5 py-0.5 bg-white/20 text-white text-[11px] font-bold rounded-full uppercase tracking-wider mb-2">
-                    Sesión Iniciada con Éxito
-                </span>
-                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
-                    ¡Bienvenido, {{ $usuario->nombre_completo }}!
-                </h1>
-                <p class="text-sm text-white/80 mt-1 max-w-xl">
-                    Has ingresado con el usuario <code class="bg-white/20 px-1.5 py-0.5 rounded text-white font-mono">{{ $usuario->nombre_usuario }}</code> al Sistema de Gestión de Proyección Social.
-                </p>
-            </div>
-            <div class="bg-white/10 backdrop-blur-sm px-4 py-3 rounded-2xl border border-white/20 text-right">
-                <span class="block text-xs text-white/70">Estado de cuenta</span>
-                <span class="text-sm font-bold text-white flex items-center gap-1.5 mt-0.5">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    {{ $usuario->activo ? 'Cuenta Activa' : 'Inactiva' }}
-                </span>
-            </div>
+                <!-- 3. Certificaciones / Auditoría -->
+                <a href="#certificaciones" class="p-2.5 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors" title="Certificaciones y Documentos">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </a>
+
+                <!-- 4. Carpetas / Proyectos -->
+                <a href="#carpetas" class="p-2.5 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors" title="Proyectos y Carpetas">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                    </svg>
+                </a>
+
+                <!-- 5. Responsables / Docentes -->
+                <a href="#docentes" class="p-2.5 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors" title="Tutores y Responsables">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </a>
+
+                <!-- 6. Grupos de Alumnos -->
+                <a href="#alumnos" class="p-2.5 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors" title="Alumnos en Proyección">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                </a>
+            </nav>
         </div>
 
-        <!-- Tarjetas de Resumen Rápido -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-            <div class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-xs">
-                <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Tus Roles</span>
-                <p class="text-xl font-bold text-gray-900 mt-2">
-                    {{ $usuario->roles->count() }}
-                </p>
-                <p class="text-xs text-gray-500 mt-1 truncate">
-                    {{ $usuario->roles->pluck('nombre_rol')->join(', ') ?: 'Ninguno' }}
-                </p>
-            </div>
+        <!-- Usuario inferior y botón Cerrar sesión -->
+        <div class="flex items-center gap-2 lg:flex-col lg:gap-3">
+            <form method="POST" action="{{ route('logout') }}" title="Cerrar sesión">
+                @csrf
+                <button type="submit" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer" title="Cerrar sesión">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                </button>
+            </form>
 
-            <div class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-xs">
-                <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Como Tutor</span>
-                <p class="text-xl font-bold text-[#8B1D2D] mt-2">
-                    {{ $usuario->proyectosComoTutor->count() }} proyectos
-                </p>
-                <p class="text-xs text-gray-500 mt-1">Proyectos bajo tu tutoría</p>
-            </div>
-
-            <div class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-xs">
-                <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Como Alumno</span>
-                <p class="text-xl font-bold text-emerald-700 mt-2">
-                    {{ $usuario->proyectosComoAlumno->count() }} proyectos
-                </p>
-                <p class="text-xs text-gray-500 mt-1">Participación activa</p>
-            </div>
-
-            <div class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-xs">
-                <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Permisos</span>
-                <p class="text-xl font-bold text-gray-900 mt-2">
-                    {{ $usuario->roles->flatMap->permisos->unique('id_permiso')->count() }} asignados
-                </p>
-                <p class="text-xs text-gray-500 mt-1">Capacidades del sistema</p>
+            <div class="w-9 h-9 rounded-xl border border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center text-xs font-bold text-gray-700 shadow-2xs" title="{{ $usuario->nombre_completo }}">
+                <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>
             </div>
         </div>
+    </aside>
 
-        <!-- Proyectos Registrados en la Base de Datos -->
-        @php
-            $todosProyectos = \App\Models\Proyecto::with(['tutor', 'alumnos', 'documentos'])->orderBy('codigo_proyecto')->get();
-        @endphp
+    <!-- ================================================================= -->
+    <!-- ÁREA DE CONTENIDO PRINCIPAL -->
+    <!-- ================================================================= -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-y-auto">
 
-        <div class="bg-white rounded-3xl border border-gray-200/80 shadow-xs overflow-hidden">
-            <div class="p-6 border-b border-gray-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+        <!-- CABECERA PRINCIPAL (TOP BAR) -->
+        <header class="bg-white border-b border-gray-200/80 px-4 sm:px-8 py-5">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <!-- Título y subtítulo -->
                 <div>
-                    <h2 class="text-lg font-bold text-gray-900 tracking-tight">
-                        Proyectos en el Sistema (Base de Datos)
-                    </h2>
-                    <p class="text-xs text-gray-500 mt-0.5">
-                        Listado completo cargado desde PostgreSQL según la especificación DB_Coordinadores
+                    <h1 class="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight">
+                        Dashboard Operativo UPS
+                    </h1>
+                    <p class="text-xs sm:text-[13px] text-gray-500 mt-0.5">
+                        Resumen general del estado de expedientes, plazos y certificaciones.
                     </p>
                 </div>
-                <span class="text-xs font-semibold bg-gray-100 text-gray-700 px-3 py-1 rounded-full">
-                    Total: {{ $todosProyectos->count() }} proyectos
-                </span>
+
+                <!-- Buscador, Notificación y Perfil de Usuario -->
+                <div class="flex flex-wrap items-center gap-3 sm:gap-5">
+                    <!-- Buscador estilo píldora -->
+                    <div class="relative w-full sm:w-64">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </span>
+                        <input
+                            type="search"
+                            placeholder="Buscar expediente..."
+                            class="w-full pl-9 pr-3 py-1.5 bg-gray-50/70 border border-gray-200 rounded-full text-xs text-gray-800 placeholder:text-gray-400 focus:outline-none focus:bg-white focus:border-[#8B1D2D] focus:ring-1 focus:ring-[#8B1D2D]/30 transition-all"
+                        />
+                    </div>
+
+                    <!-- Campana de notificación -->
+                    <button type="button" class="relative p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors" title="Notificaciones">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                        <span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[#8B1D2D] rounded-full"></span>
+                    </button>
+
+                    <!-- Perfil de Usuario con Avatar -->
+                    <div class="flex items-center gap-2.5 pl-2 sm:border-l sm:border-gray-200">
+                        <div class="w-8 h-8 rounded-full bg-[#8B1D2D]/10 text-[#8B1D2D] font-bold text-xs flex items-center justify-center border border-[#8B1D2D]/20">
+                            {{ strtoupper(substr($usuario->nombre_completo ?? 'Juan Pérez', 0, 2)) }}
+                        </div>
+                        <div class="text-left">
+                            <p class="text-xs font-bold text-gray-800 leading-tight">
+                                {{ $usuario->nombre_completo ?? 'Juan Pérez' }}
+                            </p>
+                            <p class="text-[11px] text-gray-400 font-medium leading-tight">
+                                {{ $usuario->roles->first()?->nombre_rol ? ucfirst(str_replace('_', ' ', $usuario->roles->first()->nombre_rol)) : 'Jefe UPS' }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm">
-                    <thead class="bg-gray-50 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                        <tr>
-                            <th class="px-6 py-3.5">Código</th>
-                            <th class="px-6 py-3.5">Nombre del Proyecto</th>
-                            <th class="px-6 py-3.5">Estado</th>
-                            <th class="px-6 py-3.5">Docente Tutor</th>
-                            <th class="px-6 py-3.5">Alumnos</th>
-                            <th class="px-6 py-3.5">Documentos</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100">
-                        @forelse ($todosProyectos as $proyecto)
-                            <tr class="hover:bg-gray-50/70 transition-colors">
-                                <td class="px-6 py-4 font-mono font-bold text-xs text-gray-700">
-                                    #{{ $proyecto->codigo_proyecto }}
-                                </td>
-                                <td class="px-6 py-4 font-medium text-gray-900">
-                                    {{ $proyecto->nombre_proyecto }}
-                                </td>
-                                <td class="px-6 py-4">
-                                    @php
-                                        $badgeColor = match ($proyecto->estado) {
-                                            'solicitado' => 'bg-amber-50 text-amber-800 border-amber-200',
-                                            'en_inscripcion' => 'bg-blue-50 text-blue-800 border-blue-200',
-                                            'en_proceso' => 'bg-indigo-50 text-indigo-800 border-indigo-200',
-                                            'en_finalizacion' => 'bg-purple-50 text-purple-800 border-purple-200',
-                                            'finalizado' => 'bg-emerald-50 text-emerald-800 border-emerald-200',
-                                            default => 'bg-gray-100 text-gray-800 border-gray-200',
-                                        };
-                                    @endphp
-                                    <span class="inline-block px-2.5 py-0.5 text-xs font-semibold rounded-full border {{ $badgeColor }}">
-                                        {{ str_replace('_', ' ', ucfirst($proyecto->estado)) }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 text-xs text-gray-600">
-                                    {{ $proyecto->tutor ? $proyecto->tutor->nombre_completo : 'Sin asignar' }}
-                                </td>
-                                <td class="px-6 py-4 text-xs font-medium text-gray-700">
-                                    {{ $proyecto->alumnos->count() }} alumnos
-                                </td>
-                                <td class="px-6 py-4 text-xs text-gray-500">
-                                    {{ $proyecto->documentos->count() }} archivos
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="px-6 py-8 text-center text-sm text-gray-500">
-                                    No hay proyectos registrados en este momento.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+            <!-- Indicador de fecha y hora institucional -->
+            <div class="flex justify-end mt-2 pt-2 border-t border-gray-100 text-[11px] text-gray-400 items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span>Lunes, 28 de septiembre de 2026 &bull; 10:24 h</span>
             </div>
-        </div>
-    </main>
+        </header>
 
-    <!-- PIE DE PÁGINA -->
-    <footer class="bg-white border-t border-gray-200 py-4 mt-auto">
-        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-gray-500">
-            &copy; 2026 Universidad de El Salvador &bull; Facultad Multidisciplinaria Oriental &bull; Unidad de Proyección Social (UPS)
-        </div>
-    </footer>
+        <!-- CUERPO PRINCIPAL DEL DASHBOARD (2 COLUMNAS) -->
+        <main class="flex-1 p-4 sm:p-6 lg:p-8">
+            <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+
+                <!-- ========================================================= -->
+                <!-- COLUMNA IZQUIERDA (8 / 12 EN DESKTOP) -->
+                <!-- ========================================================= -->
+                <div class="xl:col-span-8 space-y-6">
+
+                    <!-- FILA DE 3 TARJETAS DE ESTADÍSTICAS (KPIs) -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <!-- KPI 1: Expedientes pendientes -->
+                        <div class="bg-white rounded-2xl p-5 border border-gray-200/80 shadow-2xs hover:shadow-xs transition-shadow flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-full bg-[#FFF1F2] text-[#8B1D2D] flex items-center justify-center shrink-0">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-3xl font-extrabold text-gray-900 tracking-tight leading-none">18</p>
+                                <p class="text-xs font-bold text-gray-800 mt-1">Expedientes pendientes</p>
+                                <p class="text-[11px] text-gray-400 mt-0.5">6 más que la semana pasada</p>
+                            </div>
+                        </div>
+
+                        <!-- KPI 2: Trámites en alerta -->
+                        <div class="bg-white rounded-2xl p-5 border border-gray-200/80 shadow-2xs hover:shadow-xs transition-shadow flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-full bg-[#FFF5F2] text-[#E05238] flex items-center justify-center shrink-0">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-3xl font-extrabold text-gray-900 tracking-tight leading-none">7</p>
+                                <p class="text-xs font-bold text-gray-800 mt-1">Trámites en alerta</p>
+                                <p class="text-[11px] text-gray-400 mt-0.5">Próximos a vencer en 10 días</p>
+                            </div>
+                        </div>
+
+                        <!-- KPI 3: Certificaciones listas -->
+                        <div class="bg-white rounded-2xl p-5 border border-gray-200/80 shadow-2xs hover:shadow-xs transition-shadow flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-full bg-[#FFF1F2] text-[#8B1D2D] flex items-center justify-center shrink-0">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-3xl font-extrabold text-gray-900 tracking-tight leading-none">24</p>
+                                <p class="text-xs font-bold text-gray-800 mt-1">Certificaciones listas</p>
+                                <p class="text-[11px] text-gray-400 mt-0.5">4 emitidas este mes</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TABLA: EXPEDIENTES EN ESPERA DE AUDITORÍA -->
+                    <div class="bg-white rounded-2xl border border-gray-200/80 shadow-2xs overflow-hidden">
+                        <!-- Cabecera de la sección -->
+                        <div class="p-5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                            <div class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <h2 class="text-sm font-bold text-gray-900 tracking-tight">
+                                    Expedientes en espera de auditoría de sellos y firma azul
+                                </h2>
+                            </div>
+                            <a href="#ver-todos" class="text-xs font-bold text-[#8B1D2D] hover:underline flex items-center gap-1 transition-all">
+                                <span>Ver todos</span>
+                                <span>&rarr;</span>
+                            </a>
+                        </div>
+
+                        <!-- Contenedor responsivo con scroll horizontal para móviles -->
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="border-b border-gray-100 text-gray-400 font-semibold bg-gray-50/40">
+                                        <th class="py-3 px-4 w-12 text-center">#</th>
+                                        <th class="py-3 px-4">Carnet / Código</th>
+                                        <th class="py-3 px-4">Área de conocimiento</th>
+                                        <th class="py-3 px-4">Profesor responsable</th>
+                                        <th class="py-3 px-4">Fecha de revisión</th>
+                                        <th class="py-3 px-4 text-center">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100 text-gray-700">
+                                    @foreach ($expedientes as $exp)
+                                        <tr class="hover:bg-gray-50/70 transition-colors">
+                                            <td class="py-3.5 px-4 text-center text-gray-400 font-medium">
+                                                {{ $exp['num'] }}
+                                            </td>
+                                            <td class="py-3.5 px-4 font-bold text-gray-900 tracking-tight whitespace-nowrap">
+                                                {{ $exp['codigo'] }}
+                                            </td>
+                                            <td class="py-3.5 px-4 text-gray-600 whitespace-nowrap">
+                                                {{ $exp['area'] }}
+                                            </td>
+                                            <td class="py-3.5 px-4 text-gray-700 whitespace-nowrap">
+                                                {{ $exp['profesor'] }}
+                                            </td>
+                                            <td class="py-3.5 px-4 text-gray-500 whitespace-nowrap">
+                                                {{ $exp['fecha'] }}
+                                            </td>
+                                            <td class="py-3.5 px-4 text-center whitespace-nowrap">
+                                                <div class="flex items-center justify-center gap-2">
+                                                    <!-- Icono de ojo sutil -->
+                                                    <span class="text-gray-300">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                        </svg>
+                                                    </span>
+                                                    <!-- Botón Revisar -->
+                                                    <button
+                                                        type="button"
+                                                        onclick="alert('Expediente {{ $exp['codigo'] }}: Auditoría y revisión de sellos activa.');"
+                                                        class="px-3 py-1 bg-[#FFF1F2] hover:bg-[#8B1D2D] text-[#8B1D2D] hover:text-white border border-[#FFE4E6] rounded-md font-semibold text-[11px] transition-all duration-150 cursor-pointer shadow-2xs"
+                                                    >
+                                                        Revisar
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- ========================================================= -->
+                <!-- COLUMNA DERECHA (4 / 12 EN DESKTOP) -->
+                <!-- ========================================================= -->
+                <div class="xl:col-span-4 space-y-6">
+
+                    <!-- TARJETA 1: ALERTAS DE PLAZO -->
+                    <div class="bg-white rounded-2xl border border-gray-200/80 shadow-2xs p-5 relative overflow-hidden">
+                        <!-- Barra roja de acento en el borde derecho (exacto al diseño) -->
+                        <div class="absolute right-0 top-1/4 bottom-1/4 w-1 bg-[#8B1D2D] rounded-l-full"></div>
+
+                        <!-- Cabecera Alertas -->
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="text-amber-500">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </span>
+                            <h3 class="text-xs font-bold text-gray-900 tracking-tight">Alertas de plazo</h3>
+                        </div>
+
+                        <!-- Lista de Alertas -->
+                        <div class="space-y-3 divide-y divide-gray-100">
+                            @foreach ($alertas as $alerta)
+                                <div class="pt-2.5 first:pt-0">
+                                    <p class="text-xs font-bold text-[#8B1D2D] leading-tight">
+                                        {{ $alerta['codigo'] }}
+                                    </p>
+                                    <p class="text-[11px] @if($alerta['dias'] <= 5) text-red-600 font-semibold @else text-gray-400 @endif mt-0.5">
+                                        {{ $alerta['plazo'] }}
+                                    </p>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <!-- Enlace inferior -->
+                        <div class="mt-4 pt-3 border-t border-gray-100 text-center">
+                            <a href="#alertas" class="text-xs font-bold text-[#8B1D2D] hover:underline inline-flex items-center gap-1">
+                                <span>Ver todas las alertas</span>
+                                <span>&rarr;</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- TARJETA 2: CALENDARIO DE PLAZOS -->
+                    <div class="bg-white rounded-2xl border border-gray-200/80 shadow-2xs p-5">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xs font-bold text-gray-900 tracking-tight">Calendario de plazos</h3>
+                            <div class="flex items-center gap-1 text-xs font-bold text-[#8B1D2D]">
+                                <span>&lsaquo;</span>
+                                <span>Sep 2026</span>
+                                <span>&rsaquo;</span>
+                            </div>
+                        </div>
+
+                        <!-- Cuadrícula del Calendario -->
+                        <div class="text-center text-xs">
+                            <!-- Días de la semana -->
+                            <div class="grid grid-cols-7 gap-1 text-[11px] font-semibold text-gray-400 mb-2">
+                                <div>L</div>
+                                <div>M</div>
+                                <div>X</div>
+                                <div>J</div>
+                                <div>V</div>
+                                <div>S</div>
+                                <div>D</div>
+                            </div>
+
+                            <!-- Días del mes (Septiembre 2026) -->
+                            <div class="grid grid-cols-7 gap-1 text-xs font-medium text-gray-700">
+                                <!-- Espacios vacíos antes del 1 de septiembre -->
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                                <div class="py-1 hover:bg-gray-50 rounded">1</div>
+                                <div class="py-1 hover:bg-gray-50 rounded">2</div>
+                                <div class="py-1 hover:bg-gray-50 rounded">3</div>
+                                <div class="py-1 hover:bg-gray-50 rounded">4</div>
+
+                                <div class="py-1 hover:bg-gray-50 rounded">5</div>
+                                <div class="py-1 hover:bg-gray-50 rounded">6</div>
+                                <div class="py-1 hover:bg-gray-50 rounded">7</div>
+                                <div class="py-1 hover:bg-gray-50 rounded">8</div>
+                                <div class="py-1 hover:bg-gray-50 rounded">9</div>
+                                <div class="py-1 hover:bg-gray-50 rounded">10</div>
+                                <div class="py-1 hover:bg-gray-50 rounded">11</div>
+
+                                <div class="py-1 hover:bg-gray-50 rounded">12</div>
+                                <div class="py-1 hover:bg-gray-50 rounded">13</div>
+                                <div class="py-1 hover:bg-gray-50 rounded">14</div>
+                                <div class="py-1 hover:bg-gray-50 rounded">15</div>
+                                <div class="py-1 hover:bg-gray-50 rounded">16</div>
+                                <div class="py-1 hover:bg-gray-50 rounded">17</div>
+                                <div class="py-1 hover:bg-gray-50 rounded">18</div>
+
+                                <div class="py-1 hover:bg-gray-50 rounded">19</div>
+                                <div class="py-1 hover:bg-gray-50 rounded">20</div>
+                                <div class="py-1 hover:bg-gray-50 rounded">21</div>
+                                <div class="py-1 hover:bg-gray-50 rounded">22</div>
+                                <div class="py-1 hover:bg-gray-50 rounded">23</div>
+                                <!-- Día 24 destacado en recuadro guinda exacto a la imagen -->
+                                <div class="py-1 bg-[#8B1D2D] text-white font-bold rounded-md shadow-2xs">24</div>
+                                <div class="py-1 hover:bg-gray-50 rounded">25</div>
+
+                                <div class="py-1 hover:bg-gray-50 rounded">26</div>
+                                <div class="py-1 hover:bg-gray-50 rounded">27</div>
+                                <div class="py-1 hover:bg-gray-50 rounded">28</div>
+                                <div class="py-1 hover:bg-gray-50 rounded">29</div>
+                                <div class="py-1 hover:bg-gray-50 rounded">30</div>
+                                <div class="py-1 text-gray-300">1</div>
+                                <div class="py-1 text-gray-300">2</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TARJETA 3: ACCIONES RÁPIDAS -->
+                    <div class="bg-white rounded-2xl border border-gray-200/80 shadow-2xs p-5">
+                        <h3 class="text-xs font-bold text-gray-900 tracking-tight mb-3">Acciones rápidas</h3>
+
+                        <div class="space-y-2.5">
+                            <!-- Acción 1: Registrar certificado (Destacado rosado/guinda) -->
+                            <button
+                                type="button"
+                                onclick="alert('Módulo para registro y certificación de servicio social.');"
+                                class="w-full p-3 bg-[#FFF5F6] hover:bg-[#FFEBEF] border border-[#FED7DE] rounded-xl text-left flex items-center gap-3 transition-colors cursor-pointer group shadow-2xs"
+                            >
+                                <span class="text-[#8B1D2D] group-hover:scale-110 transition-transform">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                                    </svg>
+                                </span>
+                                <span class="text-xs font-semibold text-gray-800">Registrar certificado</span>
+                            </button>
+
+                            <!-- Acción 2: Actualizar perfil -->
+                            <button
+                                type="button"
+                                onclick="alert('Actualización de información de perfil del coordinador.');"
+                                class="w-full p-3 bg-white hover:bg-gray-50 border border-gray-200 rounded-xl text-left flex items-center gap-3 transition-colors cursor-pointer group"
+                            >
+                                <span class="text-gray-400 group-hover:text-gray-600 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                </span>
+                                <span class="text-xs font-medium text-gray-700">Actualizar perfil</span>
+                            </button>
+
+                            <!-- Acción 3: Generar reporte -->
+                            <button
+                                type="button"
+                                onclick="alert('Generación de informe estadístico PDF/Excel.');"
+                                class="w-full p-3 bg-white hover:bg-gray-50 border border-gray-200 rounded-xl text-left flex items-center gap-3 transition-colors cursor-pointer group"
+                            >
+                                <span class="text-gray-400 group-hover:text-gray-600 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                </span>
+                                <span class="text-xs font-medium text-gray-700">Generar reporte</span>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </main>
+
+    </div>
+
 </body>
 </html>

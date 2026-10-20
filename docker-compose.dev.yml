@@ -19,6 +19,7 @@ services:
       - PHP_OPCACHE_VALIDATE_TIMESTAMPS=1
     volumes:
       - .:/var/www
+      - ./docker/dev/nginx.conf:/etc/nginx/sites-available/default:ro
       - sigps-admin-vendor:/var/www/vendor
     networks:
       - sigps-admin-dev-network

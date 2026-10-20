@@ -57,8 +57,8 @@ class AuthController extends Controller
             return redirect()->intended(route('dashboard'));
         }
 
-        return back()->withErrors([
-            'login' => 'Las credenciales proporcionadas no son válidas o la cuenta no se encuentra activa.',
+        return redirect()->route('login')->withErrors([
+            'login' => 'Las credenciales no son correctas o la cuenta no se encuentra activa.',
         ])->withInput($request->only('login'));
     }
 
@@ -84,8 +84,26 @@ class AuthController extends Controller
         $usuario = Auth::user();
         $usuario->load(['roles', 'proyectosComoTutor', 'proyectosComoAlumno']);
 
+        $expedientes = [
+            ['num' => '001', 'codigo' => '2024-0185', 'area' => 'Capacitación comunitaria', 'profesor' => 'Ana Pérez', 'fecha' => '25/09/2026'],
+            ['num' => '002', 'codigo' => '2024-0192', 'area' => 'Alfabetización digital', 'profesor' => 'Luis Alvarez', 'fecha' => '28/09/2026'],
+            ['num' => '003', 'codigo' => '2024-0201', 'area' => 'Censo de salud', 'profesor' => 'Dra. López', 'fecha' => '30/09/2026'],
+            ['num' => '004', 'codigo' => '2024-0216', 'area' => 'Huerto escolar', 'profesor' => 'Ing. Marta Méndez', 'fecha' => '02/10/2026'],
+            ['num' => '005', 'codigo' => '2024-0223', 'area' => 'Apoyo jurídico', 'profesor' => 'Mg. Ricardo Ruiz', 'fecha' => '05/10/2026'],
+            ['num' => '006', 'codigo' => '2024-0237', 'area' => 'Ingeniería UES', 'profesor' => 'Arq. Elena Flores', 'fecha' => '08/10/2026'],
+            ['num' => '007', 'codigo' => '2024-0244', 'area' => 'Voluntariado ambiental', 'profesor' => 'Ing. Samuel Díaz', 'fecha' => '10/10/2026'],
+        ];
+
+        $alertas = [
+            ['codigo' => 'Expediente 2024-118', 'plazo' => 'Vence en 5 días', 'dias' => 5],
+            ['codigo' => 'Expediente 2024-097', 'plazo' => 'Vence en 8 días', 'dias' => 8],
+            ['codigo' => 'Expediente 2024-083', 'plazo' => 'Vence en 12 días', 'dias' => 12],
+        ];
+
         return view('dashboard', [
             'usuario' => $usuario,
+            'expedientes' => $expedientes,
+            'alertas' => $alertas,
         ]);
     }
 }
