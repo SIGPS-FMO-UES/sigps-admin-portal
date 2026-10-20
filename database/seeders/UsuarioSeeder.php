@@ -64,6 +64,30 @@ class UsuarioSeeder extends Seeder
         }
 
         // 5. Estudiantes
+        $estudiantesData = [
+            ['carnet' => '2024-0185', 'nombre' => 'Ana Beatriz Mendoza Solís'],
+            ['carnet' => '2024-0192', 'nombre' => 'Carlos Eduardo Ramos García'],
+            ['carnet' => '2024-0201', 'nombre' => 'Gabriela María López Portillo'],
+            ['carnet' => '2024-0216', 'nombre' => 'José Alexander Martínez Rivera'],
+            ['carnet' => '2024-0223', 'nombre' => 'Valeria Sofía Hernández Castro'],
+            ['carnet' => '2024-0237', 'nombre' => 'Diego Alejandro Cruz Flores'],
+            ['carnet' => '2024-0244', 'nombre' => 'Fátima Guadalupe Pineda Reyes'],
+            ['carnet' => '2024-0258', 'nombre' => 'Rodrigo Ernesto Vásquez Molina'],
+            ['carnet' => '2024-0271', 'nombre' => 'Camila Marcela Aguilar Romero'],
+            ['carnet' => '2024-0290', 'nombre' => 'Kevin Daniel Salazar Cornejo'],
+        ];
+
+        foreach ($estudiantesData as $est) {
+            Usuario::firstOrCreate(
+                ['nombre_usuario' => $est['carnet']],
+                [
+                    'nombre_completo' => $est['nombre'],
+                    'password' => $passwordHasheado,
+                    'activo' => true,
+                ]
+            );
+        }
+
         for ($i = 1; $i <= 10; $i++) {
             $num = str_pad((string) $i, 2, '0', STR_PAD_LEFT);
             Usuario::firstOrCreate(

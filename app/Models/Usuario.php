@@ -124,4 +124,36 @@ class Usuario extends Authenticatable
     {
         return $this->hasMany(Proyecto::class, 'tutor_id', 'id_usuario');
     }
+
+    /**
+     * Carrera asignada o calculada para efectos de visualización en el portal.
+     */
+    public function getCarreraAttribute(): string
+    {
+        $carreras = [
+            'Ingeniería de Sistemas Informáticos',
+            'Licenciatura en Computación',
+            'Ingeniería Industrial',
+            'Ingeniería Civil',
+            'Ingeniería Eléctrica',
+            'Licenciatura en Educación',
+        ];
+
+        return $carreras[($this->id_usuario ?? 1) % count($carreras)];
+    }
+
+    /**
+     * Departamento asignado o calculado para efectos de visualización en el portal.
+     */
+    public function getDepartamentoAttribute(): string
+    {
+        $departamentos = [
+            'Escuela de Ingeniería de Sistemas',
+            'Escuela de Ingeniería Industrial',
+            'Departamento de Ciencias Básicas',
+            'Escuela de Ingeniería Civil',
+        ];
+
+        return $departamentos[($this->id_usuario ?? 1) % count($departamentos)];
+    }
 }

@@ -21,6 +21,7 @@ class ProyectoSeeder extends Seeder
         $tutorGarcia = Usuario::where('nombre_usuario', 'tutor_garcia')->first();
 
         $alumnos = Usuario::where('nombre_usuario', 'like', 'alumno_%')
+            ->orWhere('nombre_usuario', 'like', '2024-%')
             ->orderBy('id_usuario')
             ->get();
 

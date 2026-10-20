@@ -19,16 +19,12 @@
         <!-- Logo UES Superior -->
         <div class="flex lg:flex-col items-center gap-4">
             <a href="{{ route('dashboard') }}" class="group block p-1 transition-transform hover:scale-105" title="Universidad de El Salvador">
-                <!-- Emblema circular rojo UES -->
-                <div class="w-10 h-10 rounded-full bg-[#8B1D2D] p-1.5 flex items-center justify-center shadow-sm shadow-[#8B1D2D]/20">
-                    <svg viewBox="0 0 100 100" class="w-full h-full fill-white" xmlns="http://www.w3.org/2000/svg">
-                        <!-- Escudo heráldico simplificado de la UES -->
-                        <path d="M50 5 L88 22 C88 55 50 92 50 92 C50 92 12 55 12 22 Z" fill="#8B1D2D" stroke="#FFFFFF" stroke-width="5" />
-                        <circle cx="50" cy="38" r="14" fill="#FFFFFF" />
-                        <path d="M42 58 L58 58 L55 78 L45 78 Z" fill="#FFFFFF" />
-                        <circle cx="50" cy="38" r="8" fill="#8B1D2D" />
-                    </svg>
-                </div>
+                <!-- Emblema oficial UES -->
+                <img
+                    src="/images/logo.png"
+                    alt="Logo UES"
+                    class="w-10 h-10 object-contain drop-shadow-xs"
+                />
             </a>
 
             <!-- Menú de Iconos de Navegación (Desktop vertical, Mobile horizontal) -->
@@ -40,8 +36,8 @@
                     </svg>
                 </a>
 
-                <!-- 2. Perfil / Usuarios -->
-                <a href="#perfil" class="p-2.5 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors" title="Expedientes">
+                <!-- 2. Estudiantes -->
+                <a href="{{ route('estudiantes.index') }}" class="p-2.5 rounded-xl text-gray-400 hover:text-white hover:bg-white/10 lg:hover:bg-gray-100 transition-colors" title="Estudiantes">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>

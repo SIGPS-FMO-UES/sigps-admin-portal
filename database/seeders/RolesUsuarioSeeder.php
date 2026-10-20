@@ -59,7 +59,9 @@ class RolesUsuarioSeeder extends Seeder
         }
 
         // 5. Asignar Estudiantes
-        $estudiantes = Usuario::where('nombre_usuario', 'like', 'alumno_%')->get();
+        $estudiantes = Usuario::where('nombre_usuario', 'like', 'alumno_%')
+            ->orWhere('nombre_usuario', 'like', '2024-%')
+            ->get();
         if ($estudianteRol) {
             foreach ($estudiantes as $estudiante) {
                 RolesUsuario::firstOrCreate([

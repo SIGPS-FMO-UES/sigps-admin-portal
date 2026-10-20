@@ -26,9 +26,12 @@
 
             <!-- Cabecera del Banner -->
             <div class="relative z-10 flex items-center justify-between w-full">
-                <span class="text-xs uppercase tracking-widest text-white/90 font-semibold drop-shadow-sm">
-                    &copy; 2026 UES
-                </span>
+                <div class="flex items-center gap-2.5">
+                    <img src="/images/logo.png" alt="Logo UES" class="w-8 h-8 object-contain drop-shadow" />
+                    <span class="text-xs uppercase tracking-widest text-white/90 font-semibold drop-shadow-sm">
+                        &copy; 2026 UES
+                    </span>
+                </div>
 
                 <!-- Indicador visual slider con punto rojo -->
                 <div class="flex items-center gap-1.5 bg-black/30 backdrop-blur-sm px-3 py-1 rounded-full border border-white/10">
@@ -58,6 +61,10 @@
             <main class="w-full max-w-[440px] bg-white rounded-3xl shadow-xl shadow-gray-200/60 border border-gray-100 p-6 sm:p-10 my-auto transition-all">
                 <!-- Título del formulario -->
                 <div class="mb-8">
+                    <div class="flex items-center gap-2 mb-3">
+                        <img src="/images/logo.png" alt="Logo UES" class="w-7 h-7 object-contain" />
+                        <span class="text-xs font-bold uppercase tracking-wider text-[#8B1D2D]">SIGPS &bull; UES</span>
+                    </div>
                     <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
                         Bienvenido de nuevo
                     </h2>
