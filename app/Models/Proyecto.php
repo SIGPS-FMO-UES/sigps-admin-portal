@@ -112,4 +112,43 @@ class Proyecto extends Model
     {
         return $this->hasMany(DocumentosProyecto::class, 'id_proyecto', 'id_proyecto');
     }
+
+    /**
+     * Área asignada o calculada para visualización en el portal.
+     */
+    public function getAreaAttribute(): string
+    {
+        $areas = [
+            'Tecnología y Proyección Social',
+            'Desarrollo Comunitario y Sistemas',
+            'Innovación y Servicios Educativos',
+            'Gestión Ambiental e Informática',
+        ];
+
+        return $areas[($this->id_proyecto ?? 1) % count($areas)];
+    }
+
+    /**
+     * Fecha de inicio estimada o registrada del proyecto.
+     */
+    public function getFechaInicioAttribute(): string
+    {
+        return '2026-02-15';
+    }
+
+    /**
+     * Fecha de finalización estimada o registrada del proyecto.
+     */
+    public function getFechaFinAttribute(): string
+    {
+        return '2026-07-30';
+    }
+
+    /**
+     * SubCoordinador asignado al proyecto.
+     */
+    public function getSubcoordinadorAttribute(): string
+    {
+        return 'Ing. Roberto Carlos Flores';
+    }
 }

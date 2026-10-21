@@ -117,6 +117,78 @@ class ModulosCrudTest extends TestCase
     }
 
     /**
+     * Verifica que se pueda ver la vista de detalles del proyecto.
+     */
+    public function test_authenticated_user_can_view_proyecto_detalles(): void
+    {
+        $admin = Usuario::where('nombre_usuario', 'admin')->first();
+        $proyecto = Proyecto::first();
+        $this->assertNotNull($proyecto);
+
+        $response = $this->actingAs($admin)->get(route('proyectos.show', $proyecto));
+
+        $response->assertOk();
+        $response->assertSee('Proyectos/Detalles');
+        $response->assertSee('Detalles del proyecto');
+        $response->assertSee('Estudiante Asociados');
+        $response->assertSee('Modificar');
+        $response->assertSee('Regresar');
+    }
+
+    /**
+     * Verifica que se pueda modificar un proyecto existente.
+     */
+    public function test_authenticated_user_can_update_proyecto(): void
+    {
+        $admin = Usuario::where('nombre_usuario', 'admin')->first();
+        $proyecto = Proyecto::first();
+        $this->assertNotNull($proyecto);
+
+        $this->actingAs($admin)->get(route('proyectos.show', $proyecto));
+
+        $response = $this->actingAs($admin)->put(route('proyectos.update', $proyecto), [
+            '_token' => session('_token'),
+            'nombre_proyecto' => 'Nombre Actualizado del Proyecto 2026',
+            'estado' => 'en_proceso',
+        ]);
+
+        $response->assertRedirect(route('proyectos.show', $proyecto));
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('proyectos', [
+            'id_proyecto' => $proyecto->id_proyecto,
+            'nombre_proyecto' => 'Nombre Actualizado del Proyecto 2026',
+            'estado' => 'en_proceso',
+        ]);
+    }
+
+    /**
+     * Verifica que se pueda eliminar un proyecto de la base de datos.
+     */
+    public function test_authenticated_user_can_delete_proyecto(): void
+    {
+        $admin = Usuario::where('nombre_usuario', 'admin')->first();
+        $proyecto = Proyecto::create([
+            'codigo_proyecto' => 77777,
+            'nombre_proyecto' => 'Proyecto Temporal para Eliminación',
+            'estado' => 'solicitado',
+        ]);
+
+        $this->actingAs($admin)->get(route('proyectos.index'));
+
+        $response = $this->actingAs($admin)->delete(route('proyectos.destroy', $proyecto), [
+            '_token' => session('_token'),
+        ]);
+
+        $response->assertRedirect(route('proyectos.index'));
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseMissing('proyectos', [
+            'id_proyecto' => $proyecto->id_proyecto,
+        ]);
+    }
+
+    /**
      * Verifica que el listado de tutores requiera autenticación.
      */
     public function test_tutores_screen_requires_authentication(): void

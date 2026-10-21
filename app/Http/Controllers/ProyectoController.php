@@ -97,4 +97,104 @@ class ProyectoController extends Controller
             "Proyecto '[{$proyecto->codigo_proyecto}] {$proyecto->nombre_proyecto}' creado exitosamente en la base de datos."
         );
     }
+
+    /**
+     * Muestra la vista de detalles del proyecto (Ver).
+     */
+    public function show(Proyecto $proyecto): View
+    {
+        /** @var Usuario $currentUser */
+        $currentUser = Auth::user();
+
+        $proyecto->load(['tutor', 'alumnos', 'documentos']);
+
+        $tutores = Usuario::whereHas('roles', function ($q): void {
+            $q->where('nombre_rol', 'Docente Tutor');
+        })->orderBy('nombre_completo')->get();
+
+        return view('proyectos.detalles', [
+            'currentUser' => $currentUser,
+            'proyecto' => $proyecto,
+            'tutores' => $tutores,
+            'mode' => 'ver',
+        ]);
+    }
+
+    /**
+     * Muestra la misma vista con los campos listos para editar.
+     */
+    public function edit(Proyecto $proyecto): View
+    {
+        /** @var Usuario $currentUser */
+        $currentUser = Auth::user();
+
+        $proyecto->load(['tutor', 'alumnos', 'documentos']);
+
+        $tutores = Usuario::whereHas('roles', function ($q): void {
+            $q->where('nombre_rol', 'Docente Tutor');
+        })->orderBy('nombre_completo')->get();
+
+        return view('proyectos.detalles', [
+            'currentUser' => $currentUser,
+            'proyecto' => $proyecto,
+            'tutores' => $tutores,
+            'mode' => 'editar',
+        ]);
+    }
+
+    /**
+     * Modifica los datos del proyecto en la base de datos.
+     */
+    public function update(Request $request, Proyecto $proyecto): RedirectResponse
+    {
+        $validated = $request->validate([
+            'nombre_proyecto' => ['required', 'string', 'max:255'],
+            'codigo_proyecto' => ['nullable', 'integer', 'unique:proyectos,codigo_proyecto,'.$proyecto->id_proyecto.',id_proyecto'],
+            'estado' => ['nullable', 'string', 'in:solicitado,en_inscripcion,en_proceso,en_finalizacion,finalizado'],
+            'tutor_id' => ['nullable', 'integer', 'exists:usuarios,id_usuario'],
+        ], [
+            'nombre_proyecto.required' => 'El título del proyecto es obligatorio.',
+            'codigo_proyecto.unique' => 'Este código de proyecto ya se encuentra en uso.',
+            'tutor_id.exists' => 'El tutor seleccionado no existe en el sistema.',
+        ]);
+
+        $updateData = [
+            'nombre_proyecto' => trim($validated['nombre_proyecto']),
+        ];
+
+        if (! empty($validated['codigo_proyecto'])) {
+            $updateData['codigo_proyecto'] = (int) $validated['codigo_proyecto'];
+        }
+
+        if (! empty($validated['estado'])) {
+            $updateData['estado'] = $validated['estado'];
+        }
+
+        if ($request->has('tutor_id')) {
+            $updateData['tutor_id'] = ! empty($validated['tutor_id']) ? (int) $validated['tutor_id'] : null;
+        }
+
+        $proyecto->update($updateData);
+
+        return redirect()->route('proyectos.show', $proyecto)->with(
+            'success',
+            "Proyecto '[{$proyecto->codigo_proyecto}] {$proyecto->nombre_proyecto}' modificado exitosamente."
+        );
+    }
+
+    /**
+     * Elimina el proyecto de la base de datos previa confirmación.
+     */
+    public function destroy(Proyecto $proyecto): RedirectResponse
+    {
+        $nombre = $proyecto->nombre_proyecto;
+        $codigo = $proyecto->codigo_proyecto;
+
+        $proyecto->delete();
+
+        return redirect()->route('proyectos.index')->with(
+            'success',
+            "Proyecto '[{$codigo}] {$nombre}' eliminado exitosamente de la base de datos."
+        );
+    }
 }
