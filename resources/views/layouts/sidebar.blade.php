@@ -26,16 +26,15 @@
     <!-- Contenedor Superior: Logo UES con '>' muy pequeño y largo estático (sin bordes) -->
     <div class="flex flex-col gap-2">
         <div class="sidebar-top-wrapper">
-            <!-- Bloque de Identidad / Logo UES y Chevron '>' -->
-            <div class="flex items-center gap-1.5 overflow-hidden min-w-0">
-                <!-- En estado contraído, pulsar el icono o el chevron abre el menú sin ningún borde -->
-                <button
-                    id="sidebarLogoToggleBtn"
-                    type="button"
-                    class="sidebar-toggle-trigger group flex items-center gap-1.5 p-0 border-0 bg-transparent cursor-pointer focus:outline-none focus:ring-0 shadow-none hover:bg-transparent"
-                    title="Desplegar menú lateral"
-                    aria-label="Desplegar menú lateral"
-                >
+            <!-- Bloque de Identidad / Logo UES, Chevron '>' y Letras Proyección Social -->
+            <button
+                id="sidebarHeaderToggleBtn"
+                type="button"
+                class="sidebar-toggle-trigger group flex items-center gap-2 p-0 border-0 bg-transparent cursor-pointer focus:outline-none focus:ring-0 shadow-none text-left overflow-hidden min-w-0 select-none hover:bg-transparent"
+                title="Alternar menú lateral"
+                aria-label="Alternar menú lateral"
+            >
+                <div class="flex items-center gap-1.5 shrink-0">
                     <img
                         src="/images/logo.png"
                         alt="Logo UES"
@@ -55,20 +54,20 @@
                     >
                         <path d="M2 4l6 8-6 8" />
                     </svg>
-                </button>
+                </div>
 
-                <!-- Texto de marca institucional UES (visible al expandir) -->
-                <a href="{{ route('dashboard') }}" class="sidebar-brand-info flex flex-col min-w-0 hover:opacity-80 transition-opacity" title="Ir al Dashboard">
+                <!-- Texto de marca institucional UES (visible al expandir, al hacer click cierra el menú) -->
+                <div class="sidebar-brand-info flex flex-col min-w-0 transition-opacity group-hover:opacity-80">
                     <span class="font-black text-sm text-gray-900 tracking-tight leading-tight">SIGPS - UES</span>
                     <span class="text-[10px] font-bold text-[#8B1D2D] uppercase tracking-wider">Proyección Social</span>
-                </a>
-            </div>
+                </div>
+            </button>
 
             <!-- Botón para plegar el menú en estado expandido (sin bordes, con '<' estilizado) -->
             <button
                 id="sidebarFoldBtn"
                 type="button"
-                class="sidebar-toggle-trigger sidebar-fold-btn p-1.5 text-gray-400 hover:text-[#8B1D2D] transition-colors cursor-pointer border-0 bg-transparent focus:outline-none focus:ring-0 shadow-none"
+                class="sidebar-toggle-trigger sidebar-fold-btn p-1.5 text-gray-400 hover:text-[#8B1D2D] transition-colors cursor-pointer border-0 bg-transparent focus:outline-none focus:ring-0 shadow-none shrink-0"
                 title="Plegar menú lateral"
                 aria-label="Plegar menú lateral"
             >
@@ -202,34 +201,41 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const sidebar = document.getElementById('mainSidebar');
-            const logoToggleBtn = document.getElementById('sidebarLogoToggleBtn');
+            const headerToggleBtn = document.getElementById('sidebarHeaderToggleBtn');
             const foldBtn = document.getElementById('sidebarFoldBtn');
             const mobileMenu = document.getElementById('mobileNavMenu');
 
             if (!sidebar) return;
 
             function updateTitles(expanded) {
-                if (logoToggleBtn) {
-                    logoToggleBtn.setAttribute('title', expanded ? 'Ir al Dashboard' : 'Desplegar menú lateral');
-                    logoToggleBtn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+                const titleText = expanded ? 'Plegar menú lateral' : 'Desplegar menú lateral';
+                if (headerToggleBtn) {
+                    headerToggleBtn.setAttribute('title', titleText);
+                    headerToggleBtn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+                }
+                if (foldBtn) {
+                    foldBtn.setAttribute('title', 'Plegar menú lateral');
                 }
             }
 
-            function setSidebarState(expanded) {
-                if (expanded) {
+            function toggleSidebar() {
+                const isCurrentlyExpanded = sidebar.classList.contains('is-expanded');
+                const nextState = !isCurrentlyExpanded;
+
+                if (nextState) {
                     sidebar.classList.add('is-expanded');
                 } else {
                     sidebar.classList.remove('is-expanded');
                 }
                 try {
-                    localStorage.setItem('sigps_sidebar_expanded', expanded ? 'true' : 'false');
+                    localStorage.setItem('sigps_sidebar_expanded', nextState ? 'true' : 'false');
                 } catch (err) {}
 
-                updateTitles(expanded);
+                updateTitles(nextState);
 
                 // Soporte para menú desplegable en pantallas móviles
                 if (mobileMenu && window.innerWidth < 1024) {
-                    if (expanded) {
+                    if (nextState) {
                         mobileMenu.classList.remove('hidden');
                     } else {
                         mobileMenu.classList.add('hidden');
@@ -240,22 +246,16 @@
             // Inicializar según estado actual
             updateTitles(sidebar.classList.contains('is-expanded'));
 
-            // Click en logo o chevron estático en estado contraído: abre el menú
-            logoToggleBtn?.addEventListener('click', function (e) {
-                if (!sidebar.classList.contains('is-expanded')) {
-                    e.preventDefault();
-                    setSidebarState(true);
-                } else if (window.innerWidth < 1024) {
-                    // En móvil, pulsar de nuevo cierra
-                    e.preventDefault();
-                    setSidebarState(false);
-                }
+            // Click en logo, chevron estático o letras de Proyección Social: alternar estado
+            headerToggleBtn?.addEventListener('click', function (e) {
+                e.preventDefault();
+                toggleSidebar();
             });
 
-            // Click en botón de plegar en estado expandido: cierra el menú
+            // Click en botón de plegar '<' en estado expandido: alternar/cerrar estado
             foldBtn?.addEventListener('click', function (e) {
                 e.preventDefault();
-                setSidebarState(false);
+                toggleSidebar();
             });
         });
     </script>
