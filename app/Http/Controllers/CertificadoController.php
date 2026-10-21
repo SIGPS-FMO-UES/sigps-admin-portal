@@ -113,4 +113,117 @@ class CertificadoController extends Controller
             "Certificado '{$documento->nombre_documento}' registrado exitosamente en la base de datos."
         );
     }
+
+    /**
+     * Muestra la vista de detalles del certificado (Ver).
+     */
+    public function show(Documento $certificado): View
+    {
+        /** @var Usuario $currentUser */
+        $currentUser = Auth::user();
+
+        $certificado->load('proyectos');
+        $proyectos = Proyecto::orderBy('nombre_proyecto')->get();
+
+        $tipos = [
+            'solicitud' => 'Solicitud de Proyecto',
+            'inscripcion' => 'Ficha de Inscripción',
+            'anteproyecto' => 'Anteproyecto Aprobado',
+            'mitad_proyecto' => 'Informe Mitad de Proyecto',
+            'memoria' => 'Memoria y Certificación Final',
+            'otro' => 'Otro Documento',
+        ];
+
+        return view('certificados.detalles', [
+            'currentUser' => $currentUser,
+            'certificado' => $certificado,
+            'proyectos' => $proyectos,
+            'tipos' => $tipos,
+            'mode' => 'ver',
+        ]);
+    }
+
+    /**
+     * Muestra la misma vista con campos habilitados para edición.
+     */
+    public function edit(Documento $certificado): View
+    {
+        /** @var Usuario $currentUser */
+        $currentUser = Auth::user();
+
+        $certificado->load('proyectos');
+        $proyectos = Proyecto::orderBy('nombre_proyecto')->get();
+
+        $tipos = [
+            'solicitud' => 'Solicitud de Proyecto',
+            'inscripcion' => 'Ficha de Inscripción',
+            'anteproyecto' => 'Anteproyecto Aprobado',
+            'mitad_proyecto' => 'Informe Mitad de Proyecto',
+            'memoria' => 'Memoria y Certificación Final',
+            'otro' => 'Otro Documento',
+        ];
+
+        return view('certificados.detalles', [
+            'currentUser' => $currentUser,
+            'certificado' => $certificado,
+            'proyectos' => $proyectos,
+            'tipos' => $tipos,
+            'mode' => 'editar',
+        ]);
+    }
+
+    /**
+     * Modifica los datos del certificado y su proyecto asociado.
+     */
+    public function update(Request $request, Documento $certificado): RedirectResponse
+    {
+        $validated = $request->validate([
+            'nombre_documento' => ['required', 'string', 'max:255'],
+            'url_documento' => ['nullable', 'string', 'max:500'],
+            'tipo' => ['required', 'string', 'in:solicitud,inscripcion,anteproyecto,mitad_proyecto,memoria,otro'],
+            'id_proyecto' => ['nullable', 'integer', 'exists:proyectos,id_proyecto'],
+        ], [
+            'nombre_documento.required' => 'El título o nombre del documento es obligatorio.',
+            'tipo.required' => 'El tipo de documento es obligatorio.',
+            'id_proyecto.exists' => 'El proyecto seleccionado no existe.',
+        ]);
+
+        $url = $request->filled('url_documento')
+            ? trim((string) $validated['url_documento'])
+            : $certificado->url_documento;
+
+        $certificado->update([
+            'nombre_documento' => trim($validated['nombre_documento']),
+            'url_documento' => $url,
+            'tipo' => $validated['tipo'],
+        ]);
+
+        // Sincronizar proyecto asociado
+        if (! empty($validated['id_proyecto'])) {
+            $certificado->proyectos()->sync([(int) $validated['id_proyecto']]);
+        } else {
+            $certificado->proyectos()->detach();
+        }
+
+        return redirect()->route('certificados.show', $certificado)->with(
+            'success',
+            "Certificado '{$certificado->nombre_documento}' modificado exitosamente."
+        );
+    }
+
+    /**
+     * Elimina el certificado de la base de datos previa confirmación.
+     */
+    public function destroy(Documento $certificado): RedirectResponse
+    {
+        $nombre = $certificado->nombre_documento;
+
+        $certificado->proyectos()->detach();
+        $certificado->delete();
+
+        return redirect()->route('certificados.index')->with(
+            'success',
+            "Certificado '{$nombre}' eliminado exitosamente de la base de datos."
+        );
+    }
 }

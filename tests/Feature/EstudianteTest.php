@@ -118,4 +118,75 @@ class EstudianteTest extends TestCase
 
         $response->assertSessionHasErrors(['nombre_usuario']);
     }
+
+    /**
+     * Verifica que se pueda acceder a la pantalla de detalles de un estudiante.
+     */
+    public function test_can_view_estudiante_detalles(): void
+    {
+        $admin = Usuario::where('nombre_usuario', 'admin')->first();
+        $estudiante = Usuario::where('nombre_usuario', '2024-0185')->first();
+        $this->assertNotNull($estudiante);
+
+        $response = $this->actingAs($admin)->get(route('estudiantes.show', $estudiante));
+
+        $response->assertOk();
+        $response->assertSee('Estudiantes/Detalles');
+        $response->assertSee('Detalles del estudiante');
+        $response->assertSee('2024-0185');
+        $response->assertSee('Regresar');
+        $response->assertSee('Modificar');
+    }
+
+    /**
+     * Verifica que se puedan actualizar los datos de un estudiante.
+     */
+    public function test_can_update_estudiante(): void
+    {
+        $admin = Usuario::where('nombre_usuario', 'admin')->first();
+        $estudiante = Usuario::where('nombre_usuario', '2024-0185')->first();
+        $this->assertNotNull($estudiante);
+
+        $this->actingAs($admin)->get(route('estudiantes.show', $estudiante));
+
+        $response = $this->actingAs($admin)->put(route('estudiantes.update', $estudiante), [
+            '_token' => session('_token'),
+            'nombre_usuario' => '2024-0185',
+            'nombre_completo' => 'Ana Beatriz Mendoza Modificada',
+            'activo' => '1',
+        ]);
+
+        $response->assertRedirect(route('estudiantes.show', $estudiante));
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('usuarios', [
+            'id_usuario' => $estudiante->id_usuario,
+            'nombre_completo' => 'Ana Beatriz Mendoza Modificada',
+        ]);
+    }
+
+    /**
+     * Verifica que se pueda eliminar un estudiante.
+     */
+    public function test_can_delete_estudiante(): void
+    {
+        $admin = Usuario::where('nombre_usuario', 'admin')->first();
+        $estudiante = Usuario::factory()->create([
+            'nombre_usuario' => 'estudiante_temp_del',
+            'nombre_completo' => 'Alumno para Eliminar',
+        ]);
+
+        $this->actingAs($admin)->get(route('estudiantes.index'));
+
+        $response = $this->actingAs($admin)->delete(route('estudiantes.destroy', $estudiante), [
+            '_token' => session('_token'),
+        ]);
+
+        $response->assertRedirect(route('estudiantes.index'));
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseMissing('usuarios', [
+            'id_usuario' => $estudiante->id_usuario,
+        ]);
+    }
 }

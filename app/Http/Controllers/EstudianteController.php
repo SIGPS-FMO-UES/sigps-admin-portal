@@ -128,4 +128,104 @@ class EstudianteController extends Controller
             "Estudiante '{$usuario->nombre_completo}' ({$usuario->nombre_usuario}) registrado exitosamente en la base de datos."
         );
     }
+
+    /**
+     * Muestra la vista de detalles del estudiante (Ver).
+     */
+    public function show(Usuario $estudiante): View
+    {
+        /** @var Usuario $currentUser */
+        $currentUser = Auth::user();
+
+        $estudiante->load(['proyectosComoAlumno', 'roles']);
+        $proyectos = Proyecto::orderBy('nombre_proyecto')->get();
+
+        return view('estudiantes.detalles', [
+            'currentUser' => $currentUser,
+            'estudiante' => $estudiante,
+            'proyectos' => $proyectos,
+            'mode' => 'ver',
+        ]);
+    }
+
+    /**
+     * Muestra la misma vista con campos habilitados para edición.
+     */
+    public function edit(Usuario $estudiante): View
+    {
+        /** @var Usuario $currentUser */
+        $currentUser = Auth::user();
+
+        $estudiante->load(['proyectosComoAlumno', 'roles']);
+        $proyectos = Proyecto::orderBy('nombre_proyecto')->get();
+
+        return view('estudiantes.detalles', [
+            'currentUser' => $currentUser,
+            'estudiante' => $estudiante,
+            'proyectos' => $proyectos,
+            'mode' => 'editar',
+        ]);
+    }
+
+    /**
+     * Modifica los datos del estudiante y su proyecto asociado.
+     */
+    public function update(Request $request, Usuario $estudiante): RedirectResponse
+    {
+        $validated = $request->validate([
+            'nombre_usuario' => [
+                'required',
+                'string',
+                'max:50',
+                'unique:usuarios,nombre_usuario,'.$estudiante->id_usuario.',id_usuario',
+                'regex:/^[a-zA-Z0-9_\-\.]+$/',
+            ],
+            'nombre_completo' => ['required', 'string', 'max:255'],
+            'id_proyecto' => ['nullable', 'integer', 'exists:proyectos,id_proyecto'],
+            'activo' => ['nullable', 'boolean'],
+        ], [
+            'nombre_usuario.required' => 'El carnet o nombre de usuario es obligatorio.',
+            'nombre_usuario.unique' => 'Este carnet o usuario ya se encuentra registrado.',
+            'nombre_completo.required' => 'El nombre completo es obligatorio.',
+            'id_proyecto.exists' => 'El proyecto seleccionado no existe.',
+        ]);
+
+        $estudiante->update([
+            'nombre_usuario' => trim($validated['nombre_usuario']),
+            'nombre_completo' => trim($validated['nombre_completo']),
+            'activo' => $request->boolean('activo', true),
+        ]);
+
+        // Sincronizar proyecto asociado
+        if (! empty($validated['id_proyecto'])) {
+            $estudiante->proyectosComoAlumno()->sync([(int) $validated['id_proyecto']]);
+        } else {
+            $estudiante->proyectosComoAlumno()->detach();
+        }
+
+        return redirect()->route('estudiantes.show', $estudiante)->with(
+            'success',
+            "Estudiante '{$estudiante->nombre_completo}' modificado exitosamente."
+        );
+    }
+
+    /**
+     * Elimina el estudiante de la base de datos previa confirmación.
+     */
+    public function destroy(Usuario $estudiante): RedirectResponse
+    {
+        $nombre = $estudiante->nombre_completo;
+        $carnet = $estudiante->nombre_usuario;
+
+        // Desvincular proyectos y roles asignados
+        $estudiante->proyectosComoAlumno()->detach();
+        $estudiante->roles()->detach();
+
+        $estudiante->delete();
+
+        return redirect()->route('estudiantes.index')->with(
+            'success',
+            "Estudiante '{$nombre}' ({$carnet}) eliminado exitosamente de la base de datos."
+        );
+    }
 }

@@ -100,4 +100,91 @@ class TutorController extends Controller
             "Docente Tutor '{$usuario->nombre_completo}' registrado exitosamente en la base de datos."
         );
     }
+
+    /**
+     * Muestra la vista de detalles del docente tutor (Ver).
+     */
+    public function show(Usuario $tutor): View
+    {
+        /** @var Usuario $currentUser */
+        $currentUser = Auth::user();
+
+        $tutor->load(['proyectosComoTutor.alumnos', 'roles']);
+
+        return view('tutores.detalles', [
+            'currentUser' => $currentUser,
+            'tutor' => $tutor,
+            'mode' => 'ver',
+        ]);
+    }
+
+    /**
+     * Muestra la misma vista con campos habilitados para edición.
+     */
+    public function edit(Usuario $tutor): View
+    {
+        /** @var Usuario $currentUser */
+        $currentUser = Auth::user();
+
+        $tutor->load(['proyectosComoTutor.alumnos', 'roles']);
+
+        return view('tutores.detalles', [
+            'currentUser' => $currentUser,
+            'tutor' => $tutor,
+            'mode' => 'editar',
+        ]);
+    }
+
+    /**
+     * Modifica los datos del docente tutor en la base de datos.
+     */
+    public function update(Request $request, Usuario $tutor): RedirectResponse
+    {
+        $validated = $request->validate([
+            'nombre_usuario' => [
+                'required',
+                'string',
+                'max:50',
+                'unique:usuarios,nombre_usuario,'.$tutor->id_usuario.',id_usuario',
+                'regex:/^[a-zA-Z0-9_\-\.]+$/',
+            ],
+            'nombre_completo' => ['required', 'string', 'max:255'],
+            'activo' => ['nullable', 'boolean'],
+        ], [
+            'nombre_usuario.required' => 'El código o usuario del tutor es obligatorio.',
+            'nombre_usuario.unique' => 'Este usuario ya está registrado en el sistema.',
+            'nombre_completo.required' => 'El nombre completo es obligatorio.',
+        ]);
+
+        $tutor->update([
+            'nombre_usuario' => trim($validated['nombre_usuario']),
+            'nombre_completo' => trim($validated['nombre_completo']),
+            'activo' => $request->boolean('activo', true),
+        ]);
+
+        return redirect()->route('tutores.show', $tutor)->with(
+            'success',
+            "Docente Tutor '{$tutor->nombre_completo}' modificado exitosamente."
+        );
+    }
+
+    /**
+     * Elimina el docente tutor de la base de datos previa confirmación.
+     */
+    public function destroy(Usuario $tutor): RedirectResponse
+    {
+        $nombre = $tutor->nombre_completo;
+        $codigo = $tutor->nombre_usuario;
+
+        // Desvincular de los proyectos donde es tutor
+        $tutor->proyectosComoTutor()->update(['tutor_id' => null]);
+        $tutor->roles()->detach();
+
+        $tutor->delete();
+
+        return redirect()->route('tutores.index')->with(
+            'success',
+            "Docente Tutor '{$nombre}' ({$codigo}) eliminado exitosamente de la base de datos."
+        );
+    }
 }

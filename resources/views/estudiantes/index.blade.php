@@ -180,14 +180,21 @@
                                         @endif
                                     </td>
 
-                                    <!-- Acción -->
+                                    <!-- Acción: Botón con Panel Pequeño Flotante (Ver, Editar, Borrar) -->
                                     <td class="py-3.5 px-4 text-right whitespace-nowrap">
                                         <button
                                             type="button"
-                                            onclick="alert('Expediente Estudiante: {{ $estudiante->nombre_usuario }}\nNombre: {{ $estudiante->nombre_completo }}\nCarrera: {{ $estudiante->carrera }}\nEstado: {{ $estudiante->activo ? 'Activo' : 'Inactivo' }}');"
-                                            class="px-3.5 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 rounded-lg text-xs font-semibold transition-all cursor-pointer shadow-2xs hover:border-gray-300"
+                                            class="action-menu-btn px-3.5 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 rounded-lg text-xs font-semibold transition-all cursor-pointer shadow-2xs hover:border-gray-300 inline-flex items-center gap-1.5"
+                                            data-id="{{ $estudiante->id_usuario }}"
+                                            data-nombre="[{{ $estudiante->nombre_usuario }}] {{ $estudiante->nombre_completo }}"
+                                            data-show-url="{{ route('estudiantes.show', $estudiante) }}"
+                                            data-edit-url="{{ route('estudiantes.edit', $estudiante) }}"
+                                            data-delete-url="{{ route('estudiantes.destroy', $estudiante) }}"
                                         >
-                                            Button
+                                            <span>Acción</span>
+                                            <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                            </svg>
                                         </button>
                                     </td>
                                 </tr>
@@ -437,7 +444,112 @@
         </div>
     </div>
 
-    <!-- Script de control del Modal -->
+    <!-- ================================================================= -->
+    <!-- PANEL PEQUEÑO FLOTANTE DE ACCIONES (VER, EDITAR, BORRAR)          -->
+    <!-- ================================================================= -->
+    <div
+        id="actionDropdownMenu"
+        class="fixed z-50 hidden w-44 bg-white rounded-2xl shadow-xl border border-gray-200/90 py-1.5 text-xs transition-all duration-150"
+        role="menu"
+    >
+        <!-- Opción Ver -->
+        <a
+            id="dropdownVerLink"
+            href="#"
+            class="flex items-center gap-2.5 px-3.5 py-2 text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors font-medium"
+        >
+            <svg class="w-4 h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            <span>Ver</span>
+        </a>
+
+        <!-- Opción Editar -->
+        <a
+            id="dropdownEditarLink"
+            href="#"
+            class="flex items-center gap-2.5 px-3.5 py-2 text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors font-medium"
+        >
+            <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            <span>Editar</span>
+        </a>
+
+        <div class="border-t border-gray-100 my-1"></div>
+
+        <!-- Opción Borrar -->
+        <button
+            type="button"
+            id="dropdownBorrarBtn"
+            class="flex w-full items-center gap-2.5 px-3.5 py-2 text-red-600 hover:bg-red-50 transition-colors text-left font-medium cursor-pointer"
+        >
+            <svg class="w-4 h-4 text-red-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            <span>Borrar</span>
+        </button>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- MODAL CONFIRMACIÓN: BORRAR ESTUDIANTE                             -->
+    <!-- ================================================================= -->
+    <div
+        id="confirmDeleteModal"
+        class="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 transition-opacity duration-200 hidden"
+        role="dialog"
+        aria-modal="true"
+    >
+        <div class="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-gray-100 p-6 sm:p-7">
+            <div class="flex items-center gap-3.5 mb-4">
+                <div class="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-base sm:text-lg font-bold text-gray-900 tracking-tight">
+                        ¿Está seguro que quieres eliminar?
+                    </h3>
+                    <p class="text-xs text-gray-500 mt-0.5">
+                        Esta acción removerá la cuenta del estudiante y sus vinculaciones.
+                    </p>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 border border-gray-200/80 rounded-2xl p-3.5 mb-6">
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Estudiante:</p>
+                <p id="deleteModalStudentName" class="text-xs sm:text-sm font-bold text-gray-800 break-words"></p>
+            </div>
+
+            <form id="deleteStudentForm" method="POST" action="">
+                @csrf
+                @method('DELETE')
+
+                <div class="flex items-center justify-end gap-3">
+                    <button
+                        type="button"
+                        id="cancelDeleteBtn"
+                        class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        type="submit"
+                        class="px-5 py-2.5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white rounded-xl text-xs font-semibold transition-all shadow-sm hover:shadow-md cursor-pointer flex items-center gap-1.5"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        <span>Sí, eliminar</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script de control del Modal y Panel de Acciones -->
     <script>
         const modal = document.getElementById('nuevoEstudianteModal');
         const openBtn = document.getElementById('openModalBtn');
@@ -466,10 +578,90 @@
         if (closeBtn) closeBtn.addEventListener('click', closeModal);
         if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
 
-        // Cerrar modal al presionar Escape o clic fuera
+        // Panel Flotante Desplegable de Acciones
+        const actionMenu = document.getElementById('actionDropdownMenu');
+        const verLink = document.getElementById('dropdownVerLink');
+        const editarLink = document.getElementById('dropdownEditarLink');
+        const borrarBtn = document.getElementById('dropdownBorrarBtn');
+
+        let currentSelectedStudent = null;
+
+        document.querySelectorAll('.action-menu-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+
+                const rect = btn.getBoundingClientRect();
+                currentSelectedStudent = {
+                    id: btn.getAttribute('data-id'),
+                    nombre: btn.getAttribute('data-nombre'),
+                    showUrl: btn.getAttribute('data-show-url'),
+                    editUrl: btn.getAttribute('data-edit-url'),
+                    deleteUrl: btn.getAttribute('data-delete-url')
+                };
+
+                verLink.href = currentSelectedStudent.showUrl;
+                editarLink.href = currentSelectedStudent.editUrl;
+
+                // Posicionar panel cerca del botón
+                actionMenu.style.top = `${rect.bottom + 6}px`;
+                actionMenu.style.left = `${Math.max(12, rect.right - 176)}px`;
+                actionMenu.classList.remove('hidden');
+            });
+        });
+
+        // Ocultar panel al hacer clic afuera o scroll
+        window.addEventListener('click', () => {
+            if (actionMenu) actionMenu.classList.add('hidden');
+        });
+
+        window.addEventListener('scroll', () => {
+            if (actionMenu && !actionMenu.classList.contains('hidden')) {
+                actionMenu.classList.add('hidden');
+            }
+        }, true);
+
+        // Modal de Confirmación de Borrado
+        const deleteModal = document.getElementById('confirmDeleteModal');
+        const deleteForm = document.getElementById('deleteStudentForm');
+        const deleteModalStudentName = document.getElementById('deleteModalStudentName');
+        const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+
+        if (borrarBtn) {
+            borrarBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (!currentSelectedStudent) return;
+
+                if (actionMenu) actionMenu.classList.add('hidden');
+
+                deleteModalStudentName.textContent = currentSelectedStudent.nombre;
+                deleteForm.action = currentSelectedStudent.deleteUrl;
+
+                deleteModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            });
+        }
+
+        function closeDeleteModal() {
+            if (deleteModal) {
+                deleteModal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        if (cancelDeleteBtn) cancelDeleteBtn.addEventListener('click', closeDeleteModal);
+
+        if (deleteModal) {
+            deleteModal.addEventListener('click', (e) => {
+                if (e.target === deleteModal) closeDeleteModal();
+            });
+        }
+
+        // Cerrar con Escape
         window.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
+            if (e.key === 'Escape') {
+                if (actionMenu) actionMenu.classList.add('hidden');
                 closeModal();
+                closeDeleteModal();
             }
         });
 

@@ -20,10 +20,18 @@ Route::middleware('auth')->group(function (): void {
     // 1. Módulo Estudiantes
     Route::get('/estudiantes', [EstudianteController::class, 'index'])->name('estudiantes.index');
     Route::post('/estudiantes', [EstudianteController::class, 'store'])->name('estudiantes.store');
+    Route::get('/estudiantes/{estudiante}', [EstudianteController::class, 'show'])->name('estudiantes.show');
+    Route::get('/estudiantes/{estudiante}/edit', [EstudianteController::class, 'edit'])->name('estudiantes.edit');
+    Route::put('/estudiantes/{estudiante}', [EstudianteController::class, 'update'])->name('estudiantes.update');
+    Route::delete('/estudiantes/{estudiante}', [EstudianteController::class, 'destroy'])->name('estudiantes.destroy');
 
     // 2. Módulo Certificados / Documentos
     Route::get('/certificados', [CertificadoController::class, 'index'])->name('certificados.index');
     Route::post('/certificados', [CertificadoController::class, 'store'])->name('certificados.store');
+    Route::get('/certificados/{certificado}', [CertificadoController::class, 'show'])->name('certificados.show');
+    Route::get('/certificados/{certificado}/edit', [CertificadoController::class, 'edit'])->name('certificados.edit');
+    Route::put('/certificados/{certificado}', [CertificadoController::class, 'update'])->name('certificados.update');
+    Route::delete('/certificados/{certificado}', [CertificadoController::class, 'destroy'])->name('certificados.destroy');
 
     // 3. Módulo Proyectos
     Route::get('/proyectos', [ProyectoController::class, 'index'])->name('proyectos.index');
@@ -36,6 +44,10 @@ Route::middleware('auth')->group(function (): void {
     // 4. Módulo Tutores
     Route::get('/tutores', [TutorController::class, 'index'])->name('tutores.index');
     Route::post('/tutores', [TutorController::class, 'store'])->name('tutores.store');
+    Route::get('/tutores/{tutor}', [TutorController::class, 'show'])->name('tutores.show');
+    Route::get('/tutores/{tutor}/edit', [TutorController::class, 'edit'])->name('tutores.edit');
+    Route::put('/tutores/{tutor}', [TutorController::class, 'update'])->name('tutores.update');
+    Route::delete('/tutores/{tutor}', [TutorController::class, 'destroy'])->name('tutores.destroy');
 
     // 5. Módulo Administración de Usuarios y Roles
     Route::get('/usuarios', [UsuarioController::class, 'index'])->name('usuarios.index');
