@@ -21,7 +21,7 @@ class RolSeeder extends Seeder
         ];
 
         foreach ($roles as $nombre) {
-            Rol::firstOrCreate(['nombre_rol' => $nombre]);
+            Rol::findOrCreate($nombre, 'web');
         }
     }
 }

@@ -26,7 +26,7 @@ class PermisoSeeder extends Seeder
         ];
 
         foreach ($permisos as $nombre) {
-            Permiso::firstOrCreate(['nombre_permiso' => $nombre]);
+            Permiso::findOrCreate($nombre, 'web');
         }
     }
 }

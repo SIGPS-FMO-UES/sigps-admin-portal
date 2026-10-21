@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Route;
 
 // Ruta principal: muestra el formulario de inicio de sesión como primera pantalla
 Route::get('/', [AuthController::class, 'showLogin'])->name('login');
+Route::get('/login', [AuthController::class, 'showLogin']);
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 

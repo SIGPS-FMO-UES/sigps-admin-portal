@@ -4,65 +4,59 @@ namespace App\Models;
 
 use Database\Factories\PermisoFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Permission\Models\Permission as SpatiePermission;
 
-class Permiso extends Model
+class Permiso extends SpatiePermission
 {
     /** @use HasFactory<PermisoFactory> */
     use HasFactory;
 
-    /**
-     * Nombre de la tabla asociada al modelo.
-     *
-     * @var string
-     */
-    protected $table = 'permisos';
+    protected $guard_name = 'web';
 
-    /**
-     * Clave primaria personalizada.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'id_permiso';
-
-    /**
-     * Timestamps desactivados (no definidos en el diagrama).
-     *
-     * @var bool
-     */
-    public $timestamps = false;
-
-    /**
-     * Atributos asignables en masa.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
+        'name',
+        'guard_name',
         'nombre_permiso',
     ];
 
-    /**
-     * Relación N:M con roles mediante la tabla permisos_rol.
-     */
-    public function roles(): BelongsToMany
+    protected static function booted(): void
     {
-        return $this->belongsToMany(
-            Rol::class,
-            'permisos_rol',
-            'id_permiso',
-            'id_rol',
-            'id_permiso',
-            'id_rol'
-        )->withPivot('id_permisos_rol');
+        static::saving(function ($permiso): void {
+            if (empty($permiso->guard_name)) {
+                $permiso->guard_name = 'web';
+            }
+            if (! empty($permiso->name)) {
+                $permiso->nombre_permiso = $permiso->name;
+            }
+        });
     }
 
     /**
-     * Registros de asignación en permisos_rol.
+     * Accessor para compatibilidad con código que use $permiso->nombre_permiso.
      */
-    public function permisosRol(): HasMany
+    public function getNombrePermisoAttribute(): string
     {
-        return $this->hasMany(PermisosRol::class, 'id_permiso', 'id_permiso');
+        return (string) ($this->name ?? $this->attributes['nombre_permiso'] ?? '');
+    }
+
+    /**
+     * Mutator para compatibilidad cuando se asigne $permiso->nombre_permiso.
+     */
+    public function setNombrePermisoAttribute(?string $value): void
+    {
+        if ($value) {
+            if (empty($this->attributes['name'])) {
+                $this->attributes['name'] = $value;
+            }
+            $this->attributes['nombre_permiso'] = $value;
+        }
+    }
+
+    /**
+     * Accessor para compatibilidad con código que use $permiso->id_permiso.
+     */
+    public function getIdPermisoAttribute(): int
+    {
+        return (int) $this->id;
     }
 }

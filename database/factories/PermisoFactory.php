@@ -19,19 +19,11 @@ class PermisoFactory extends Factory
      */
     public function definition(): array
     {
+        $name = fake()->unique()->word().'_'.fake()->unique()->randomNumber(5);
+
         return [
-            'nombre_permiso' => fake()->randomElement([
-                'gestionar_usuarios',
-                'gestionar_roles',
-                'crear_proyectos',
-                'aprobar_proyectos',
-                'asignar_tutor',
-                'inscribir_alumnos',
-                'subir_documentos',
-                'revisar_documentos',
-                'finalizar_proyectos',
-                'ver_reportes',
-            ]),
+            'name' => $name,
+            'guard_name' => 'web',
         ];
     }
 }

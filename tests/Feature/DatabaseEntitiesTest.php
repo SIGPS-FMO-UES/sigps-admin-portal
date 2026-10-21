@@ -5,11 +5,9 @@ namespace Tests\Feature;
 use App\Models\Documento;
 use App\Models\DocumentosProyecto;
 use App\Models\Permiso;
-use App\Models\PermisosRol;
 use App\Models\Proyecto;
 use App\Models\ProyectosAlumno;
 use App\Models\Rol;
-use App\Models\RolesUsuario;
 use App\Models\Usuario;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -25,11 +23,11 @@ class DatabaseEntitiesTest extends TestCase
      */
     public function test_seeders_populate_all_tables(): void
     {
-        $this->assertDatabaseHas('roles', ['nombre_rol' => 'Administrador']);
-        $this->assertDatabaseHas('roles', ['nombre_rol' => 'Estudiante']);
+        $this->assertDatabaseHas('roles', ['name' => 'Administrador']);
+        $this->assertDatabaseHas('roles', ['name' => 'Estudiante']);
 
-        $this->assertDatabaseHas('permisos', ['nombre_permiso' => 'gestionar_usuarios']);
-        $this->assertDatabaseHas('permisos', ['nombre_permiso' => 'subir_documentos']);
+        $this->assertDatabaseHas('permissions', ['name' => 'gestionar_usuarios']);
+        $this->assertDatabaseHas('permissions', ['name' => 'subir_documentos']);
 
         $this->assertDatabaseHas('usuarios', ['nombre_usuario' => 'admin', 'activo' => true]);
         $this->assertDatabaseHas('usuarios', ['nombre_usuario' => 'tutor_lopez']);
@@ -42,31 +40,32 @@ class DatabaseEntitiesTest extends TestCase
     }
 
     /**
-     * Verifica la relación N:M entre Usuario y Rol.
+     * Verifica la relación N:M entre Usuario y Rol con Spatie.
      */
     public function test_usuario_rol_relationship(): void
     {
         $admin = Usuario::where('nombre_usuario', 'admin')->first();
         $this->assertNotNull($admin);
-        $this->assertTrue($admin->roles->contains('nombre_rol', 'Administrador'));
+        $this->assertTrue($admin->hasRole('Administrador'));
+        $this->assertTrue($admin->roles->contains('name', 'Administrador'));
 
-        $rolAdmin = Rol::where('nombre_rol', 'Administrador')->first();
+        $rolAdmin = Rol::where('name', 'Administrador')->first();
         $this->assertNotNull($rolAdmin);
         $this->assertTrue($rolAdmin->usuarios->contains('nombre_usuario', 'admin'));
     }
 
     /**
-     * Verifica la relación N:M entre Rol y Permiso.
+     * Verifica la relación N:M entre Rol y Permiso con Spatie.
      */
     public function test_rol_permiso_relationship(): void
     {
-        $adminRol = Rol::where('nombre_rol', 'Administrador')->first();
+        $adminRol = Rol::where('name', 'Administrador')->first();
         $this->assertNotNull($adminRol);
-        $this->assertTrue($adminRol->permisos->contains('nombre_permiso', 'gestionar_usuarios'));
+        $this->assertTrue($adminRol->hasPermissionTo('gestionar_usuarios'));
 
-        $permiso = Permiso::where('nombre_permiso', 'gestionar_usuarios')->first();
+        $permiso = Permiso::where('name', 'gestionar_usuarios')->first();
         $this->assertNotNull($permiso);
-        $this->assertTrue($permiso->roles->contains('nombre_rol', 'Administrador'));
+        $this->assertTrue($permiso->roles->contains('name', 'Administrador'));
     }
 
     /**
@@ -95,25 +94,23 @@ class DatabaseEntitiesTest extends TestCase
     public function test_factories_create_valid_entities(): void
     {
         $usuario = Usuario::factory()->create();
-        $rol = Rol::factory()->create();
-        $permiso = Permiso::factory()->create();
+        $rol = Rol::factory()->create(['name' => 'RolFactoryTest']);
+        $permiso = Permiso::factory()->create(['name' => 'PermisoFactoryTest']);
 
-        $rolesUsuario = RolesUsuario::factory()->create([
-            'id_usuario' => $usuario->id_usuario,
-            'id_rol' => $rol->id_rol,
-        ]);
-        $this->assertDatabaseHas('roles_usuario', [
-            'id_roles_usuario' => $rolesUsuario->id_roles_usuario,
-            'id_usuario' => $usuario->id_usuario,
-            'id_rol' => $rol->id_rol,
+        // Asignación de rol con Spatie
+        $usuario->assignRole($rol);
+        $this->assertTrue($usuario->fresh()->hasRole('RolFactoryTest'));
+        $this->assertDatabaseHas('model_has_roles', [
+            'model_id' => $usuario->id_usuario,
+            'role_id' => $rol->id,
         ]);
 
-        $permisosRol = PermisosRol::factory()->create([
-            'id_permiso' => $permiso->id_permiso,
-            'id_rol' => $rol->id_rol,
-        ]);
-        $this->assertDatabaseHas('permisos_rol', [
-            'id_permisos_rol' => $permisosRol->id_permisos_rol,
+        // Asignación de permiso al rol con Spatie
+        $rol->givePermissionTo($permiso);
+        $this->assertTrue($rol->fresh()->hasPermissionTo('PermisoFactoryTest'));
+        $this->assertDatabaseHas('role_has_permissions', [
+            'role_id' => $rol->id,
+            'permission_id' => $permiso->id,
         ]);
 
         $proyecto = Proyecto::factory()->conTutor($usuario)->create();

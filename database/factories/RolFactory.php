@@ -19,14 +19,11 @@ class RolFactory extends Factory
      */
     public function definition(): array
     {
+        $name = fake()->unique()->jobTitle().'_'.fake()->unique()->randomNumber(4);
+
         return [
-            'nombre_rol' => fake()->randomElement([
-                'Administrador',
-                'Coordinador UPS',
-                'Coordinador de Carrera',
-                'Docente Tutor',
-                'Estudiante',
-            ]),
+            'name' => $name,
+            'guard_name' => 'web',
         ];
     }
 }

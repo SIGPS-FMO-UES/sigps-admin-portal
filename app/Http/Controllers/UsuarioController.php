@@ -35,7 +35,7 @@ class UsuarioController extends Controller
         if ($request->filled('rol_id')) {
             $rolId = (int) $request->input('rol_id');
             $query->whereHas('roles', function ($q) use ($rolId): void {
-                $q->where('roles.id_rol', $rolId);
+                $q->where('roles.id', $rolId);
             });
         }
 
@@ -47,7 +47,7 @@ class UsuarioController extends Controller
 
         $usuarios = $query->orderBy('id_usuario', 'asc')->paginate(10)->withQueryString();
 
-        $roles = Rol::orderBy('id_rol', 'asc')->get();
+        $roles = Rol::orderBy('id', 'asc')->get();
 
         return view('usuarios.index', [
             'currentUser' => $currentUser,
@@ -75,7 +75,7 @@ class UsuarioController extends Controller
             'nombre_completo' => ['required', 'string', 'max:255'],
             'password' => ['nullable', 'string', 'min:6'],
             'roles' => ['required', 'array', 'min:1'],
-            'roles.*' => ['integer', 'exists:roles,id_rol'],
+            'roles.*' => ['integer', 'exists:roles,id'],
             'activo' => ['nullable', 'boolean'],
         ], [
             'nombre_usuario.required' => 'El nombre de usuario es obligatorio.',
@@ -97,8 +97,9 @@ class UsuarioController extends Controller
             'activo' => $request->boolean('activo', true),
         ]);
 
-        // Sincronizar roles en roles_usuario
-        $usuario->roles()->sync($validated['roles']);
+        // Sincronizar roles en Spatie Permission (asegurando tipos enteros)
+        $roleIds = array_map('intval', $validated['roles']);
+        $usuario->syncRoles($roleIds);
 
         return redirect()->route('usuarios.index')->with(
             'success',
@@ -113,7 +114,7 @@ class UsuarioController extends Controller
     {
         $validated = $request->validate([
             'roles' => ['required', 'array', 'min:1'],
-            'roles.*' => ['integer', 'exists:roles,id_rol'],
+            'roles.*' => ['integer', 'exists:roles,id'],
             'activo' => ['nullable', 'boolean'],
         ], [
             'roles.required' => 'Debe seleccionar al menos un rol para el usuario.',
@@ -121,8 +122,9 @@ class UsuarioController extends Controller
             'roles.*.exists' => 'Uno de los roles seleccionados no es válido.',
         ]);
 
-        // Actualizar roles asignados
-        $usuario->roles()->sync($validated['roles']);
+        // Actualizar roles asignados con Spatie (asegurando tipos enteros)
+        $roleIds = array_map('intval', $validated['roles']);
+        $usuario->syncRoles($roleIds);
 
         // Actualizar estado si se envió
         $usuario->update([

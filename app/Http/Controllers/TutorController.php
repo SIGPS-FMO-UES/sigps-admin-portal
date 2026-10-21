@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Rol;
-use App\Models\RolesUsuario;
 use App\Models\Usuario;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,7 +29,7 @@ class TutorController extends Controller
 
         $query = Usuario::query()
             ->whereHas('roles', function ($q): void {
-                $q->where('nombre_rol', 'Docente Tutor');
+                $q->where('name', 'Docente Tutor')->orWhere('nombre_rol', 'Docente Tutor');
             })
             ->with(['roles', 'proyectosComoTutor']);
 
@@ -87,13 +86,8 @@ class TutorController extends Controller
             'activo' => $request->boolean('activo', true),
         ]);
 
-        $rolTutor = Rol::where('nombre_rol', 'Docente Tutor')->first();
-        if ($rolTutor) {
-            RolesUsuario::firstOrCreate([
-                'id_usuario' => $usuario->id_usuario,
-                'id_rol' => $rolTutor->id_rol,
-            ]);
-        }
+        // Asignar el rol Docente Tutor con Spatie
+        $usuario->assignRole('Docente Tutor');
 
         return redirect()->route('tutores.index')->with(
             'success',
@@ -176,9 +170,9 @@ class TutorController extends Controller
         $nombre = $tutor->nombre_completo;
         $codigo = $tutor->nombre_usuario;
 
-        // Desvincular de los proyectos donde es tutor
+        // Desvincular de los proyectos donde es tutor y remover roles
         $tutor->proyectosComoTutor()->update(['tutor_id' => null]);
-        $tutor->roles()->detach();
+        $tutor->syncRoles([]);
 
         $tutor->delete();
 

@@ -87,11 +87,11 @@ class EstudianteTest extends TestCase
         $nuevoEstudiante = Usuario::where('nombre_usuario', '2024-9999')->first();
         $this->assertNotNull($nuevoEstudiante);
 
-        // Verificar asignación del rol 'Estudiante'
-        $rolEstudiante = Rol::where('nombre_rol', 'Estudiante')->first();
-        $this->assertDatabaseHas('roles_usuario', [
-            'id_usuario' => $nuevoEstudiante->id_usuario,
-            'id_rol' => $rolEstudiante->id_rol,
+        // Verificar asignación del rol 'Estudiante' con Spatie
+        $this->assertTrue($nuevoEstudiante->fresh()->hasRole('Estudiante'));
+        $this->assertDatabaseHas('model_has_roles', [
+            'model_id' => $nuevoEstudiante->id_usuario,
+            'role_id' => Rol::where('name', 'Estudiante')->first()->id,
         ]);
 
         // Verificar asignación a `proyectos_alumnos`

@@ -91,7 +91,7 @@ class UsuarioRolesTest extends TestCase
             'nombre_usuario' => 'usuario_roles',
             'activo' => true,
         ]);
-        $usuario->roles()->sync([5]); // Inicialmente sólo Estudiante
+        $usuario->syncRoles([5]); // Inicialmente sólo Estudiante
 
         $this->assertEqualsCanonicalizing([5], $usuario->fresh()->roles->pluck('id_rol')->toArray());
 
@@ -110,6 +110,30 @@ class UsuarioRolesTest extends TestCase
         $this->assertEqualsCanonicalizing([3, 4], $usuario->fresh()->roles->pluck('id_rol')->toArray());
     }
 
+    public function test_puede_actualizar_roles_enviando_ids_como_strings_desde_formulario(): void
+    {
+        $admin = Usuario::where('nombre_usuario', 'admin')->first();
+
+        $usuario = Usuario::factory()->create([
+            'nombre_usuario' => 'tutor_form_test',
+            'activo' => true,
+        ]);
+
+        $this->actingAs($admin)->get(route('usuarios.index'));
+
+        $response = $this->actingAs($admin)->put(route('usuarios.updateRoles', $usuario), [
+            '_token' => session('_token'),
+            'roles' => ['4', '5'],
+            'activo' => '1',
+        ]);
+
+        $response->assertRedirect(route('usuarios.index'));
+        $response->assertSessionHas('success');
+
+        $this->assertTrue($usuario->fresh()->hasRole('Docente Tutor'));
+        $this->assertTrue($usuario->fresh()->hasRole('Estudiante'));
+    }
+
     public function test_puede_desactivar_usuario_al_actualizar_roles(): void
     {
         $admin = Usuario::where('nombre_usuario', 'admin')->first();
@@ -118,7 +142,7 @@ class UsuarioRolesTest extends TestCase
             'nombre_usuario' => 'usuario_activo',
             'activo' => true,
         ]);
-        $usuario->roles()->sync([4]);
+        $usuario->syncRoles([4]);
 
         $this->actingAs($admin)->get(route('usuarios.index'));
 
@@ -138,7 +162,7 @@ class UsuarioRolesTest extends TestCase
         $admin = Usuario::where('nombre_usuario', 'admin')->first();
 
         $docente = Usuario::factory()->create(['nombre_usuario' => 'docente_filter']);
-        $docente->roles()->sync([4]);
+        $docente->syncRoles([4]);
 
         $response = $this->actingAs($admin)->get(route('usuarios.index', ['rol_id' => 4]));
 

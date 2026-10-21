@@ -8,11 +8,56 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 
 class Usuario extends Authenticatable
 {
     /** @use HasFactory<UsuarioFactory> */
     use HasFactory, Notifiable;
+
+    use HasRoles {
+        assignRole as traitAssignRole;
+        syncRoles as traitSyncRoles;
+    }
+
+    /**
+     * Normaliza los roles para que identificadores numéricos en string (ej. '4')
+     * se conviertan a enteros y Spatie los resuelva por ID y no por nombre.
+     *
+     * @param  mixed  ...$roles
+     */
+    public function assignRole(...$roles): static
+    {
+        $normalized = collect($roles)
+            ->flatten()
+            ->map(fn ($role) => is_numeric($role) ? (int) $role : $role)
+            ->all();
+
+        return $this->traitAssignRole($normalized);
+    }
+
+    /**
+     * Normaliza los roles para que identificadores numéricos en string (ej. '4')
+     * se conviertan a enteros y Spatie los resuelva por ID y no por nombre.
+     *
+     * @param  mixed  ...$roles
+     */
+    public function syncRoles(...$roles): static
+    {
+        $normalized = collect($roles)
+            ->flatten()
+            ->map(fn ($role) => is_numeric($role) ? (int) $role : $role)
+            ->all();
+
+        return $this->traitSyncRoles($normalized);
+    }
+
+    /**
+     * Guard utilizado por Spatie para permisos y roles.
+     *
+     * @var string
+     */
+    protected $guard_name = 'web';
 
     /**
      * Nombre de la tabla asociada al modelo.
@@ -69,29 +114,6 @@ class Usuario extends Authenticatable
             'activo' => 'boolean',
             'password' => 'hashed',
         ];
-    }
-
-    /**
-     * Relación N:M con roles mediante la tabla intermedia roles_usuario.
-     */
-    public function roles(): BelongsToMany
-    {
-        return $this->belongsToMany(
-            Rol::class,
-            'roles_usuario',
-            'id_usuario',
-            'id_rol',
-            'id_usuario',
-            'id_rol'
-        )->withPivot('id_roles_usuario');
-    }
-
-    /**
-     * Registros en la tabla intermedia roles_usuario asociados al usuario.
-     */
-    public function rolesUsuario(): HasMany
-    {
-        return $this->hasMany(RolesUsuario::class, 'id_usuario', 'id_usuario');
     }
 
     /**

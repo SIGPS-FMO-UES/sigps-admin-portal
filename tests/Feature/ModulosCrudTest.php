@@ -313,10 +313,11 @@ class ModulosCrudTest extends TestCase
         $nuevoTutor = Usuario::where('nombre_usuario', 'tutor_valencia')->first();
         $this->assertNotNull($nuevoTutor);
 
-        $rolTutor = Rol::where('nombre_rol', 'Docente Tutor')->first();
-        $this->assertDatabaseHas('roles_usuario', [
-            'id_usuario' => $nuevoTutor->id_usuario,
-            'id_rol' => $rolTutor->id_rol,
+        // Verificar asignación del rol 'Docente Tutor' con Spatie
+        $this->assertTrue($nuevoTutor->fresh()->hasRole('Docente Tutor'));
+        $this->assertDatabaseHas('model_has_roles', [
+            'model_id' => $nuevoTutor->id_usuario,
+            'role_id' => Rol::where('name', 'Docente Tutor')->first()->id,
         ]);
     }
 

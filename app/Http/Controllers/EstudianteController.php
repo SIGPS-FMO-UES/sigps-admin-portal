@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Proyecto;
 use App\Models\ProyectosAlumno;
 use App\Models\Rol;
-use App\Models\RolesUsuario;
 use App\Models\Usuario;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -41,7 +40,7 @@ class EstudianteController extends Controller
 
         $query = Usuario::query()
             ->whereHas('roles', function ($q): void {
-                $q->where('nombre_rol', 'Estudiante');
+                $q->where('name', 'Estudiante')->orWhere('nombre_rol', 'Estudiante');
             })
             ->with(['proyectosComoAlumno', 'roles']);
 
@@ -106,14 +105,8 @@ class EstudianteController extends Controller
             'activo' => $request->boolean('activo', true),
         ]);
 
-        // 2. Asignar el rol de 'Estudiante' en `roles_usuario`
-        $rolEstudiante = Rol::where('nombre_rol', 'Estudiante')->first();
-        if ($rolEstudiante) {
-            RolesUsuario::firstOrCreate([
-                'id_usuario' => $usuario->id_usuario,
-                'id_rol' => $rolEstudiante->id_rol,
-            ]);
-        }
+        // 2. Asignar el rol de 'Estudiante' mediante Spatie
+        $usuario->assignRole('Estudiante');
 
         // 3. Si se seleccionó un proyecto, asociarlo en `proyectos_alumnos`
         if (! empty($validated['id_proyecto'])) {

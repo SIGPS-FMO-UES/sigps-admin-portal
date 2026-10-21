@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Permiso;
-use App\Models\PermisosRol;
 use App\Models\Rol;
 use Illuminate\Database\Seeder;
 
@@ -14,27 +13,20 @@ class PermisosRolSeeder extends Seeder
      */
     public function run(): void
     {
-        $admin = Rol::where('nombre_rol', 'Administrador')->first();
-        $coordUps = Rol::where('nombre_rol', 'Coordinador UPS')->first();
-        $coordCarrera = Rol::where('nombre_rol', 'Coordinador de Carrera')->first();
-        $tutor = Rol::where('nombre_rol', 'Docente Tutor')->first();
-        $estudiante = Rol::where('nombre_rol', 'Estudiante')->first();
-
-        $todosPermisos = Permiso::all();
+        $admin = Rol::where('name', 'Administrador')->first();
+        $coordUps = Rol::where('name', 'Coordinador UPS')->first();
+        $coordCarrera = Rol::where('name', 'Coordinador de Carrera')->first();
+        $tutor = Rol::where('name', 'Docente Tutor')->first();
+        $estudiante = Rol::where('name', 'Estudiante')->first();
 
         // 1. Administrador: todos los permisos
         if ($admin) {
-            foreach ($todosPermisos as $permiso) {
-                PermisosRol::firstOrCreate([
-                    'id_permiso' => $permiso->id_permiso,
-                    'id_rol' => $admin->id_rol,
-                ]);
-            }
+            $admin->syncPermissions(Permiso::all());
         }
 
         // 2. Coordinador UPS
         if ($coordUps) {
-            $nombres = [
+            $coordUps->syncPermissions([
                 'crear_proyectos',
                 'aprobar_proyectos',
                 'asignar_tutor',
@@ -43,62 +35,34 @@ class PermisosRolSeeder extends Seeder
                 'revisar_documentos',
                 'finalizar_proyectos',
                 'ver_reportes',
-            ];
-            $permisos = Permiso::whereIn('nombre_permiso', $nombres)->get();
-            foreach ($permisos as $permiso) {
-                PermisosRol::firstOrCreate([
-                    'id_permiso' => $permiso->id_permiso,
-                    'id_rol' => $coordUps->id_rol,
-                ]);
-            }
+            ]);
         }
 
         // 3. Coordinador de Carrera
         if ($coordCarrera) {
-            $nombres = [
+            $coordCarrera->syncPermissions([
                 'crear_proyectos',
                 'asignar_tutor',
                 'inscribir_alumnos',
                 'revisar_documentos',
                 'ver_reportes',
-            ];
-            $permisos = Permiso::whereIn('nombre_permiso', $nombres)->get();
-            foreach ($permisos as $permiso) {
-                PermisosRol::firstOrCreate([
-                    'id_permiso' => $permiso->id_permiso,
-                    'id_rol' => $coordCarrera->id_rol,
-                ]);
-            }
+            ]);
         }
 
         // 4. Docente Tutor
         if ($tutor) {
-            $nombres = [
+            $tutor->syncPermissions([
                 'subir_documentos',
                 'revisar_documentos',
                 'ver_reportes',
-            ];
-            $permisos = Permiso::whereIn('nombre_permiso', $nombres)->get();
-            foreach ($permisos as $permiso) {
-                PermisosRol::firstOrCreate([
-                    'id_permiso' => $permiso->id_permiso,
-                    'id_rol' => $tutor->id_rol,
-                ]);
-            }
+            ]);
         }
 
         // 5. Estudiante
         if ($estudiante) {
-            $nombres = [
+            $estudiante->syncPermissions([
                 'subir_documentos',
-            ];
-            $permisos = Permiso::whereIn('nombre_permiso', $nombres)->get();
-            foreach ($permisos as $permiso) {
-                PermisosRol::firstOrCreate([
-                    'id_permiso' => $permiso->id_permiso,
-                    'id_rol' => $estudiante->id_rol,
-                ]);
-            }
+            ]);
         }
     }
 }
