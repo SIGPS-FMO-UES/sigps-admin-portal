@@ -82,6 +82,8 @@ class ModulosCrudTest extends TestCase
         $response->assertSee('Detalles del documento / certificado');
         $response->assertSee('Regresar');
         $response->assertSee('Modificar');
+        $response->assertSee('actionDropdownMenu');
+        $response->assertSee('confirmDeleteModal');
     }
 
     /**
@@ -205,6 +207,8 @@ class ModulosCrudTest extends TestCase
         $response->assertSee('Estudiante Asociados');
         $response->assertSee('Modificar');
         $response->assertSee('Regresar');
+        $response->assertSee('actionDropdownMenu');
+        $response->assertSee('confirmDeleteModal');
     }
 
     /**
@@ -338,6 +342,8 @@ class ModulosCrudTest extends TestCase
         $response->assertSee('tutor_lopez');
         $response->assertSee('Regresar');
         $response->assertSee('Modificar');
+        $response->assertSee('actionDropdownMenu');
+        $response->assertSee('confirmDeleteModal');
     }
 
     /**

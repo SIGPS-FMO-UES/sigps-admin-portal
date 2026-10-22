@@ -136,6 +136,9 @@ class EstudianteTest extends TestCase
         $response->assertSee('2024-0185');
         $response->assertSee('Regresar');
         $response->assertSee('Modificar');
+        $response->assertSee('actionDropdownMenu');
+        $response->assertSee('confirmDeleteModal');
+        $response->assertSee('action-menu-btn');
     }
 
     /**

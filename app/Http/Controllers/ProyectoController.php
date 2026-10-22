@@ -109,7 +109,7 @@ class ProyectoController extends Controller
         $proyecto->load(['tutor', 'alumnos', 'documentos']);
 
         $tutores = Usuario::whereHas('roles', function ($q): void {
-            $q->where('nombre_rol', 'Docente Tutor');
+            $q->where('name', 'Docente Tutor')->orWhere('nombre_rol', 'Docente Tutor');
         })->orderBy('nombre_completo')->get();
 
         return view('proyectos.detalles', [
@@ -131,7 +131,7 @@ class ProyectoController extends Controller
         $proyecto->load(['tutor', 'alumnos', 'documentos']);
 
         $tutores = Usuario::whereHas('roles', function ($q): void {
-            $q->where('nombre_rol', 'Docente Tutor');
+            $q->where('name', 'Docente Tutor')->orWhere('nombre_rol', 'Docente Tutor');
         })->orderBy('nombre_completo')->get();
 
         return view('proyectos.detalles', [
