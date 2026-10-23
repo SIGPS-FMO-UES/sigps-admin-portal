@@ -47,6 +47,9 @@ class Documento extends Model
         'observaciones',
         'fecha_dictamen',
         'folio',
+        'version',
+        'fecha_entrega',
+        'motivo_rechazo',
     ];
 
     /**
@@ -58,7 +61,40 @@ class Documento extends Model
     {
         return [
             'fecha_dictamen' => 'datetime',
+            'fecha_entrega' => 'datetime',
         ];
+    }
+
+    /**
+     * Determina si el documento fue aprobado en la etapa actual o superior.
+     */
+    public function isAprobado(): bool
+    {
+        return in_array($this->estado_revision, ['aprobado_tutor', 'aval_carrera', 'auditado_ups', 'certificado_emitido'], true);
+    }
+
+    /**
+     * Determina si el documento fue observado / rechazado para corrección.
+     */
+    public function isObservado(): bool
+    {
+        return in_array($this->estado_revision, ['observado_tutor', 'observado_carrera'], true);
+    }
+
+    /**
+     * Determina si el documento está pendiente / no revisado.
+     */
+    public function isPendiente(): bool
+    {
+        return in_array($this->estado_revision, ['pendiente_tutor', 'pendiente', null], true);
+    }
+
+    /**
+     * Obtiene el motivo de rechazo u observaciones prioritarias.
+     */
+    public function getMotivoFeedbackAttribute(): ?string
+    {
+        return $this->motivo_rechazo ?: $this->observaciones;
     }
 
     /**

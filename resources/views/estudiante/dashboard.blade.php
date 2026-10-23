@@ -127,19 +127,68 @@
                         </div>
                     </div>
 
-                    <!-- BARRA DE PROGRESO DE HORAS SOCIALES -->
+                    <!-- BARRA DESPLEGABLE DE PROGRESO DE HORAS SOCIALES (PREDETERMINADO PLEGADO) -->
                     <div class="mt-6 pt-5 border-t border-white/10">
-                        <div class="flex items-center justify-between text-xs mb-2">
-                            <span class="text-gray-300 font-semibold flex items-center gap-1.5">
-                                <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <button
+                            type="button"
+                            onclick="toggleHorasSociales()"
+                            id="btnToggleHoras"
+                            class="w-full flex items-center justify-between text-xs text-left group cursor-pointer focus:outline-none"
+                            aria-expanded="false"
+                        >
+                            <span class="text-gray-300 font-semibold flex items-center gap-2">
+                                <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                                 <span>Horas de Servicio Social: <strong class="text-white">{{ $horasAcumuladas }}</strong> de {{ $horasRequeridas }} horas</span>
                             </span>
-                            <span class="font-extrabold text-emerald-400 text-sm font-mono">{{ $porcentajeAvance }}%</span>
-                        </div>
-                        <div class="w-full h-3 bg-white/10 rounded-full overflow-hidden p-0.5">
-                            <div class="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-500" style="width: {{ $porcentajeAvance }}%"></div>
+
+                            <div class="flex items-center gap-3">
+                                <span class="font-extrabold text-emerald-400 text-sm font-mono">{{ $porcentajeAvance }}%</span>
+                                <span class="px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 text-[11px] font-bold transition-all inline-flex items-center gap-1.5 shadow-2xs">
+                                    <span id="textoToggleHoras">Ver desglose</span>
+                                    <svg id="iconoToggleHoras" class="w-3.5 h-3.5 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </span>
+                            </div>
+                        </button>
+
+                        <!-- CONTENIDO DESPLEGABLE (PLEGADO POR DEFECTO CON CLASE HIDDEN) -->
+                        <div id="contenedorDesplegableHoras" class="hidden mt-4 space-y-3 pt-3 border-t border-white/10 transition-all">
+                            <div>
+                                <div class="flex justify-between text-[11px] text-gray-300 mb-1.5 font-medium">
+                                    <span>Progreso reglamentario de horas:</span>
+                                    <span>{{ $horasAcumuladas }} / {{ $horasRequeridas }} hrs (Restan: {{ max(0, $horasRequeridas - $horasAcumuladas) }} hrs)</span>
+                                </div>
+                                <div class="w-full h-3 bg-white/10 rounded-full overflow-hidden p-0.5">
+                                    <div class="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-500" style="width: {{ $porcentajeAvance }}%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Desglose por etapas normativas del servicio social -->
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-[11px]">
+                                <div class="bg-white/5 p-2.5 rounded-xl border border-white/10">
+                                    <span class="text-gray-400 block text-[10px] uppercase font-bold tracking-wider">Inscripción</span>
+                                    <span class="font-bold text-white text-xs">50 hrs</span>
+                                    <span class="text-[10px] text-emerald-400 block mt-0.5">Formatos F1/F2</span>
+                                </div>
+                                <div class="bg-white/5 p-2.5 rounded-xl border border-white/10">
+                                    <span class="text-gray-400 block text-[10px] uppercase font-bold tracking-wider">Plan Aprobado</span>
+                                    <span class="font-bold text-white text-xs">100 hrs</span>
+                                    <span class="text-[10px] text-emerald-400 block mt-0.5">Anteproyecto F3</span>
+                                </div>
+                                <div class="bg-white/5 p-2.5 rounded-xl border border-white/10">
+                                    <span class="text-gray-400 block text-[10px] uppercase font-bold tracking-wider">Avance 50%</span>
+                                    <span class="font-bold text-white text-xs">100 hrs</span>
+                                    <span class="text-[10px] text-emerald-400 block mt-0.5">Informe F4/F5</span>
+                                </div>
+                                <div class="bg-white/5 p-2.5 rounded-xl border border-white/10">
+                                    <span class="text-gray-400 block text-[10px] uppercase font-bold tracking-wider">Memoria Final</span>
+                                    <span class="font-bold text-white text-xs">250 hrs</span>
+                                    <span class="text-[10px] text-emerald-400 block mt-0.5">Finiquito F6/F8</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -286,65 +335,161 @@
                             ];
                         @endphp
 
-                        <div class="divide-y divide-gray-100">
+                        <div class="space-y-3">
                             @foreach ($entregablesChecklist as $item)
                                 @php
                                     $docEntregado = $documentos->firstWhere('tipo', $item['tipo']);
+                                    $isObs = $docEntregado && $docEntregado->isObservado();
+                                    $isPend = $docEntregado && $docEntregado->isPendiente();
+                                    $isAprob = $docEntregado && $docEntregado->isAprobado();
                                 @endphp
-                                <div class="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                    <div class="flex items-start gap-3">
-                                        <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 {{ $docEntregado ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-400' }}">
-                                            @if ($docEntregado)
-                                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                                </svg>
-                                            @else
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
-                                            @endif
-                                        </div>
-                                        <div>
-                                            <p class="text-xs sm:text-sm font-bold text-gray-800 leading-tight">
-                                                {{ $item['titulo'] }}
-                                            </p>
-                                            <p class="text-[11px] text-gray-500 mt-0.5">
-                                                {{ $item['descripcion'] }}
-                                            </p>
-                                            @if ($docEntregado)
-                                                <p class="text-[10px] text-emerald-700 font-mono mt-1 font-semibold flex items-center gap-1">
-                                                    <span>Archivo: {{ $docEntregado->nombre_documento }}</span>
+                                <div class="p-4 rounded-2xl border transition-all {{ $isObs ? 'bg-rose-50/40 border-rose-200' : ($isPend ? 'bg-amber-50/30 border-amber-200/80' : ($isAprob ? 'bg-emerald-50/20 border-emerald-100' : 'bg-gray-50/40 border-gray-100')) }}">
+                                    <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                                        <div class="flex items-start gap-3">
+                                            <!-- Ícono según estado -->
+                                            <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 {{ $isObs ? 'bg-rose-100 text-rose-600 border border-rose-200' : ($isPend ? 'bg-amber-100 text-amber-700 border border-amber-200' : ($isAprob ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-gray-100 text-gray-400')) }}">
+                                                @if ($isObs)
+                                                    <!-- Alerta de rechazo/observación (NO check) -->
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                                    </svg>
+                                                @elseif ($isPend)
+                                                    <!-- Espera / Pendiente de revisión -->
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                @elseif ($isAprob)
+                                                    <!-- Check de aprobado -->
+                                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                                    </svg>
+                                                @else
+                                                    <!-- Sin entregar -->
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                @endif
+                                            </div>
+
+                                            <div class="space-y-1">
+                                                <div class="flex flex-wrap items-center gap-2">
+                                                    <p class="text-xs sm:text-sm font-bold text-gray-900 leading-tight">
+                                                        {{ $item['titulo'] }}
+                                                    </p>
+
+                                                    <!-- Badge de Estado Específico -->
+                                                    @if ($isObs)
+                                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300">
+                                                            <span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
+                                                            Rechazado con Observaciones
+                                                        </span>
+                                                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-white text-gray-700 border border-gray-200">
+                                                            v{{ $docEntregado->version ?? 1 }}
+                                                        </span>
+                                                    @elseif ($isPend)
+                                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                                            No revisado (En espera de dictamen)
+                                                        </span>
+                                                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-white text-gray-700 border border-gray-200">
+                                                            v{{ $docEntregado->version ?? 1 }}
+                                                        </span>
+                                                    @elseif ($isAprob)
+                                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                                                            Aprobado por Tutor
+                                                        </span>
+                                                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-white text-gray-700 border border-gray-200">
+                                                            v{{ $docEntregado->version ?? 1 }}
+                                                        </span>
+                                                    @else
+                                                        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-gray-200/80 text-gray-600">
+                                                            Pendiente de Entrega
+                                                        </span>
+                                                    @endif
+                                                </div>
+
+                                                <p class="text-[11px] text-gray-500 leading-normal">
+                                                    {{ $item['descripcion'] }}
                                                 </p>
+
+                                                @if ($docEntregado)
+                                                    <p class="text-[10px] text-gray-600 font-mono mt-0.5 flex flex-wrap items-center gap-2">
+                                                        <span class="font-semibold text-gray-800">Archivo: {{ $docEntregado->nombre_documento }}</span>
+                                                        @if ($docEntregado->fecha_entrega)
+                                                            <span class="text-gray-400">&bull; Entregado: {{ $docEntregado->fecha_entrega->format('d/m/Y H:i') }}</span>
+                                                        @endif
+                                                    </p>
+                                                @endif
+                                            </div>
+                                        </div>
+
+                                        <!-- Acciones -->
+                                        <div class="self-end sm:self-center shrink-0 flex items-center gap-2">
+                                            @if ($isObs)
+                                                <a
+                                                    href="{{ route('estudiante.subirView') }}"
+                                                    class="px-3 py-1.5 bg-[#8B1D2D] hover:bg-[#721523] text-white rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                                                    title="Corregir y subir una nueva versión del documento"
+                                                >
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                                    </svg>
+                                                    <span>Corregir y Reenviar</span>
+                                                </a>
+                                                <a
+                                                    href="{{ $docEntregado->url_documento }}"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    class="px-2.5 py-1.5 bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 rounded-lg text-xs font-semibold transition-colors inline-flex items-center gap-1 cursor-pointer"
+                                                    title="Visualizar versión PDF observada"
+                                                >
+                                                    <span>Ver PDF</span>
+                                                </a>
+                                            @elseif ($docEntregado)
+                                                <a
+                                                    href="{{ $docEntregado->url_documento }}"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    class="px-3 py-1.5 {{ $isAprob ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-200' }} border rounded-lg text-xs font-semibold transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                                                    title="Visualizar documento PDF entregado"
+                                                >
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                    </svg>
+                                                    <span>Ver PDF</span>
+                                                </a>
+                                            @else
+                                                <a
+                                                    href="{{ route('estudiante.subirView') }}"
+                                                    class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-[#8B1D2D] border border-rose-200 rounded-lg text-xs font-semibold transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                                                >
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                                    </svg>
+                                                    <span>Subir Entrega</span>
+                                                </a>
                                             @endif
                                         </div>
                                     </div>
 
-                                    <div class="self-end sm:self-auto shrink-0">
-                                        @if ($docEntregado)
-                                            <a
-                                                href="{{ $docEntregado->url_documento }}"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-lg text-xs font-semibold transition-colors inline-flex items-center gap-1.5 cursor-pointer"
-                                                title="Visualizar documento PDF entregado"
-                                            >
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    <!-- Retroalimentación / Motivo si fue Rechazado -->
+                                    @if ($isObs)
+                                        <div class="mt-3 p-3 rounded-xl bg-white/95 border border-rose-200/90 text-xs shadow-2xs">
+                                            <div class="flex items-center gap-1.5 font-bold text-rose-800 text-[11px] mb-1">
+                                                <svg class="w-3.5 h-3.5 text-rose-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                                 </svg>
-                                                <span>Ver PDF</span>
-                                            </a>
-                                        @else
-                                            <a
-                                                href="{{ route('estudiante.subirView') }}"
-                                                class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-[#8B1D2D] border border-rose-200 rounded-lg text-xs font-semibold transition-colors inline-flex items-center gap-1.5 cursor-pointer"
-                                            >
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                                                </svg>
-                                                <span>Subir Entrega</span>
-                                            </a>
-                                        @endif
-                                    </div>
+                                                <span>Motivo del rechazo / Observación del tutor:</span>
+                                            </div>
+                                            <p class="text-rose-950 text-xs leading-relaxed font-medium bg-rose-50/60 p-2.5 rounded-lg border border-rose-100">
+                                                {{ $docEntregado->motivo_feedback ?? 'El documento presenta observaciones normativas y requiere ser corregido.' }}
+                                            </p>
+                                            <div class="mt-2 flex items-center justify-between text-[11px] text-rose-700">
+                                                <span>Revisa los detalles completos en <a href="{{ route('estudiante.observaciones') }}" class="font-bold underline hover:text-rose-900">Dictámenes y Revisiones</a>.</span>
+                                            </div>
+                                        </div>
+                                    @endif
                                 </div>
                             @endforeach
                         </div>
@@ -515,5 +660,29 @@
         </main>
     </div>
 
+    <!-- SCRIPT DE DESPLIEGUE DE HORAS SOCIALES -->
+    <script>
+        function toggleHorasSociales() {
+            const contenedor = document.getElementById('contenedorDesplegableHoras');
+            const icono = document.getElementById('iconoToggleHoras');
+            const texto = document.getElementById('textoToggleHoras');
+            const btn = document.getElementById('btnToggleHoras');
+
+            if (!contenedor) return;
+
+            const isHidden = contenedor.classList.contains('hidden');
+            if (isHidden) {
+                contenedor.classList.remove('hidden');
+                if (icono) icono.classList.add('rotate-180');
+                if (texto) texto.textContent = 'Ocultar desglose';
+                if (btn) btn.setAttribute('aria-expanded', 'true');
+            } else {
+                contenedor.classList.add('hidden');
+                if (icono) icono.classList.remove('rotate-180');
+                if (texto) texto.textContent = 'Ver desglose';
+                if (btn) btn.setAttribute('aria-expanded', 'false');
+            }
+        }
+    </script>
 </body>
 </html>

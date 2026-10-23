@@ -281,6 +281,96 @@ class EstudianteRolYDocumentosTest extends TestCase
     }
 
     /**
+     * Verifica que la sección de Horas de Servicio Social sea desplegable y esté plegada por defecto.
+     */
+    public function test_estudiante_dashboard_collapsible_horas_sociales(): void
+    {
+        $estudiante = Usuario::where('nombre_usuario', '2024-0185')->first();
+
+        $response = $this->actingAs($estudiante)->get(route('dashboard'));
+        $response->assertOk();
+
+        $response->assertSee('id="btnToggleHoras"', false);
+        $response->assertSee('id="contenedorDesplegableHoras"', false);
+        $response->assertSee('class="hidden mt-4', false);
+        $response->assertSee('toggleHorasSociales', false);
+        $response->assertSee('Ver desglose');
+    }
+
+    /**
+     * Verifica que cuando el tutor rechaza/observa un documento:
+     * - El dashboard no muestre check verde de aprobado, sino alerta de rechazo.
+     * - Muestre el motivo de rechazo y el botón de corregir y reenviar.
+     * - En Observaciones se muestre el estado de rechazado, el motivo y la versión.
+     */
+    public function test_estudiante_dashboard_and_observaciones_show_rejection_feedback_when_document_observed(): void
+    {
+        $estudiante = Usuario::where('nombre_usuario', '2024-0185')->first();
+        $proyecto = $estudiante->proyectosComoAlumno()->first();
+        $this->assertNotNull($proyecto);
+
+        // Crear documento observado con motivo
+        $doc = Documento::create([
+            'nombre_documento' => 'Plan de Trabajo F3',
+            'url_documento' => '/storage/documentos/f3_observado.pdf',
+            'tipo' => 'anteproyecto',
+            'version' => 2,
+            'fecha_entrega' => now()->subDay(),
+            'fecha_dictamen' => now(),
+            'estado_revision' => 'observado_tutor',
+            'observaciones' => 'Falta sello oficial de la institución contraparte en la página 3.',
+            'motivo_rechazo' => 'Falta sello oficial de la institución contraparte en la página 3.',
+        ]);
+
+        $proyecto->documentos()->attach($doc->id_documento);
+
+        // 1. Dashboard del Estudiante
+        $resDashboard = $this->actingAs($estudiante)->get(route('dashboard'));
+        $resDashboard->assertOk();
+
+        // Debe indicar rechazado con observaciones y NO mostrar check de aprobado
+        $resDashboard->assertSee('Rechazado con Observaciones');
+        $resDashboard->assertSee('Falta sello oficial de la institución contraparte en la página 3.');
+        $resDashboard->assertSee('Corregir y Reenviar');
+        $resDashboard->assertSee('v2');
+
+        // 2. Vista de Observaciones y Dictámenes
+        $resObs = $this->actingAs($estudiante)->get(route('estudiante.observaciones'));
+        $resObs->assertOk();
+
+        $resObs->assertSee('Rechazado con Observaciones');
+        $resObs->assertSee('Falta sello oficial de la institución contraparte en la página 3.');
+        $resObs->assertSee('Subsanar Entrega');
+        $resObs->assertSee('Versión v2');
+    }
+
+    /**
+     * Verifica que un documento recién subido y no dictaminado se muestre como 'No revisado'.
+     */
+    public function test_estudiante_dashboard_shows_pending_state_when_document_uploaded_not_reviewed(): void
+    {
+        $estudiante = Usuario::where('nombre_usuario', '2024-0185')->first();
+        $proyecto = $estudiante->proyectosComoAlumno()->first();
+
+        $docPendiente = Documento::create([
+            'nombre_documento' => 'Ficha Inicial F1',
+            'url_documento' => '/storage/documentos/f1.pdf',
+            'tipo' => 'solicitud',
+            'version' => 1,
+            'fecha_entrega' => now(),
+            'estado_revision' => 'pendiente_tutor',
+        ]);
+
+        $proyecto->documentos()->attach($docPendiente->id_documento);
+
+        $resDashboard = $this->actingAs($estudiante)->get(route('dashboard'));
+        $resDashboard->assertOk();
+
+        $resDashboard->assertSee('No revisado (En espera de dictamen)');
+        $resDashboard->assertSee('v1');
+    }
+
+    /**
      * Verifica que el Administrador mantenga acceso total a todos los módulos y pueda visitar el portal del estudiante.
      */
     public function test_administrador_maintains_full_access(): void

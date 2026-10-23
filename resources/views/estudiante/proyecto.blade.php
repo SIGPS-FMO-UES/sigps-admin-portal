@@ -352,9 +352,14 @@
                                                 </svg>
                                             </div>
                                             <div>
-                                                <p class="font-bold text-gray-900 leading-tight">
-                                                    {{ $doc->nombre_documento }}
-                                                </p>
+                                                <div class="flex items-center gap-2">
+                                                    <p class="font-bold text-gray-900 leading-tight">
+                                                        {{ $doc->nombre_documento }}
+                                                    </p>
+                                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-gray-100 text-gray-700 border border-gray-200">
+                                                        v{{ $doc->version ?? 1 }}
+                                                    </span>
+                                                </div>
                                                 <p class="text-[11px] text-gray-400 mt-0.5 font-mono">
                                                     ID: #{{ $doc->id_documento }}
                                                 </p>
@@ -390,10 +395,22 @@
 
                                     <!-- Estado -->
                                     <td class="py-3.5 px-4 whitespace-nowrap">
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                            <span>Disponible</span>
-                                        </span>
+                                        @if ($doc->isObservado())
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800 border border-rose-300">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
+                                                <span>Rechazado con Observaciones</span>
+                                            </span>
+                                        @elseif ($doc->isAprobado())
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                                                <span>Aprobado por Tutor</span>
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                                <span>No revisado</span>
+                                            </span>
+                                        @endif
                                     </td>
 
                                     <!-- Acciones -->

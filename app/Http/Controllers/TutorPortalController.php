@@ -126,6 +126,7 @@ class TutorPortalController extends Controller
             $documento->update([
                 'estado_revision' => 'aprobado_tutor',
                 'observaciones' => $validated['observaciones'] ?? 'Dictamen técnico favorable emitido por el docente tutor. Cumple con los requisitos normativos.',
+                'motivo_rechazo' => null,
                 'fecha_dictamen' => now(),
             ]);
 
@@ -143,9 +144,12 @@ class TutorPortalController extends Controller
             'observaciones.min' => 'El motivo de observación debe contener al menos 10 caracteres.',
         ]);
 
+        $motivo = trim((string) $request->input('observaciones'));
+
         $documento->update([
             'estado_revision' => 'observado_tutor',
-            'observaciones' => trim((string) $request->input('observaciones')),
+            'observaciones' => $motivo,
+            'motivo_rechazo' => $motivo,
             'fecha_dictamen' => now(),
         ]);
 

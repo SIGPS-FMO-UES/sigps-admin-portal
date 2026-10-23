@@ -25,11 +25,19 @@ class EstudiantePortalController extends Controller
         $usuario = Auth::user();
         $usuario->load(['roles', 'proyectosComoAlumno.tutor', 'proyectosComoAlumno.documentos', 'proyectosComoAlumno.alumnos']);
 
-        $proyecto = $usuario->proyectosComoAlumno()->with(['tutor', 'documentos', 'alumnos'])->first();
+        $proyecto = $usuario->proyectosComoAlumno()->with([
+            'tutor',
+            'documentos' => fn ($q) => $q->orderBy('id_documento', 'desc'),
+            'alumnos',
+        ])->first();
 
         // Si es administrador o coordinador navegando a esta vista para pruebas, usar el primer proyecto existente
         if (! $proyecto && ($usuario->hasRole('Administrador') || $usuario->can('crear_proyectos'))) {
-            $proyecto = Proyecto::with(['tutor', 'documentos', 'alumnos'])->first();
+            $proyecto = Proyecto::with([
+                'tutor',
+                'documentos' => fn ($q) => $q->orderBy('id_documento', 'desc'),
+                'alumnos',
+            ])->first();
         }
 
         // Fases del proceso de Proyección Social en la UES
@@ -269,7 +277,17 @@ class EstudiantePortalController extends Controller
         $usuario = Auth::user();
         $usuario->load(['proyectosComoAlumno.tutor', 'proyectosComoAlumno.documentos']);
 
-        $proyecto = $usuario->proyectosComoAlumno()->with(['tutor', 'documentos'])->first();
+        $proyecto = $usuario->proyectosComoAlumno()->with([
+            'tutor',
+            'documentos' => fn ($q) => $q->orderBy('id_documento', 'desc'),
+        ])->first();
+
+        if (! $proyecto && ($usuario->hasRole('Administrador') || $usuario->can('crear_proyectos'))) {
+            $proyecto = Proyecto::with([
+                'tutor',
+                'documentos' => fn ($q) => $q->orderBy('id_documento', 'desc'),
+            ])->first();
+        }
 
         return view('estudiante.observaciones', [
             'usuario' => $usuario,
@@ -341,10 +359,18 @@ class EstudiantePortalController extends Controller
 
         $urlGenerada = Storage::disk('public')->url($storedPath);
 
+        // Calcular la versión correlativa del documento para este tipo dentro del proyecto
+        $versionActual = $proyecto->documentos()->where('tipo', $validated['tipo'])->count() + 1;
+
         $documento = Documento::create([
             'nombre_documento' => trim($validated['nombre_documento']),
             'url_documento' => $urlGenerada,
             'tipo' => $validated['tipo'],
+            'version' => $versionActual,
+            'fecha_entrega' => now(),
+            'estado_revision' => 'pendiente_tutor',
+            'observaciones' => null,
+            'motivo_rechazo' => null,
         ]);
 
         DocumentosProyecto::firstOrCreate([
@@ -354,7 +380,7 @@ class EstudiantePortalController extends Controller
 
         return redirect()->route('estudiante.proyecto')->with(
             'success',
-            "El archivo PDF '{$documento->nombre_documento}' fue subido con éxito y ya está disponible para visualización en el navegador."
+            "El archivo PDF '{$documento->nombre_documento}' (Versión {$versionActual}) fue subido con éxito y ya está disponible para visualización y dictamen del tutor."
         );
     }
 }
