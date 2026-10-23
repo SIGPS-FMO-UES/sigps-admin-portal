@@ -87,6 +87,7 @@ Route::middleware('auth')->group(function (): void {
     // 7. Portal Estudiante: Mi Proyecto, Subida PDF, Formatos y Observaciones
     Route::middleware('permission:subir_documentos')->group(function (): void {
         Route::get('/mi-proyecto', [EstudiantePortalController::class, 'miProyecto'])->name('estudiante.proyecto');
+        Route::get('/subir-documento', [EstudiantePortalController::class, 'subirDocumentoView'])->name('estudiante.subirView');
         Route::post('/mi-proyecto/documentos', [EstudiantePortalController::class, 'subirDocumento'])->name('estudiante.subirDocumento');
         Route::get('/formatos-guias', [EstudiantePortalController::class, 'formatos'])->name('estudiante.formatos');
         Route::get('/observaciones', [EstudiantePortalController::class, 'observaciones'])->name('estudiante.observaciones');

@@ -132,6 +132,31 @@ class EstudianteRolYDocumentosTest extends TestCase
         $response->assertSee('2024-0185');
         $response->assertSee('Subir Entrega de Documento');
         $response->assertSee('Exclusivo: Formato PDF');
+        // Mi Proyecto debe estar activo con bg-[#8B1D2D] en el menú lateral
+        $html = $response->getContent();
+        $this->assertMatchesRegularExpression('/id="sidebar-nav-mi-proyecto"[^>]*bg-\[#8B1D2D\]/', $html);
+        $this->assertDoesNotMatchRegularExpression('/id="sidebar-nav-subir-documento"[^>]*bg-\[#8B1D2D\]/', $html);
+    }
+
+    /**
+     * Verifica que el estudiante pueda consultar la pantalla de 'Subir Documento'
+     * y que el menú lateral resalte 'Subir Documento' como activo y no 'Mi Proyecto'.
+     */
+    public function test_estudiante_can_view_subir_documento_and_sidebar_highlights_it(): void
+    {
+        $estudiante = Usuario::where('nombre_usuario', '2024-0185')->first();
+
+        $response = $this->actingAs($estudiante)->get(route('estudiante.subirView'));
+
+        $response->assertOk();
+        $response->assertSee('Subir Documento de Proyección Social');
+        $response->assertSee('Subir Entrega de Documento');
+        $response->assertSee('Exclusivo: Formato PDF');
+
+        // Subir Documento debe estar activo con bg-[#8B1D2D] y Mi Proyecto inactivo
+        $html = $response->getContent();
+        $this->assertMatchesRegularExpression('/id="sidebar-nav-subir-documento"[^>]*bg-\[#8B1D2D\]/', $html);
+        $this->assertDoesNotMatchRegularExpression('/id="sidebar-nav-mi-proyecto"[^>]*bg-\[#8B1D2D\]/', $html);
     }
 
     /**

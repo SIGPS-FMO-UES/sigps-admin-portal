@@ -130,6 +130,7 @@
                 <!-- 2. Mi Proyecto -->
                 <a
                     href="{{ route('estudiante.proyecto') }}"
+                    id="sidebar-nav-mi-proyecto"
                     class="sidebar-nav-link {{ in_array($active, ['mi-proyecto', 'proyecto-estudiante']) ? 'bg-[#8B1D2D] text-white shadow-sm shadow-[#8B1D2D]/25 font-semibold' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium' }}"
                     title="Mi Proyecto"
                 >
@@ -143,7 +144,8 @@
 
                 <!-- 3. Subir Documento -->
                 <a
-                    href="{{ route('estudiante.proyecto') }}#subir-pdf"
+                    href="{{ route('estudiante.subirView') }}"
+                    id="sidebar-nav-subir-documento"
                     class="sidebar-nav-link {{ $active === 'subir-documento' ? 'bg-[#8B1D2D] text-white shadow-sm shadow-[#8B1D2D]/25 font-semibold' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium' }}"
                     title="Subir Documento (PDF)"
                 >
@@ -345,11 +347,21 @@
                 toggleSidebar();
             });
 
-            // Click en botón de plegar '<' en estado expandido: alternar/cerrar estado
-            foldBtn?.addEventListener('click', function (e) {
-                e.preventDefault();
-                toggleSidebar();
-            });
+            // Sincronizar estado visual si el usuario navega a #subir-pdf en /mi-proyecto
+            function syncSubirDocHash() {
+                const btnSubir = document.getElementById('sidebar-nav-subir-documento');
+                const btnProyecto = document.getElementById('sidebar-nav-mi-proyecto');
+                if (!btnSubir || !btnProyecto) return;
+
+                if (window.location.hash === '#subir-pdf') {
+                    btnProyecto.classList.remove('bg-[#8B1D2D]', 'text-white', 'shadow-sm', 'shadow-[#8B1D2D]/25', 'font-semibold');
+                    btnProyecto.classList.add('text-gray-500', 'hover:text-gray-900', 'hover:bg-gray-100', 'font-medium');
+                    btnSubir.classList.remove('text-gray-500', 'hover:text-gray-900', 'hover:bg-gray-100', 'font-medium');
+                    btnSubir.classList.add('bg-[#8B1D2D]', 'text-white', 'shadow-sm', 'shadow-[#8B1D2D]/25', 'font-semibold');
+                }
+            }
+            syncSubirDocHash();
+            window.addEventListener('hashchange', syncSubirDocHash);
         });
     </script>
 </aside>

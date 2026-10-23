@@ -139,6 +139,22 @@ class EstudiantePortalController extends Controller
      */
     public function miProyecto(Request $request): View
     {
+        return $this->cargarDatosProyectoView($request, 'mi-proyecto');
+    }
+
+    /**
+     * Muestra la vista dedicada a Subir Documento para el estudiante autenticado.
+     */
+    public function subirDocumentoView(Request $request): View
+    {
+        return $this->cargarDatosProyectoView($request, 'subir-documento');
+    }
+
+    /**
+     * Obtiene los datos del proyecto y documentos para renderizar la vista de estudiante.
+     */
+    private function cargarDatosProyectoView(Request $request, string $active): View
+    {
         /** @var Usuario $usuario */
         $usuario = Auth::user();
         $usuario->load(['roles', 'proyectosComoAlumno.tutor', 'proyectosComoAlumno.documentos']);
@@ -167,6 +183,7 @@ class EstudiantePortalController extends Controller
             'proyecto' => $proyecto,
             'documentos' => $documentos,
             'tipos' => $tipos,
+            'active' => $active,
         ]);
     }
 

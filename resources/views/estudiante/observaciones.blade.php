@@ -38,7 +38,7 @@
 
                 <div class="flex items-center gap-2">
                     <a
-                        href="{{ route('estudiante.proyecto') }}#subir-pdf"
+                        href="{{ route('estudiante.subirView') }}"
                         class="px-4 py-2 bg-[#8B1D2D] hover:bg-[#721523] text-white rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
                     >
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">

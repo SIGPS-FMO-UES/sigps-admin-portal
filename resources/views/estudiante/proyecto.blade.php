@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Proyecto de Proyección Social | SIGPS - UES</title>
+    <title>{{ ($active ?? 'mi-proyecto') === 'subir-documento' ? 'Subir Documento' : 'Mi Proyecto' }} de Proyección Social | SIGPS - UES</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700,800" rel="stylesheet" />
@@ -13,7 +13,7 @@
 <body class="h-full font-sans antialiased text-gray-900 bg-[#F8F9FA] flex flex-col lg:flex-row min-h-screen">
 
     <!-- BARRA LATERAL (SIDEBAR DE NAVEGACIÓN) -->
-    @include('layouts.sidebar', ['active' => 'mi-proyecto'])
+    @include('layouts.sidebar', ['active' => $active ?? 'mi-proyecto'])
 
     <!-- ================================================================= -->
     <!-- ÁREA DE CONTENIDO PRINCIPAL                                       -->
@@ -28,14 +28,14 @@
                     <nav class="flex items-center gap-1.5 text-xs text-gray-400 mb-1 font-medium">
                         <a href="{{ route('dashboard') }}" class="hover:text-gray-600 transition-colors">Inicio</a>
                         <span>/</span>
-                        <span class="text-gray-700 font-semibold">Mi Proyecto</span>
+                        <span class="text-gray-700 font-semibold">{{ ($active ?? 'mi-proyecto') === 'subir-documento' ? 'Subir Documento' : 'Mi Proyecto' }}</span>
                     </nav>
 
                     <h1 class="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight">
-                        Mi Trámite de Proyección Social
+                        {{ ($active ?? 'mi-proyecto') === 'subir-documento' ? 'Subir Documento de Proyección Social' : 'Mi Trámite de Proyección Social' }}
                     </h1>
                     <p class="text-xs sm:text-[13px] text-gray-500 mt-0.5">
-                        Consulta el estado de tu proyecto y sube tus documentos oficiales exclusivamente en formato PDF.
+                        {{ ($active ?? 'mi-proyecto') === 'subir-documento' ? 'Adjunta tus expedientes y formatos oficiales requeridos exclusivamente en formato PDF.' : 'Consulta el estado de tu proyecto y sube tus documentos oficiales exclusivamente en formato PDF.' }}
                     </p>
                 </div>
 
@@ -57,11 +57,11 @@
         </header>
 
         <!-- CUERPO PRINCIPAL -->
-        <main class="flex-1 p-4 sm:p-6 lg:p-8 space-y-6">
+        <main class="flex-1 p-4 sm:p-6 lg:p-8 flex flex-col gap-6">
 
             <!-- ALERTA DE MENSAJES DE ÉXITO O ERROR -->
             @if (session('success'))
-                <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3.5 rounded-2xl text-xs sm:text-sm flex items-start gap-3 shadow-2xs">
+                <div class="order-0 bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3.5 rounded-2xl text-xs sm:text-sm flex items-start gap-3 shadow-2xs">
                     <svg class="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -73,7 +73,7 @@
             @endif
 
             @if ($errors->any())
-                <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3.5 rounded-2xl text-xs sm:text-sm flex items-start gap-3 shadow-2xs">
+                <div class="order-0 bg-red-50 border border-red-200 text-red-800 px-4 py-3.5 rounded-2xl text-xs sm:text-sm flex items-start gap-3 shadow-2xs">
                     <svg class="w-5 h-5 text-red-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
@@ -90,7 +90,7 @@
 
             <!-- TARJETA DEL PROYECTO ASIGNADO -->
             @if ($proyecto)
-                <div class="bg-white rounded-3xl border border-gray-200/80 shadow-2xs overflow-hidden">
+                <div id="seccion-proyecto" class="{{ ($active ?? 'mi-proyecto') === 'subir-documento' ? 'order-3' : 'order-1' }} bg-white rounded-3xl border border-gray-200/80 shadow-2xs overflow-hidden">
                     <div class="bg-gradient-to-r from-gray-900 to-gray-800 p-6 text-white flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
                             <div class="flex items-center gap-2 mb-2">
@@ -156,7 +156,7 @@
                 </div>
             @else
                 <!-- Sin proyecto asignado -->
-                <div class="bg-amber-50 border border-amber-200 rounded-3xl p-6 sm:p-8 text-center text-amber-900 shadow-2xs">
+                <div id="seccion-proyecto" class="{{ ($active ?? 'mi-proyecto') === 'subir-documento' ? 'order-3' : 'order-1' }} bg-amber-50 border border-amber-200 rounded-3xl p-6 sm:p-8 text-center text-amber-900 shadow-2xs">
                     <div class="w-12 h-12 bg-amber-100 rounded-2xl mx-auto flex items-center justify-center text-amber-700 mb-3">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -172,7 +172,7 @@
             <!-- ============================================================= -->
             <!-- SECCIÓN: SUBIR DOCUMENTO (EXCLUSIVAMENTE PDF)                  -->
             <!-- ============================================================= -->
-            <div id="subir-pdf" class="bg-white rounded-3xl border border-gray-200/80 shadow-2xs p-6 sm:p-7">
+            <div id="subir-pdf" class="{{ ($active ?? 'mi-proyecto') === 'subir-documento' ? 'order-1' : 'order-2' }} bg-white rounded-3xl border border-gray-200/80 shadow-2xs p-6 sm:p-7">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-gray-100">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center shrink-0">
@@ -313,7 +313,7 @@
             <!-- ============================================================= -->
             <!-- SECCIÓN: DOCUMENTOS DEL PROYECTO Y EXPEDIENTE                 -->
             <!-- ============================================================= -->
-            <div class="bg-white rounded-3xl border border-gray-200/80 shadow-2xs overflow-hidden">
+            <div id="seccion-expedientes" class="{{ ($active ?? 'mi-proyecto') === 'subir-documento' ? 'order-2' : 'order-3' }} bg-white rounded-3xl border border-gray-200/80 shadow-2xs overflow-hidden">
                 <div class="p-6 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                         <h3 class="text-base sm:text-lg font-bold text-gray-900 tracking-tight flex items-center gap-2">

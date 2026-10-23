@@ -116,7 +116,7 @@
                             </a>
 
                             <a
-                                href="{{ route('estudiante.proyecto') }}#subir-pdf"
+                                href="{{ route('estudiante.subirView') }}"
                                 class="px-4 py-2.5 bg-[#8B1D2D] hover:bg-[#721523] active:bg-[#5E101D] text-white font-bold text-xs rounded-xl transition-all shadow-sm flex items-center gap-2 cursor-pointer"
                             >
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -247,7 +247,7 @@
                                 </p>
                             </div>
                             <a
-                                href="{{ route('estudiante.proyecto') }}#subir-pdf"
+                                href="{{ route('estudiante.subirView') }}"
                                 class="text-xs text-[#8B1D2D] hover:underline font-bold flex items-center gap-1 cursor-pointer"
                             >
                                 <span>Subir entregable</span>
@@ -335,7 +335,7 @@
                                             </a>
                                         @else
                                             <a
-                                                href="{{ route('estudiante.proyecto') }}#subir-pdf"
+                                                href="{{ route('estudiante.subirView') }}"
                                                 class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-[#8B1D2D] border border-rose-200 rounded-lg text-xs font-semibold transition-colors inline-flex items-center gap-1.5 cursor-pointer"
                                             >
                                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
