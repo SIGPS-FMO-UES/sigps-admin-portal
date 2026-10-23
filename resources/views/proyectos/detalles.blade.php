@@ -191,7 +191,40 @@
                         </div>
                     </div>
 
-                    <!-- Fila 6: Documento -->
+                    <!-- Fila 6: Estado del Proyecto -->
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                        <label for="campo_estado" class="w-full sm:w-44 text-xs sm:text-sm font-semibold text-gray-700 shrink-0">
+                            Estado del Proyecto
+                        </label>
+                        <div class="w-full">
+                            <select
+                                name="estado"
+                                id="campo_estado"
+                                class="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-xs sm:text-sm text-gray-900 focus:outline-none focus:border-[#8B1D2D] focus:ring-1 focus:ring-[#8B1D2D]/30 transition-all cursor-pointer font-semibold"
+                            >
+                                <option value="solicitado" @selected(old('estado', $proyecto->estado) === 'solicitado')>
+                                    Solicitud Registrada (Fase 1: Inicial)
+                                </option>
+                                <option value="en_inscripcion" @selected(old('estado', $proyecto->estado) === 'en_inscripcion')>
+                                    En Inscripción (Fase 1: Formatos F1/F2)
+                                </option>
+                                <option value="en_proceso" @selected(old('estado', $proyecto->estado) === 'en_proceso')>
+                                    En Ejecución / Activo (Fase 2 y 3: Anteproyecto F3 y Avance F4/F5)
+                                </option>
+                                <option value="en_finalizacion" @selected(old('estado', $proyecto->estado) === 'en_finalizacion')>
+                                    En Finalización / Cierre (Fase 4: Memoria Final F6/F7/F8)
+                                </option>
+                                <option value="finalizado" @selected(old('estado', $proyecto->estado) === 'finalizado')>
+                                    Finalizado (Fase 5: Certificación Oficial Emitida)
+                                </option>
+                            </select>
+                            <p class="text-[11px] text-gray-400 mt-1">
+                                El estado avanza automáticamente con la entrega y aprobación de documentos reglamentarios, pero puedes modificarlo manualmente.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Fila 7: Documento -->
                     <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                         <label class="w-full sm:w-44 text-xs sm:text-sm font-semibold text-gray-700 shrink-0">
                             Documento

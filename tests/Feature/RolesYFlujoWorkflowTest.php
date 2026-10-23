@@ -262,4 +262,149 @@ class RolesYFlujoWorkflowTest extends TestCase
         $this->actingAs($admin)->get(route('certificados.index'))->assertOk();
         $this->actingAs($admin)->get(route('tutores.index'))->assertOk();
     }
+
+    /**
+     * Verifica que en el dashboard del tutor, los proyectos con documentos "Por Dictaminar"
+     * aparezcan de primero con el ícono amarillo y que una vez resueltos regresen a su lugar natural.
+     */
+    public function test_tutor_dashboard_prioritizes_projects_with_pending_documents_and_returns_when_resolved(): void
+    {
+        $tutor = Usuario::where('nombre_usuario', 'tutor_lopez')->first();
+        $this->assertNotNull($tutor);
+
+        // tutor_lopez tiene asignados los proyectos 102 y 105
+        $p102 = Proyecto::where('codigo_proyecto', 102)->first();
+        $p105 = Proyecto::where('codigo_proyecto', 105)->first();
+
+        // Agregar un documento pendiente únicamente al proyecto 105 (código mayor)
+        $docPendiente = Documento::create([
+            'nombre_documento' => 'Documento Pendiente Proyecto 105',
+            'url_documento' => 'storage/documentos/p105.pdf',
+            'tipo' => 'anteproyecto',
+            'estado_revision' => 'pendiente_tutor',
+        ]);
+        $p105->documentos()->attach($docPendiente->id_documento);
+
+        // Al consultar el dashboard, el proyecto 105 debe aparecer primero por tener documentos por dictaminar
+        $response = $this->actingAs($tutor)->get(route('dashboard'));
+        $response->assertOk();
+        $response->assertSee('Por Dictaminar');
+        $response->assertSee('btnFiltroPorDictaminar');
+
+        $html = $response->getContent();
+        // Verificar que en la lista de tarjetas P105 aparece antes que P102
+        $card105_first = strpos($html, 'data-proyecto-id="'.$p105->id_proyecto.'"');
+        $card102_first = strpos($html, 'data-proyecto-id="'.$p102->id_proyecto.'"');
+        $this->assertNotFalse($card105_first);
+        $this->assertNotFalse($card102_first);
+        $this->assertLessThan($card102_first, $card105_first);
+
+        // Resolver el documento dictaminando aprobación
+        $resAprob = $this->actingAs($tutor)->post(route('tutor.dictamen', $docPendiente), [
+            '_token' => session('_token'),
+            'accion' => 'aprobar',
+            'observaciones' => 'Aprobado satisfactoriamente.',
+        ]);
+        $resAprob->assertRedirect();
+
+        // Al recargar el dashboard, ambos tienen 0 pendientes, por lo que regresan a su orden natural por código (102 antes de 105)
+        $responseResolved = $this->actingAs($tutor)->get(route('dashboard'));
+        $responseResolved->assertOk();
+        $htmlResolved = $responseResolved->getContent();
+
+        // En la zona de tarjetas, P102 aparece primero ahora
+        $card102 = strpos($htmlResolved, 'data-proyecto-id="'.$p102->id_proyecto.'"');
+        $card105 = strpos($htmlResolved, 'data-proyecto-id="'.$p105->id_proyecto.'"');
+        $this->assertLessThan($card105, $card102);
+    }
+
+    /**
+     * Verifica que el estado del proyecto se pueda editar manualmente
+     * y avance automáticamente según los documentos entregados y dictaminados.
+     */
+    public function test_project_state_can_be_edited_manually_and_advances_automatically_with_document_approvals(): void
+    {
+        $admin = Usuario::where('nombre_usuario', 'admin')->first();
+        $tutor = Usuario::where('nombre_usuario', 'tutor_lopez')->first();
+
+        // 1. Proyecto en estado inicial 'solicitado'
+        $proyecto = Proyecto::create([
+            'nombre_proyecto' => 'Proyecto Ciclo de Vida Test',
+            'codigo_proyecto' => 999,
+            'estado' => 'solicitado',
+            'tutor_id' => $tutor->id_usuario,
+        ]);
+
+        $this->actingAs($admin)->get(route('proyectos.edit', $proyecto));
+
+        // 2. Edición manual del estado vía formulario PUT
+        $responseEdit = $this->actingAs($admin)->put(route('proyectos.update', $proyecto), [
+            '_token' => session('_token'),
+            'nombre_proyecto' => 'Proyecto Ciclo de Vida Test (Editado)',
+            'estado' => 'en_inscripcion',
+            'tutor_id' => $tutor->id_usuario,
+        ]);
+        $responseEdit->assertRedirect();
+        $proyecto->refresh();
+        $this->assertEquals('en_inscripcion', $proyecto->estado);
+
+        // 3. Subir anteproyecto y aprobarlo con tutor -> avanza automáticamente a 'en_proceso'
+        $docAnteproyecto = Documento::create([
+            'nombre_documento' => 'Anteproyecto F3 Aprobado',
+            'url_documento' => 'storage/documentos/f3.pdf',
+            'tipo' => 'anteproyecto',
+            'estado_revision' => 'pendiente_tutor',
+        ]);
+        $proyecto->documentos()->attach($docAnteproyecto->id_documento);
+
+        $this->actingAs($tutor)->get(route('dashboard'));
+        $resAprobAnte = $this->actingAs($tutor)->post(route('tutor.dictamen', $docAnteproyecto), [
+            '_token' => session('_token'),
+            'accion' => 'aprobar',
+            'observaciones' => 'Aprobado técnicamente.',
+        ]);
+        $resAprobAnte->assertRedirect();
+
+        $proyecto->refresh();
+        $this->assertEquals('en_proceso', $proyecto->estado);
+
+        // 4. Subir memoria final y aprobarla -> avanza automáticamente a 'en_finalizacion'
+        $docMemoria = Documento::create([
+            'nombre_documento' => 'Memoria Final F8',
+            'url_documento' => 'storage/documentos/f8.pdf',
+            'tipo' => 'memoria',
+            'estado_revision' => 'pendiente_tutor',
+        ]);
+        $proyecto->documentos()->attach($docMemoria->id_documento);
+
+        $resAprobMemoria = $this->actingAs($tutor)->post(route('tutor.dictamen', $docMemoria), [
+            '_token' => session('_token'),
+            'accion' => 'aprobar',
+            'observaciones' => 'Memoria técnica aprobada.',
+        ]);
+        $resAprobMemoria->assertRedirect();
+
+        $proyecto->refresh();
+        $this->assertEquals('en_finalizacion', $proyecto->estado);
+
+        // 5. Emisión de certificado por UPS -> avanza a 'finalizado'
+        $coordUps = Usuario::where('nombre_usuario', 'coord_ups')->first();
+        $docCertificado = Documento::create([
+            'nombre_documento' => 'Constancia Oficial UPS',
+            'url_documento' => 'storage/documentos/cert.pdf',
+            'tipo' => 'otro',
+            'estado_revision' => 'pendiente_tutor',
+        ]);
+        $proyecto->documentos()->attach($docCertificado->id_documento);
+
+        $this->actingAs($coordUps)->get(route('dashboard'));
+        $resCert = $this->actingAs($coordUps)->post(route('ups.emitirCertificado', $docCertificado), [
+            '_token' => session('_token'),
+        ]);
+        $resCert->assertRedirect();
+
+        $proyecto->actualizarEstadoAutomatico();
+        $proyecto->refresh();
+        $this->assertEquals('finalizado', $proyecto->estado);
+    }
 }

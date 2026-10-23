@@ -79,51 +79,132 @@ class EstudiantePortalController extends Controller
             ],
         ];
 
+        if ($proyecto) {
+            $proyecto->actualizarEstadoAutomatico();
+        }
+
         $documentos = $proyecto ? $proyecto->documentos : collect();
         $tiposSubidos = $documentos->pluck('tipo')->all();
 
+        // Determinar documentos por etapa
+        $docFase1 = $documentos->first(fn ($d) => in_array($d->tipo, ['solicitud', 'inscripcion'], true));
+        $docFase2 = $documentos->firstWhere('tipo', 'anteproyecto');
+        $docFase3 = $documentos->firstWhere('tipo', 'mitad_proyecto');
+        $docFase4 = $documentos->firstWhere('tipo', 'memoria');
+        $docFase5 = $documentos->first(fn ($d) => $d->tipo === 'certificado' || $d->folio !== null);
+
+        $estadoProy = $proyecto?->estado ?? 'solicitado';
+
+        $fase1Completada = ($docFase1 && $docFase1->isAprobado())
+            || in_array($estadoProy, ['en_proceso', 'en_finalizacion', 'finalizado'], true)
+            || ($docFase2 && $docFase2->isAprobado());
+
+        $fase2Completada = ($docFase2 && $docFase2->isAprobado())
+            || in_array($estadoProy, ['en_finalizacion', 'finalizado'], true)
+            || ($docFase3 && $docFase3->isAprobado());
+
+        $fase3Completada = ($docFase3 && $docFase3->isAprobado())
+            || in_array($estadoProy, ['en_finalizacion', 'finalizado'], true)
+            || ($docFase4 && $docFase4->isAprobado());
+
+        $fase4Completada = ($docFase4 && $docFase4->isAprobado())
+            || $estadoProy === 'finalizado'
+            || ($docFase5 && in_array($docFase5->estado_revision, ['certificado_emitido', 'auditado_ups'], true));
+
+        $fase5Completada = $estadoProy === 'finalizado'
+            || ($docFase5 && in_array($docFase5->estado_revision, ['certificado_emitido', 'auditado_ups'], true));
+
+        $completadas = [
+            1 => $fase1Completada,
+            2 => $fase2Completada,
+            3 => $fase3Completada,
+            4 => $fase4Completada,
+            5 => $fase5Completada,
+        ];
+
+        // Determinar fase actual (primera fase que no está completada)
         $faseActual = 1;
+        foreach ($completadas as $num => $isComp) {
+            if (! $isComp) {
+                $faseActual = $num;
+                break;
+            }
+            $faseActual = 5;
+        }
+
+        // Si la fase 5 ya está completada, el proyecto está finalizado
+        if ($fase5Completada) {
+            $faseActual = 5;
+        }
+
+        // Calcular horas acumuladas y avance reglamentario
         $horasAcumuladas = 0;
         $horasRequeridas = 500;
 
-        if ($proyecto) {
-            if ($proyecto->estado === 'finalizado') {
-                $faseActual = 5;
-                $horasAcumuladas = 500;
-            } elseif ($proyecto->estado === 'en_proceso') {
-                if (in_array('memoria', $tiposSubidos, true)) {
-                    $faseActual = 4;
-                    $horasAcumuladas = 450;
-                } elseif (in_array('mitad_proyecto', $tiposSubidos, true)) {
-                    $faseActual = 3;
-                    $horasAcumuladas = 250;
-                } else {
-                    $faseActual = 2;
-                    $horasAcumuladas = 150;
-                }
-            } elseif ($proyecto->estado === 'en_inscripcion') {
-                $faseActual = 2;
-                $horasAcumuladas = 50;
-            } else {
-                $faseActual = 1;
-                $horasAcumuladas = 0;
-            }
+        if ($fase5Completada || $estadoProy === 'finalizado') {
+            $horasAcumuladas = 500;
+        } elseif ($fase4Completada || $estadoProy === 'en_finalizacion') {
+            $horasAcumuladas = 450;
+        } elseif ($fase3Completada) {
+            $horasAcumuladas = 250;
+        } elseif ($fase2Completada || $estadoProy === 'en_proceso') {
+            $horasAcumuladas = 150;
+        } elseif ($fase1Completada || $estadoProy === 'en_inscripcion') {
+            $horasAcumuladas = 50;
+        } else {
+            $horasAcumuladas = 0;
         }
 
         $porcentajeAvance = min(100, (int) round(($horasAcumuladas / $horasRequeridas) * 100));
+
+        // Enriquecer el array de fases con el estado real de avance para la visualización del alumno
+        $faseDocs = [
+            1 => $docFase1,
+            2 => $docFase2,
+            3 => $docFase3,
+            4 => $docFase4,
+            5 => $docFase5,
+        ];
+
+        foreach ($fases as $num => &$fase) {
+            $fase['completada'] = $completadas[$num];
+            $fase['actual'] = ($num === $faseActual && ! ($num === 5 && $fase5Completada));
+            $docAsoc = $faseDocs[$num];
+            $fase['doc'] = $docAsoc;
+
+            if ($fase['completada']) {
+                $fase['badge_estado'] = 'Completada';
+                $fase['badge_tipo'] = 'completada';
+            } elseif ($fase['actual']) {
+                if ($docAsoc && $docAsoc->isObservado()) {
+                    $fase['badge_estado'] = 'Observado - Corrección';
+                    $fase['badge_tipo'] = 'observado';
+                } elseif ($docAsoc && $docAsoc->isPendiente()) {
+                    $fase['badge_estado'] = 'En Revisión Tutor';
+                    $fase['badge_tipo'] = 'pendiente';
+                } else {
+                    $fase['badge_estado'] = 'Fase Actual';
+                    $fase['badge_tipo'] = 'actual';
+                }
+            } else {
+                $fase['badge_estado'] = 'Pendiente';
+                $fase['badge_tipo'] = 'inactiva';
+            }
+        }
+        unset($fase);
 
         // Plazos estimados del proceso
         $plazosEstudiante = [
             [
                 'actividad' => 'Entrega de Informe de Avance (50% de Horas)',
                 'fecha_limite' => '15 de Mayo de 2026',
-                'estado' => in_array('mitad_proyecto', $tiposSubidos, true) ? 'Completado' : 'Pendiente',
+                'estado' => $fase3Completada ? 'Completado' : (in_array('mitad_proyecto', $tiposSubidos, true) ? 'En Revisión' : 'Pendiente'),
                 'dias_restantes' => 12,
             ],
             [
                 'actividad' => 'Cierre de Horas y Entrega de Memoria Final',
                 'fecha_limite' => $proyecto?->fecha_fin ?? '30 de Julio de 2026',
-                'estado' => in_array('memoria', $tiposSubidos, true) ? 'Completado' : 'Pendiente',
+                'estado' => $fase4Completada ? 'Completado' : (in_array('memoria', $tiposSubidos, true) ? 'En Revisión' : 'Pendiente'),
                 'dias_restantes' => 45,
             ],
         ];
@@ -377,6 +458,8 @@ class EstudiantePortalController extends Controller
             'id_proyecto' => $proyecto->id_proyecto,
             'id_documento' => $documento->id_documento,
         ]);
+
+        $proyecto->actualizarEstadoAutomatico();
 
         return redirect()->route('estudiante.proyecto')->with(
             'success',

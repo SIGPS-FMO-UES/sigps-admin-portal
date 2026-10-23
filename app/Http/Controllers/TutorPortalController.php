@@ -87,6 +87,19 @@ class TutorPortalController extends Controller
             })->sortByDesc('id_documento')->values();
         }
 
+        // Ordenar proyectos: aquellos con documentos "Por Dictaminar" aparecen primero en la fila con el ícono amarillo;
+        // una vez resueltos (0 pendientes), regresan a su orden natural por código de proyecto.
+        $proyectos = $proyectos->sort(function ($a, $b) {
+            $aPend = $a->documentos_pendientes->count() > 0 ? 1 : 0;
+            $bPend = $b->documentos_pendientes->count() > 0 ? 1 : 0;
+
+            if ($aPend !== $bPend) {
+                return $bPend <=> $aPend;
+            }
+
+            return $a->codigo_proyecto <=> $b->codigo_proyecto;
+        })->values();
+
         // Estadísticas KPI del Tutor
         $totalEstudiantes = $estudiantes->count();
         $totalProyectos = $proyectos->count();
@@ -130,6 +143,12 @@ class TutorPortalController extends Controller
                 'fecha_dictamen' => now(),
             ]);
 
+            // Avanzar automáticamente el estado del proyecto según los entregables aprobados
+            $documento->load('proyectos');
+            foreach ($documento->proyectos as $proy) {
+                $proy->actualizarEstadoAutomatico();
+            }
+
             return back()->with(
                 'success',
                 "Dictamen favorable registrado para '{$documento->nombre_documento}'. Trasladado a Coordinación de Carrera para su aval académico (HU-66)."
@@ -152,6 +171,12 @@ class TutorPortalController extends Controller
             'motivo_rechazo' => $motivo,
             'fecha_dictamen' => now(),
         ]);
+
+        // Sincronizar el estado del proyecto tras emitir dictamen
+        $documento->load('proyectos');
+        foreach ($documento->proyectos as $proy) {
+            $proy->actualizarEstadoAutomatico();
+        }
 
         return back()->with(
             'warning',

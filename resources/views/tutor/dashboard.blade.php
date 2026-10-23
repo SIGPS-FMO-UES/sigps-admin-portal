@@ -213,14 +213,35 @@
                             >
                                 Todos los proyectos ({{ $proyectos->count() }})
                             </button>
+
+                            <!-- Acceso prioritario "Por Dictaminar" si existen pendientes -->
+                            @if ($totalPendientes > 0)
+                                <button
+                                    type="button"
+                                    id="btnFiltroPorDictaminar"
+                                    onclick="filtrarSoloPorDictaminar(this)"
+                                    class="btn-filtro-proyecto px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 shadow-2xs shrink-0 inline-flex items-center gap-1.5"
+                                    title="Mostrar únicamente los proyectos con documentos pendientes de dictamen"
+                                >
+                                    <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                    <span>Por Dictaminar ({{ $totalPendientes }})</span>
+                                </button>
+                            @endif
+
                             @foreach ($proyectos as $proy)
+                                @php
+                                    $hasPendientes = $proy->documentos_pendientes->count() > 0;
+                                @endphp
                                 <button
                                     type="button"
                                     onclick="filtrarProyectoTutor('{{ $proy->id_proyecto }}', this)"
-                                    class="btn-filtro-proyecto px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-700 shrink-0 inline-flex items-center gap-2"
+                                    class="btn-filtro-proyecto px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-700 shrink-0 inline-flex items-center gap-2 {{ $hasPendientes ? 'border border-amber-300 bg-amber-50/40 text-amber-950 font-bold' : '' }}"
                                 >
+                                    @if ($hasPendientes)
+                                        <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                                    @endif
                                     <span>#{{ $proy->codigo_proyecto }} &bull; {{ Str::limit($proy->nombre_proyecto, 22) }}</span>
-                                    @if ($proy->documentos_pendientes->count() > 0)
+                                    @if ($hasPendientes)
                                         <span class="px-1.5 py-0.2 bg-amber-500 text-white rounded-full text-[10px] font-bold">
                                             {{ $proy->documentos_pendientes->count() }}
                                         </span>
@@ -244,12 +265,14 @@
                             $proyecto->alumnos->pluck('nombre_usuario')->join(' ') . ' ' .
                             $proyecto->alumnos->pluck('correo')->join(' ') . ' ' .
                             $proyecto->documentos->pluck('nombre_documento')->join(' ') . ' ' .
-                            $proyecto->documentos->pluck('tipo')->join(' ')
+                            $proyecto->documentos->pluck('tipo')->join(' ') . ' ' .
+                            ($proyecto->documentos_pendientes->count() > 0 ? 'por dictaminar pendiente' : 'al dia resuelto')
                         );
                     @endphp
                     <div
                         class="proyecto-tutor-card bg-white rounded-3xl border border-gray-200/80 shadow-2xs overflow-hidden transition-all duration-200"
                         data-proyecto-id="{{ $proyecto->id_proyecto }}"
+                        data-has-pendientes="{{ $proyecto->documentos_pendientes->count() > 0 ? '1' : '0' }}"
                         data-search-terms="{{ $searchMetadata }}"
                     >
                         <!-- ENCABEZADO INDIVIDUAL DEL PROYECTO -->
@@ -819,12 +842,27 @@
             // Actualizar estilos activos de los botones de filtro
             const botones = document.querySelectorAll('.btn-filtro-proyecto');
             botones.forEach(btn => {
-                btn.classList.remove('bg-[#8B1D2D]', 'text-white', 'shadow-2xs');
+                btn.classList.remove('bg-[#8B1D2D]', 'text-white', 'shadow-2xs', 'bg-amber-500');
                 btn.classList.add('bg-gray-100', 'text-gray-700', 'hover:bg-gray-200');
             });
 
             tabElement.classList.remove('bg-gray-100', 'text-gray-700', 'hover:bg-gray-200');
             tabElement.classList.add('bg-[#8B1D2D]', 'text-white', 'shadow-2xs');
+
+            aplicarFiltrosYBusqueda();
+        }
+
+        function filtrarSoloPorDictaminar(btnElement) {
+            activeFiltroProyecto = 'por_dictaminar';
+
+            const botones = document.querySelectorAll('.btn-filtro-proyecto');
+            botones.forEach(btn => {
+                btn.classList.remove('bg-[#8B1D2D]', 'text-white', 'shadow-2xs', 'bg-amber-500');
+                btn.classList.add('bg-gray-100', 'text-gray-700', 'hover:bg-gray-200');
+            });
+
+            btnElement.classList.remove('bg-gray-100', 'text-gray-700', 'hover:bg-gray-200');
+            btnElement.classList.add('bg-amber-500', 'text-white', 'shadow-2xs');
 
             aplicarFiltrosYBusqueda();
         }
@@ -860,9 +898,19 @@
 
             tarjetas.forEach(card => {
                 const cardProjectId = card.getAttribute('data-proyecto-id');
-                const matchesTab = (activeFiltroProyecto === 'todos' || cardProjectId === activeFiltroProyecto);
+                const hasPendientes = card.getAttribute('data-has-pendientes') === '1';
+
+                let matchesTab = false;
+                if (activeFiltroProyecto === 'todos') {
+                    matchesTab = true;
+                } else if (activeFiltroProyecto === 'por_dictaminar') {
+                    matchesTab = hasPendientes;
+                } else {
+                    matchesTab = (cardProjectId === activeFiltroProyecto);
+                }
+
                 const searchTerms = (card.getAttribute('data-search-terms') || '').toLowerCase();
-                const matchesSearch = (term === '' || searchTerms.includes(term));
+                const matchesSearch = (term === '' || searchTerms.includes(term) || (term.includes('dictaminar') && hasPendientes));
 
                 if (matchesTab && matchesSearch) {
                     card.classList.remove('hidden');

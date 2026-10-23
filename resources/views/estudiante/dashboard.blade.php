@@ -230,12 +230,13 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                     @foreach ($fases as $num => $fase)
                         @php
-                            $isCompletada = $num < $faseActual;
-                            $isActual = $num === $faseActual;
+                            $isCompletada = $fase['completada'] ?? ($num < $faseActual);
+                            $isActual = $fase['actual'] ?? ($num === $faseActual);
+                            $badgeTipo = $fase['badge_tipo'] ?? ($isCompletada ? 'completada' : ($isActual ? 'actual' : 'inactiva'));
                         @endphp
-                        <div class="p-4 rounded-2xl border transition-all {{ $isActual ? 'bg-red-50/40 border-[#8B1D2D]/40 ring-1 ring-[#8B1D2D]/20 shadow-xs' : ($isCompletada ? 'bg-emerald-50/40 border-emerald-200' : 'bg-gray-50/50 border-gray-200/60 opacity-60') }}">
+                        <div class="p-4 rounded-2xl border transition-all {{ $isCompletada ? 'bg-emerald-50/40 border-emerald-200' : ($badgeTipo === 'observado' ? 'bg-rose-50/40 border-rose-300 ring-1 ring-rose-300/30 shadow-xs' : ($badgeTipo === 'pendiente' ? 'bg-amber-50/40 border-amber-300 ring-1 ring-amber-300/30 shadow-xs' : ($isActual ? 'bg-red-50/40 border-[#8B1D2D]/40 ring-1 ring-[#8B1D2D]/20 shadow-xs' : 'bg-gray-50/50 border-gray-200/60 opacity-60'))) }}">
                             <div class="flex items-center justify-between mb-2">
-                                <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold {{ $isActual ? 'bg-[#8B1D2D] text-white' : ($isCompletada ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-600') }}">
+                                <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold {{ $isCompletada ? 'bg-emerald-600 text-white' : ($badgeTipo === 'observado' ? 'bg-rose-600 text-white' : ($badgeTipo === 'pendiente' ? 'bg-amber-600 text-white' : ($isActual ? 'bg-[#8B1D2D] text-white' : 'bg-gray-200 text-gray-600'))) }}">
                                     @if ($isCompletada)
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
@@ -244,7 +245,7 @@
                                         {{ $num }}
                                     @endif
                                 </span>
-                                <span class="text-[10px] font-bold uppercase tracking-wider {{ $isActual ? 'text-[#8B1D2D]' : ($isCompletada ? 'text-emerald-700' : 'text-gray-400') }}">
+                                <span class="text-[10px] font-bold uppercase tracking-wider {{ $isCompletada ? 'text-emerald-700' : ($badgeTipo === 'observado' ? 'text-rose-700 font-bold' : ($badgeTipo === 'pendiente' ? 'text-amber-800 font-bold' : ($isActual ? 'text-[#8B1D2D]' : 'text-gray-400'))) }}">
                                     {{ $fase['codigo_formato'] }}
                                 </span>
                             </div>
@@ -257,10 +258,20 @@
                             </p>
 
                             <div class="mt-3 pt-2 border-t border-gray-100 flex items-center gap-1 text-[11px] font-semibold">
-                                @if ($isCompletada)
-                                    <span class="text-emerald-600 flex items-center gap-1">
+                                @if ($badgeTipo === 'completada')
+                                    <span class="text-emerald-600 flex items-center gap-1 font-bold">
                                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                                         Completada
+                                    </span>
+                                @elseif ($badgeTipo === 'observado')
+                                    <span class="text-rose-600 flex items-center gap-1 font-bold">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-rose-600 animate-ping"></span>
+                                        Observado
+                                    </span>
+                                @elseif ($badgeTipo === 'pendiente')
+                                    <span class="text-amber-700 flex items-center gap-1 font-bold">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                        En Revisión
                                     </span>
                                 @elseif ($isActual)
                                     <span class="text-[#8B1D2D] flex items-center gap-1 font-bold">
