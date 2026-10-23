@@ -182,32 +182,8 @@
                             </svg>
                         </button>
 
-                        <!-- Divisor "o continúa con" -->
-                        <div class="relative my-6 flex items-center justify-center">
-                            <div class="border-t border-gray-200 w-full"></div>
-                            <span class="bg-white px-3 text-xs text-gray-400 uppercase tracking-wider shrink-0">
-                                o continúa con
-                            </span>
-                            <div class="border-t border-gray-200 w-full"></div>
-                        </div>
-
-                        <!-- Botón Google -->
-                        <button
-                            type="button"
-                            onclick="openGoogleModal()"
-                            class="w-full py-3 px-4 bg-white hover:bg-gray-50 active:bg-gray-100 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 shadow-xs transition-all duration-150 cursor-pointer flex items-center justify-center gap-3"
-                        >
-                            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
-                                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
-                            </svg>
-                            <span>Continuar con Google</span>
-                        </button>
-
                         <!-- Enlace Crear cuenta -->
-                        <p class="text-center text-xs text-gray-500 pt-3">
+                        <p class="text-center text-xs text-gray-500 pt-2">
                             &iquest;A&uacute;n no tienes cuenta?
                             <a href="#registro" id="createAccountLink" onclick="showRegisterForm(); return false;" class="text-[#15803D] hover:text-[#166534] font-semibold hover:underline ml-1 cursor-pointer">
                                 Crear una cuenta
@@ -433,31 +409,8 @@
                         </svg>
                     </button>
 
-                    <!-- Autocompletar con Google -->
-                    <div class="relative my-3 flex items-center justify-center">
-                        <div class="border-t border-gray-200 w-full"></div>
-                        <span class="bg-white px-3 text-[11px] text-gray-400 uppercase tracking-wider shrink-0">
-                            o agiliza tu registro con
-                        </span>
-                        <div class="border-t border-gray-200 w-full"></div>
-                    </div>
-
-                    <button
-                        type="button"
-                        onclick="openGoogleModal(true)"
-                        class="w-full py-2.5 px-4 bg-white hover:bg-gray-50 active:bg-gray-100 border border-gray-200 rounded-xl text-xs font-medium text-gray-700 shadow-2xs transition-all duration-150 cursor-pointer flex items-center justify-center gap-2.5"
-                    >
-                        <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
-                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
-                        </svg>
-                        <span>Autocompletar formulario con Google UES</span>
-                    </button>
-
                     <!-- Enlace volver a Login -->
-                    <p class="text-center text-xs text-gray-500 pt-2">
+                    <p class="text-center text-xs text-gray-500 pt-3">
                         &iquest;Ya tienes una cuenta creada?
                         <a href="#login" onclick="showLoginForm(); return false;" class="text-[#8B1D2D] hover:text-[#721523] font-semibold hover:underline ml-1 cursor-pointer">
                             Iniciar sesión
@@ -468,98 +421,6 @@
         </main>
     </div>
 </div>
-
-    <!-- Modal institucional de Google Workspace UES -->
-    <div id="googleAuthModal" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-100 p-6 sm:p-7 relative">
-            <button
-                type="button"
-                onclick="closeGoogleModal()"
-                class="absolute right-4 top-4 text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-gray-100 cursor-pointer"
-            >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-
-            <div class="flex items-center gap-3 mb-4">
-                <div class="w-10 h-10 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center shrink-0">
-                    <svg class="w-5 h-5" viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
-                    </svg>
-                </div>
-                <div>
-                    <h3 class="text-base font-bold text-gray-900 leading-tight">Google Workspace UES</h3>
-                    <p class="text-xs text-gray-500">Ingreso institucional con correo de la Universidad</p>
-                </div>
-            </div>
-
-            <p class="text-xs text-gray-600 mb-4 leading-relaxed">
-                Ingresa tu correo institucional <strong class="text-gray-800">@ues.edu.sv</strong>. El sistema verificará tu cuenta o te registrará automáticamente con el rol de <strong class="text-emerald-700">Estudiante</strong>.
-            </p>
-
-            <form id="googleLoginForm" method="POST" action="{{ route('login.google') }}" class="space-y-4">
-                @csrf
-                <div>
-                    <label for="googleEmailInput" class="block text-xs font-semibold text-gray-700 mb-1.5">
-                        Correo de Google Workspace UES
-                    </label>
-                    <input
-                        type="email"
-                        id="googleEmailInput"
-                        name="email"
-                        placeholder="tu.nombre@ues.edu.sv"
-                        required
-                        class="w-full px-4 py-2.5 bg-[#F9FAFB] border border-gray-200 focus:ring-[#8B1D2D]/20 focus:border-[#8B1D2D] rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:bg-white focus:outline-none focus:ring-2 transition-all"
-                    />
-                </div>
-
-                <!-- Chips de prueba rápida -->
-                <div>
-                    <span class="text-[11px] font-semibold text-gray-500 block mb-1.5">Correos de prueba rápida:</span>
-                    <div class="flex flex-wrap gap-1.5">
-                        <button
-                            type="button"
-                            onclick="selectQuickGoogle('estudiante.nuevo@ues.edu.sv')"
-                            class="text-[11px] px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors cursor-pointer"
-                        >
-                            estudiante.nuevo@ues.edu.sv
-                        </button>
-                        <button
-                            type="button"
-                            onclick="selectQuickGoogle('2024-0185@ues.edu.sv')"
-                            class="text-[11px] px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors cursor-pointer"
-                        >
-                            2024-0185@ues.edu.sv
-                        </button>
-                    </div>
-                </div>
-
-                <div class="pt-2 flex flex-col gap-2">
-                    <button
-                        type="submit"
-                        class="w-full py-2.5 px-4 bg-[#8B1D2D] hover:bg-[#721523] text-white font-semibold text-sm rounded-xl shadow-xs transition-colors cursor-pointer flex items-center justify-center gap-2"
-                    >
-                        <span>Ingresar directamente con Google</span>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                        </svg>
-                    </button>
-
-                    <button
-                        type="button"
-                        onclick="autofillRegisterFromGoogle()"
-                        class="w-full py-2.5 px-4 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-semibold text-xs rounded-xl border border-emerald-200 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
-                    >
-                        <span>✍️ Rellenar formulario de registro con este correo</span>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
 
     <!-- Scripts interactivos -->
     <script>
@@ -587,7 +448,7 @@
         document.addEventListener('DOMContentLoaded', function () {
             const hasRegisterHash = window.location.hash === '#registro';
             const isModoRegistro = '{{ $modo ?? "" }}' === 'registro';
-            const hasRegisterErrors = {{ $errors->has('nombre_usuario') || $errors->has('nombre_completo') || ($errors->has('password') && old('nombre_usuario')) ? 'true' : 'false' }};
+            const hasRegisterErrors = {{ $errors->has('nombre_usuario') || $errors->has('nombre_completo') || $errors->has('correo') || ($errors->has('password') && old('nombre_usuario')) ? 'true' : 'false' }};
             
             if (hasRegisterHash || isModoRegistro || hasRegisterErrors) {
                 showRegisterForm();
@@ -633,53 +494,6 @@
                 regPassInput.setAttribute('type', isPassword ? 'text' : 'password');
                 eyeRegIcon.setAttribute('opacity', isPassword ? '0.5' : '1');
             });
-        }
-
-        // Manejo del Modal de Google Workspace
-        function openGoogleModal(forAutofill = false) {
-            const modal = document.getElementById('googleAuthModal');
-            if (modal) modal.classList.remove('hidden');
-            const input = document.getElementById('googleEmailInput');
-            if (input) {
-                if (!input.value) input.value = 'estudiante.nuevo@ues.edu.sv';
-                input.focus();
-            }
-        }
-
-        function closeGoogleModal() {
-            const modal = document.getElementById('googleAuthModal');
-            if (modal) modal.classList.add('hidden');
-        }
-
-        function selectQuickGoogle(email) {
-            const input = document.getElementById('googleEmailInput');
-            if (input) input.value = email;
-        }
-
-        function autofillRegisterFromGoogle() {
-            const emailInput = document.getElementById('googleEmailInput');
-            const email = (emailInput?.value || '').trim();
-            if (!email) {
-                alert('Por favor ingresa un correo de Google o UES.');
-                return;
-            }
-            const username = email.split('@')[0];
-            const nameFormatted = username.replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-
-            closeGoogleModal();
-            showRegisterForm();
-
-            const carnetInput = document.getElementById('reg_nombre_usuario');
-            const nameInput = document.getElementById('reg_nombre_completo');
-            const correoInput = document.getElementById('reg_correo');
-            const passInput = document.getElementById('reg_password');
-            const passConfInput = document.getElementById('reg_password_confirmation');
-
-            if (carnetInput) carnetInput.value = username;
-            if (nameInput) nameInput.value = nameFormatted;
-            if (correoInput) correoInput.value = email;
-            if (passInput) passInput.value = 'password123';
-            if (passConfInput) passConfInput.value = 'password123';
         }
     </script>
 </body>

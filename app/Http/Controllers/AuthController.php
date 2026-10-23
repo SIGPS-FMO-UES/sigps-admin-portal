@@ -80,53 +80,6 @@ class AuthController extends Controller
     }
 
     /**
-     * Procesa el inicio de sesión / registro rápido con Google Workspace UES (@ues.edu.sv).
-     */
-    public function googleLogin(Request $request): RedirectResponse
-    {
-        $validated = $request->validate([
-            'email' => ['required', 'email'],
-        ], [
-            'email.required' => 'El correo electrónico institucional es obligatorio.',
-            'email.email' => 'Debes ingresar un formato de correo electrónico válido.',
-        ]);
-
-        $email = strtolower(trim($validated['email']));
-        $username = explode('@', $email)[0];
-
-        // Buscar si ya existe por correo o por nombre de usuario
-        $usuario = Usuario::where('correo', $email)
-            ->orWhere('nombre_usuario', $username)
-            ->first();
-
-        if (! $usuario) {
-            // Generar nombre amigable a partir del usuario (ej. juan.perez -> Juan Perez)
-            $nombreCalculado = ucwords(str_replace(['.', '_', '-'], ' ', $username));
-
-            $usuario = Usuario::create([
-                'nombre_usuario' => $username,
-                'nombre_completo' => $nombreCalculado,
-                'correo' => $email,
-                'password' => Hash::make('google_oauth_'.bin2hex(random_bytes(8))),
-                'activo' => true,
-            ]);
-
-            // Se le asigna rol Estudiante automáticamente a los nuevos registros con Google
-            $usuario->assignRole('Estudiante');
-        } elseif (empty($usuario->correo)) {
-            $usuario->update(['correo' => $email]);
-        }
-
-        Auth::login($usuario);
-        $request->session()->regenerate();
-
-        return redirect()->intended(route('dashboard'))->with(
-            'status',
-            "Sesión iniciada con Google Workspace UES ({$email}) como {$usuario->nombre_completo}."
-        );
-    }
-
-    /**
      * Muestra la vista de inicio de sesión.
      * Si el usuario ya está autenticado, lo redirige al panel de control.
      */

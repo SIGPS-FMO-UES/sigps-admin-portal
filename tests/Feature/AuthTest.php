@@ -195,25 +195,4 @@ class AuthTest extends TestCase
         $this->assertAuthenticated();
         $response->assertRedirect('/dashboard');
     }
-
-    /**
-     * Verifica que el inicio de sesión rápido con Google autentique o registre con rol Estudiante y guarde el correo.
-     */
-    public function test_google_login_authenticates_or_creates_student(): void
-    {
-        $this->get('/');
-
-        $response = $this->post('/login/google', [
-            '_token' => session('_token'),
-            'email' => 'estudiante.google@ues.edu.sv',
-        ]);
-
-        $this->assertAuthenticated();
-        $response->assertRedirect('/dashboard');
-
-        $usuario = Usuario::where('nombre_usuario', 'estudiante.google')->first();
-        $this->assertNotNull($usuario);
-        $this->assertEquals('estudiante.google@ues.edu.sv', $usuario->correo);
-        $this->assertTrue($usuario->hasRole('Estudiante'));
-    }
 }
