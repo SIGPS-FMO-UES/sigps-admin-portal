@@ -49,7 +49,8 @@ class EstudianteController extends Controller
             $search = trim((string) $request->input('search'));
             $query->where(function ($q) use ($search): void {
                 $q->where('nombre_usuario', 'ilike', "%{$search}%")
-                    ->orWhere('nombre_completo', 'ilike', "%{$search}%");
+                    ->orWhere('nombre_completo', 'ilike', "%{$search}%")
+                    ->orWhere('correo', 'ilike', "%{$search}%");
             });
         }
 
@@ -90,6 +91,7 @@ class EstudianteController extends Controller
                 'regex:/^[a-zA-Z0-9_\-\.]+$/',
             ],
             'nombre_completo' => ['required', 'string', 'max:255'],
+            'correo' => ['nullable', 'string', 'email', 'max:255', 'unique:usuarios,correo'],
             'password' => ['nullable', 'string', 'min:6'],
             'id_proyecto' => ['nullable', 'integer', 'exists:proyectos,id_proyecto'],
             'activo' => ['nullable', 'boolean'],
@@ -98,6 +100,8 @@ class EstudianteController extends Controller
             'nombre_usuario.unique' => 'Este carnet o nombre de usuario ya se encuentra registrado.',
             'nombre_usuario.regex' => 'El carnet sólo puede contener letras, números, guiones y puntos.',
             'nombre_completo.required' => 'El nombre completo del estudiante es obligatorio.',
+            'correo.email' => 'El formato del correo electrónico ingresado no es válido.',
+            'correo.unique' => 'Este correo electrónico ya está registrado por otro usuario.',
             'password.min' => 'La contraseña debe contener al menos 6 caracteres.',
             'id_proyecto.exists' => 'El proyecto seleccionado no existe.',
         ]);
@@ -108,6 +112,7 @@ class EstudianteController extends Controller
         $usuario = Usuario::create([
             'nombre_usuario' => trim($validated['nombre_usuario']),
             'nombre_completo' => trim($validated['nombre_completo']),
+            'correo' => ! empty($validated['correo']) ? trim($validated['correo']) : null,
             'password' => Hash::make($passwordRaw),
             'activo' => $request->boolean('activo', true),
         ]);
@@ -181,18 +186,22 @@ class EstudianteController extends Controller
                 'regex:/^[a-zA-Z0-9_\-\.]+$/',
             ],
             'nombre_completo' => ['required', 'string', 'max:255'],
+            'correo' => ['nullable', 'string', 'email', 'max:255', 'unique:usuarios,correo,'.$estudiante->id_usuario.',id_usuario'],
             'id_proyecto' => ['nullable', 'integer', 'exists:proyectos,id_proyecto'],
             'activo' => ['nullable', 'boolean'],
         ], [
             'nombre_usuario.required' => 'El carnet o nombre de usuario es obligatorio.',
             'nombre_usuario.unique' => 'Este carnet o usuario ya se encuentra registrado.',
             'nombre_completo.required' => 'El nombre completo es obligatorio.',
+            'correo.email' => 'El formato del correo electrónico ingresado no es válido.',
+            'correo.unique' => 'Este correo electrónico ya está en uso por otro usuario.',
             'id_proyecto.exists' => 'El proyecto seleccionado no existe.',
         ]);
 
         $estudiante->update([
             'nombre_usuario' => trim($validated['nombre_usuario']),
             'nombre_completo' => trim($validated['nombre_completo']),
+            'correo' => ! empty($validated['correo']) ? trim($validated['correo']) : null,
             'activo' => $request->boolean('activo', true),
         ]);
 

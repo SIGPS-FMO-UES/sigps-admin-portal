@@ -192,4 +192,49 @@ class EstudianteTest extends TestCase
             'id_usuario' => $estudiante->id_usuario,
         ]);
     }
+
+    /**
+     * Verifica que se pueda registrar y actualizar un estudiante con su correo electrónico.
+     */
+    public function test_can_create_and_update_estudiante_with_correo(): void
+    {
+        $admin = Usuario::where('nombre_usuario', 'admin')->first();
+
+        $this->actingAs($admin)->get('/estudiantes');
+
+        $response = $this->actingAs($admin)->post('/estudiantes', [
+            '_token' => session('_token'),
+            'nombre_usuario' => '2024-8888',
+            'nombre_completo' => 'Estudiante Correo Test',
+            'correo' => 'alumno8888@ues.edu.sv',
+            'password' => 'secret1234',
+            'activo' => '1',
+        ]);
+
+        $response->assertRedirect('/estudiantes');
+        $this->assertDatabaseHas('usuarios', [
+            'nombre_usuario' => '2024-8888',
+            'correo' => 'alumno8888@ues.edu.sv',
+        ]);
+
+        // Verificar que se visualice en la tabla (filtrando por correo para validar búsqueda y visualización)
+        $indexResponse = $this->actingAs($admin)->get('/estudiantes?search=alumno8888@ues.edu.sv');
+        $indexResponse->assertSee('alumno8888@ues.edu.sv');
+
+        // Actualizar el correo
+        $estudiante = Usuario::where('nombre_usuario', '2024-8888')->first();
+        $updateResponse = $this->actingAs($admin)->put(route('estudiantes.update', $estudiante), [
+            '_token' => session('_token'),
+            'nombre_usuario' => '2024-8888',
+            'nombre_completo' => 'Estudiante Correo Test Modificado',
+            'correo' => 'nuevo_correo8888@ues.edu.sv',
+            'activo' => '1',
+        ]);
+
+        $updateResponse->assertRedirect(route('estudiantes.show', $estudiante));
+        $this->assertDatabaseHas('usuarios', [
+            'nombre_usuario' => '2024-8888',
+            'correo' => 'nuevo_correo8888@ues.edu.sv',
+        ]);
+    }
 }

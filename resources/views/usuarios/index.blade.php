@@ -226,6 +226,7 @@
                             <tr class="border-b border-gray-200 text-gray-500 font-bold bg-transparent">
                                 <th class="py-3 px-4 font-bold text-gray-800">Usuario</th>
                                 <th class="py-3 px-4 font-bold text-gray-800">Nombre Completo</th>
+                                <th class="py-3 px-4 font-bold text-gray-800">Correo Electrónico</th>
                                 <th class="py-3 px-4 font-bold text-gray-800">Roles Asignados</th>
                                 <th class="py-3 px-4 font-bold text-gray-800 text-center">Estado</th>
                                 <th class="py-3 px-4 font-bold text-gray-800 text-right">Acciones</th>
@@ -254,6 +255,20 @@
                                     <!-- Nombre Completo -->
                                     <td class="py-3.5 px-4 font-medium text-gray-800">
                                         {{ $usuarioItem->nombre_completo }}
+                                    </td>
+
+                                    <!-- Correo Electrónico -->
+                                    <td class="py-3.5 px-4 whitespace-nowrap text-xs text-gray-600">
+                                        @if ($usuarioItem->correo)
+                                            <div class="flex items-center gap-1.5 font-medium text-gray-700">
+                                                <svg class="w-3.5 h-3.5 text-gray-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                                </svg>
+                                                <span>{{ $usuarioItem->correo }}</span>
+                                            </div>
+                                        @else
+                                            <span class="text-gray-400 italic text-[11px]">Sin correo</span>
+                                        @endif
                                     </td>
 
                                     <!-- Roles Asignados (Badges) -->
@@ -316,7 +331,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="py-12 text-center text-gray-400 text-sm">
+                                    <td colspan="6" class="py-12 text-center text-gray-400 text-sm">
                                         No se encontraron usuarios que coincidan con la búsqueda.
                                     </td>
                                 </tr>
@@ -445,6 +460,22 @@
                         placeholder="Ej: Licda. Carmen Elena Morales"
                         class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm text-gray-900 placeholder:text-gray-400 focus:bg-white focus:outline-none focus:border-[#8B1D2D] focus:ring-1 focus:ring-[#8B1D2D]/30 transition-all"
                     />
+                </div>
+
+                <!-- Correo Electrónico -->
+                <div>
+                    <label for="create_correo" class="block text-xs font-semibold text-gray-700 mb-1">
+                        Correo Electrónico
+                    </label>
+                    <input
+                        type="email"
+                        name="correo"
+                        id="create_correo"
+                        value="{{ old('correo') }}"
+                        placeholder="Ej: usuario@ues.edu.sv"
+                        class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm text-gray-900 placeholder:text-gray-400 focus:bg-white focus:outline-none focus:border-[#8B1D2D] focus:ring-1 focus:ring-[#8B1D2D]/30 transition-all"
+                    />
+                    <p class="text-[11px] text-gray-400 mt-1">Correo institucional o personal para notificaciones y acceso.</p>
                 </div>
 
                 <!-- Contraseña -->

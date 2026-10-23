@@ -67,6 +67,36 @@ class UsuarioRolesTest extends TestCase
         $this->assertEqualsCanonicalizing([2, 3], $rolesAsignados);
     }
 
+    public function test_puede_crear_usuario_con_correo_y_visualizarlo_en_el_listado(): void
+    {
+        $admin = Usuario::where('nombre_usuario', 'admin')->first();
+
+        $this->actingAs($admin)->get(route('usuarios.index'));
+
+        $payload = [
+            '_token' => session('_token'),
+            'nombre_usuario' => 'usuario_con_correo',
+            'nombre_completo' => 'Lic. María Delgado',
+            'correo' => 'maria.delgado@ues.edu.sv',
+            'password' => 'secret1234',
+            'roles' => [2],
+            'activo' => '1',
+        ];
+
+        $response = $this->actingAs($admin)->post(route('usuarios.store'), $payload);
+
+        $response->assertRedirect(route('usuarios.index'));
+        $this->assertDatabaseHas('usuarios', [
+            'nombre_usuario' => 'usuario_con_correo',
+            'correo' => 'maria.delgado@ues.edu.sv',
+        ]);
+
+        $indexResponse = $this->actingAs($admin)->get(route('usuarios.index', ['search' => 'maria.delgado@ues.edu.sv']));
+        $indexResponse->assertOk();
+        $indexResponse->assertSee('maria.delgado@ues.edu.sv');
+    }
+
+
     public function test_validacion_al_crear_usuario_requiere_roles(): void
     {
         $admin = Usuario::where('nombre_usuario', 'admin')->first();

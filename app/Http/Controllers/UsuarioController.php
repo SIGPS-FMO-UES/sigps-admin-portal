@@ -27,7 +27,8 @@ class UsuarioController extends Controller
             $search = trim((string) $request->input('search'));
             $query->where(function ($q) use ($search): void {
                 $q->where('nombre_usuario', 'ilike', "%{$search}%")
-                    ->orWhere('nombre_completo', 'ilike', "%{$search}%");
+                    ->orWhere('nombre_completo', 'ilike', "%{$search}%")
+                    ->orWhere('correo', 'ilike', "%{$search}%");
             });
         }
 
@@ -73,6 +74,7 @@ class UsuarioController extends Controller
                 'regex:/^[a-zA-Z0-9_\-\.]+$/',
             ],
             'nombre_completo' => ['required', 'string', 'max:255'],
+            'correo' => ['nullable', 'string', 'email', 'max:255', 'unique:usuarios,correo'],
             'password' => ['nullable', 'string', 'min:6'],
             'roles' => ['required', 'array', 'min:1'],
             'roles.*' => ['integer', 'exists:roles,id'],
@@ -82,6 +84,8 @@ class UsuarioController extends Controller
             'nombre_usuario.unique' => 'Este nombre de usuario ya está registrado en el sistema.',
             'nombre_usuario.regex' => 'El usuario sólo puede contener caracteres alfanuméricos, guiones y puntos.',
             'nombre_completo.required' => 'El nombre completo es obligatorio.',
+            'correo.email' => 'El formato del correo electrónico ingresado no es válido.',
+            'correo.unique' => 'Este correo electrónico ya está registrado en el sistema.',
             'password.min' => 'La contraseña debe contener al menos 6 caracteres.',
             'roles.required' => 'Debe seleccionar al menos un rol para el usuario.',
             'roles.min' => 'Debe seleccionar al menos un rol para el usuario.',
@@ -93,6 +97,7 @@ class UsuarioController extends Controller
         $usuario = Usuario::create([
             'nombre_usuario' => trim($validated['nombre_usuario']),
             'nombre_completo' => trim($validated['nombre_completo']),
+            'correo' => ! empty($validated['correo']) ? trim($validated['correo']) : null,
             'password' => Hash::make($passwordRaw),
             'activo' => $request->boolean('activo', true),
         ]);

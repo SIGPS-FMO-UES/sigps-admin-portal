@@ -399,4 +399,49 @@ class ModulosCrudTest extends TestCase
             'id_usuario' => $tutor->id_usuario,
         ]);
     }
+
+    /**
+     * Verifica que se pueda registrar y actualizar un docente tutor con su correo electrónico.
+     */
+    public function test_can_create_and_update_tutor_with_correo(): void
+    {
+        $admin = Usuario::where('nombre_usuario', 'admin')->first();
+
+        $this->actingAs($admin)->get('/tutores');
+
+        $response = $this->actingAs($admin)->post('/tutores', [
+            '_token' => session('_token'),
+            'nombre_usuario' => 'tutor_correo_test',
+            'nombre_completo' => 'Ing. Roberto Correo Test',
+            'correo' => 'tutor_test@ues.edu.sv',
+            'password' => 'secret1234',
+            'activo' => '1',
+        ]);
+
+        $response->assertRedirect('/tutores');
+        $this->assertDatabaseHas('usuarios', [
+            'nombre_usuario' => 'tutor_correo_test',
+            'correo' => 'tutor_test@ues.edu.sv',
+        ]);
+
+        // Verificar que aparezca en el listado de tutores
+        $indexResponse = $this->actingAs($admin)->get('/tutores');
+        $indexResponse->assertSee('tutor_test@ues.edu.sv');
+
+        // Actualizar el correo
+        $tutor = Usuario::where('nombre_usuario', 'tutor_correo_test')->first();
+        $updateResponse = $this->actingAs($admin)->put(route('tutores.update', $tutor), [
+            '_token' => session('_token'),
+            'nombre_usuario' => 'tutor_correo_test',
+            'nombre_completo' => 'Ing. Roberto Correo Test Modificado',
+            'correo' => 'tutor_test_nuevo@ues.edu.sv',
+            'activo' => '1',
+        ]);
+
+        $updateResponse->assertRedirect(route('tutores.show', $tutor));
+        $this->assertDatabaseHas('usuarios', [
+            'nombre_usuario' => 'tutor_correo_test',
+            'correo' => 'tutor_test_nuevo@ues.edu.sv',
+        ]);
+    }
 }

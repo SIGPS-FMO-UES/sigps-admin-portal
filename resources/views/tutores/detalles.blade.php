@@ -123,6 +123,21 @@
                         />
                     </div>
 
+                    <!-- Fila: Correo Electrónico -->
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                        <label for="campo_correo" class="w-full sm:w-44 text-xs sm:text-sm font-semibold text-gray-700 shrink-0">
+                            Correo Electrónico
+                        </label>
+                        <input
+                            type="email"
+                            name="correo"
+                            id="campo_correo"
+                            value="{{ old('correo', $tutor->correo) }}"
+                            placeholder="tutor@ues.edu.sv"
+                            class="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-xs sm:text-sm text-gray-900 placeholder:text-gray-300 focus:outline-none focus:border-[#8B1D2D] focus:ring-1 focus:ring-[#8B1D2D]/30 transition-all"
+                        />
+                    </div>
+
                     <!-- Fila 3: Departamento & Especialidad -->
                     <div class="flex flex-col lg:flex-row lg:items-center gap-4">
                         <!-- Departamento -->
