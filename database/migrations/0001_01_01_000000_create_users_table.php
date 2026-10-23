@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id('id_usuario');
             $table->string('nombre_usuario')->unique();
             $table->string('nombre_completo');
+            $table->string('correo')->nullable()->unique();
             $table->string('password');
             $table->boolean('activo')->default(true);
             $table->rememberToken();

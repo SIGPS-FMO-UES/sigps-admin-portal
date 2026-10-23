@@ -118,4 +118,102 @@ class AuthTest extends TestCase
         $response->assertSee('Dashboard Operativo UPS');
         $response->assertSee('Administrador General UPS');
     }
+
+    /**
+     * Verifica que la pantalla de registro se renderice correctamente.
+     */
+    public function test_register_screen_can_be_rendered(): void
+    {
+        $response = $this->get('/register');
+
+        $response->assertStatus(200);
+        $response->assertSee('Crear cuenta');
+        $response->assertSee('Ingresa tus datos para registrarte en el sistema.');
+        $response->assertSee('Correo electrónico');
+    }
+
+    /**
+     * Verifica que un nuevo usuario pueda registrarse con correo y se le asigne el rol de Estudiante.
+     */
+    public function test_student_can_register_and_automatically_receives_estudiante_role(): void
+    {
+        $this->get('/register');
+
+        $response = $this->post('/register', [
+            '_token' => session('_token'),
+            'nombre_usuario' => '2024-9999',
+            'nombre_completo' => 'María Elena Gómez',
+            'correo' => 'maria.gomez@ues.edu.sv',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect('/dashboard');
+
+        $usuario = Usuario::where('nombre_usuario', '2024-9999')->first();
+        $this->assertNotNull($usuario);
+        $this->assertEquals('María Elena Gómez', $usuario->nombre_completo);
+        $this->assertEquals('maria.gomez@ues.edu.sv', $usuario->correo);
+        $this->assertTrue($usuario->hasRole('Estudiante'));
+    }
+
+    /**
+     * Verifica que el registro falle si las contraseñas no coinciden.
+     */
+    public function test_registration_fails_if_password_confirmation_does_not_match(): void
+    {
+        $this->get('/register');
+
+        $response = $this->post('/register', [
+            '_token' => session('_token'),
+            'nombre_usuario' => '2024-8888',
+            'nombre_completo' => 'Pedro Alvarado',
+            'correo' => 'pedro.alvarado@ues.edu.sv',
+            'password' => 'password123',
+            'password_confirmation' => 'different-password',
+        ]);
+
+        $this->assertGuest();
+        $response->assertSessionHasErrors('password');
+        $this->assertDatabaseMissing('usuarios', ['nombre_usuario' => '2024-8888']);
+    }
+
+    /**
+     * Verifica que un usuario pueda autenticarse directamente con su correo institucional.
+     */
+    public function test_users_can_authenticate_using_seeded_correo(): void
+    {
+        $this->get('/');
+
+        $response = $this->post('/login', [
+            'login' => 'coord_ups@ues.edu.sv',
+            'password' => 'password123',
+            '_token' => session('_token'),
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect('/dashboard');
+    }
+
+    /**
+     * Verifica que el inicio de sesión rápido con Google autentique o registre con rol Estudiante y guarde el correo.
+     */
+    public function test_google_login_authenticates_or_creates_student(): void
+    {
+        $this->get('/');
+
+        $response = $this->post('/login/google', [
+            '_token' => session('_token'),
+            'email' => 'estudiante.google@ues.edu.sv',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect('/dashboard');
+
+        $usuario = Usuario::where('nombre_usuario', 'estudiante.google')->first();
+        $this->assertNotNull($usuario);
+        $this->assertEquals('estudiante.google@ues.edu.sv', $usuario->correo);
+        $this->assertTrue($usuario->hasRole('Estudiante'));
+    }
 }
