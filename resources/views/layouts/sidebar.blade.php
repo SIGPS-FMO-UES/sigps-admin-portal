@@ -87,89 +87,174 @@
 
         <!-- Menú de Enlaces de Navegación (Desktop vertical, Mobile desplegable) -->
         <nav id="mobileNavMenu" class="hidden lg:flex lg:flex-col items-stretch w-full gap-2 lg:gap-3 lg:mt-6">
-            <!-- 1. Dashboard -->
-            <a
-                href="{{ route('dashboard') }}"
-                class="sidebar-nav-link {{ $active === 'dashboard' ? 'bg-[#8B1D2D] text-white shadow-sm shadow-[#8B1D2D]/25 font-semibold' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium' }}"
-                title="Dashboard Operativo"
-            >
-                <div class="shrink-0 w-5 h-5 flex items-center justify-center">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M3 4a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V4zM3 12a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zm10 0a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1v-6z" />
-                    </svg>
-                </div>
-                <span class="sidebar-link-text text-sm">Dashboard</span>
-            </a>
+            @unlessrole('Estudiante')
+                <!-- 1. Dashboard Operativo (Administrativo) -->
+                <a
+                    href="{{ route('dashboard') }}"
+                    class="sidebar-nav-link {{ $active === 'dashboard' ? 'bg-[#8B1D2D] text-white shadow-sm shadow-[#8B1D2D]/25 font-semibold' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium' }}"
+                    title="Dashboard Operativo"
+                >
+                    <div class="shrink-0 w-5 h-5 flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M3 4a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V4zM3 12a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zm10 0a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1v-6z" />
+                        </svg>
+                    </div>
+                    <span class="sidebar-link-text text-sm">Dashboard</span>
+                </a>
+            @endunlessrole
 
-            <!-- 2. Estudiantes -->
-            <a
-                href="{{ route('estudiantes.index') }}"
-                class="sidebar-nav-link {{ $active === 'estudiantes' ? 'bg-[#8B1D2D] text-white shadow-sm shadow-[#8B1D2D]/25 font-semibold' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium' }}"
-                title="Estudiantes"
-            >
-                <div class="shrink-0 w-5 h-5 flex items-center justify-center">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                </div>
-                <span class="sidebar-link-text text-sm">Estudiantes</span>
-            </a>
+            <!-- Módulos del Estudiante -->
+            @hasrole('Estudiante')
+                <!-- 1. Dashboard del Estudiante / Mi Avance -->
+                <a
+                    href="{{ route('dashboard') }}"
+                    class="sidebar-nav-link {{ $active === 'dashboard' ? 'bg-[#8B1D2D] text-white shadow-sm shadow-[#8B1D2D]/25 font-semibold' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium' }}"
+                    title="Mi Avance y Dashboard"
+                >
+                    <div class="shrink-0 w-5 h-5 flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M3 4a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V4zM3 12a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zm10 0a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1v-6z" />
+                        </svg>
+                    </div>
+                    <span class="sidebar-link-text text-sm">Mi Avance</span>
+                </a>
 
-            <!-- 3. Certificaciones / Documentos -->
-            <a
-                href="{{ route('certificados.index') }}"
-                class="sidebar-nav-link {{ $active === 'certificados' ? 'bg-[#8B1D2D] text-white shadow-sm shadow-[#8B1D2D]/25 font-semibold' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium' }}"
-                title="Certificados y Documentos"
-            >
-                <div class="shrink-0 w-5 h-5 flex items-center justify-center">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                </div>
-                <span class="sidebar-link-text text-sm">Certificados y Documentos</span>
-            </a>
+                <!-- 2. Mi Proyecto -->
+                <a
+                    href="{{ route('estudiante.proyecto') }}"
+                    class="sidebar-nav-link {{ in_array($active, ['mi-proyecto', 'proyecto-estudiante']) ? 'bg-[#8B1D2D] text-white shadow-sm shadow-[#8B1D2D]/25 font-semibold' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium' }}"
+                    title="Mi Proyecto"
+                >
+                    <div class="shrink-0 w-5 h-5 flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                        </svg>
+                    </div>
+                    <span class="sidebar-link-text text-sm">Mi Proyecto</span>
+                </a>
 
-            <!-- 4. Carpetas / Proyectos -->
-            <a
-                href="{{ route('proyectos.index') }}"
-                class="sidebar-nav-link {{ $active === 'proyectos' ? 'bg-[#8B1D2D] text-white shadow-sm shadow-[#8B1D2D]/25 font-semibold' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium' }}"
-                title="Proyectos"
-            >
-                <div class="shrink-0 w-5 h-5 flex items-center justify-center">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                    </svg>
-                </div>
-                <span class="sidebar-link-text text-sm">Proyectos</span>
-            </a>
+                <!-- 3. Subir Documento -->
+                <a
+                    href="{{ route('estudiante.proyecto') }}#subir-pdf"
+                    class="sidebar-nav-link {{ $active === 'subir-documento' ? 'bg-[#8B1D2D] text-white shadow-sm shadow-[#8B1D2D]/25 font-semibold' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium' }}"
+                    title="Subir Documento (PDF)"
+                >
+                    <div class="shrink-0 w-5 h-5 flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                        </svg>
+                    </div>
+                    <span class="sidebar-link-text text-sm">Subir Documento</span>
+                </a>
 
-            <!-- 5. Responsables / Docentes Tutores -->
-            <a
-                href="{{ route('tutores.index') }}"
-                class="sidebar-nav-link {{ $active === 'tutores' ? 'bg-[#8B1D2D] text-white shadow-sm shadow-[#8B1D2D]/25 font-semibold' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium' }}"
-                title="Docentes Tutores"
-            >
-                <div class="shrink-0 w-5 h-5 flex items-center justify-center">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <span class="sidebar-link-text text-sm">Docentes Tutores</span>
-            </a>
+                <!-- 4. Formatos y Guías Oficiales -->
+                <a
+                    href="{{ route('estudiante.formatos') }}"
+                    class="sidebar-nav-link {{ $active === 'formatos' ? 'bg-[#8B1D2D] text-white shadow-sm shadow-[#8B1D2D]/25 font-semibold' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium' }}"
+                    title="Formatos y Plantillas Oficiales"
+                >
+                    <div class="shrink-0 w-5 h-5 flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                    </div>
+                    <span class="sidebar-link-text text-sm">Formatos y Guías</span>
+                </a>
 
-            <!-- 6. Administrador / Usuarios y Roles -->
-            <a
-                href="{{ route('usuarios.index') }}"
-                class="sidebar-nav-link {{ in_array($active, ['admin', 'usuarios']) ? 'bg-[#8B1D2D] text-white shadow-sm shadow-[#8B1D2D]/25 font-semibold' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium' }}"
-                title="Usuarios y Roles"
-            >
-                <div class="shrink-0 w-5 h-5 flex items-center justify-center">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                </div>
-                <span class="sidebar-link-text text-sm">Usuarios y Roles</span>
-            </a>
+                <!-- 5. Revisiones y Observaciones -->
+                <a
+                    href="{{ route('estudiante.observaciones') }}"
+                    class="sidebar-nav-link {{ $active === 'observaciones' ? 'bg-[#8B1D2D] text-white shadow-sm shadow-[#8B1D2D]/25 font-semibold' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium' }}"
+                    title="Revisiones y Observaciones"
+                >
+                    <div class="shrink-0 w-5 h-5 flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                        </svg>
+                    </div>
+                    <span class="sidebar-link-text text-sm">Observaciones</span>
+                </a>
+            @endhasrole
+
+            {{-- 2. Estudiantes (Solo personal administrativo con permiso) --}}
+            @if(auth()->user()?->hasRole('Administrador') || auth()->user()?->can('inscribir_alumnos'))
+                <a
+                    href="{{ route('estudiantes.index') }}"
+                    class="sidebar-nav-link {{ $active === 'estudiantes' ? 'bg-[#8B1D2D] text-white shadow-sm shadow-[#8B1D2D]/25 font-semibold' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium' }}"
+                    title="Estudiantes"
+                >
+                    <div class="shrink-0 w-5 h-5 flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    </div>
+                    <span class="sidebar-link-text text-sm">Estudiantes</span>
+                </a>
+            @endif
+
+            {{-- 3. Certificaciones / Documentos (Solo personal con permiso de revisar documentos) --}}
+            @if(auth()->user()?->hasRole('Administrador') || auth()->user()?->can('revisar_documentos'))
+                <a
+                    href="{{ route('certificados.index') }}"
+                    class="sidebar-nav-link {{ $active === 'certificados' ? 'bg-[#8B1D2D] text-white shadow-sm shadow-[#8B1D2D]/25 font-semibold' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium' }}"
+                    title="Certificados y Documentos"
+                >
+                    <div class="shrink-0 w-5 h-5 flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                    </div>
+                    <span class="sidebar-link-text text-sm">Certificados y Documentos</span>
+                </a>
+            @endif
+
+            {{-- 4. Carpetas / Proyectos (Solo personal con permisos de gestión o revisión) --}}
+            @if(auth()->user()?->hasRole('Administrador') || auth()->user()?->can('crear_proyectos'))
+                <a
+                    href="{{ route('proyectos.index') }}"
+                    class="sidebar-nav-link {{ $active === 'proyectos' ? 'bg-[#8B1D2D] text-white shadow-sm shadow-[#8B1D2D]/25 font-semibold' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium' }}"
+                    title="Proyectos"
+                >
+                    <div class="shrink-0 w-5 h-5 flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                        </svg>
+                    </div>
+                    <span class="sidebar-link-text text-sm">Proyectos</span>
+                </a>
+            @endif
+
+            {{-- 5. Responsables / Docentes Tutores (Solo con permiso de asignar tutor) --}}
+            @if(auth()->user()?->hasRole('Administrador') || auth()->user()?->can('asignar_tutor'))
+                <a
+                    href="{{ route('tutores.index') }}"
+                    class="sidebar-nav-link {{ $active === 'tutores' ? 'bg-[#8B1D2D] text-white shadow-sm shadow-[#8B1D2D]/25 font-semibold' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium' }}"
+                    title="Docentes Tutores"
+                >
+                    <div class="shrink-0 w-5 h-5 flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <span class="sidebar-link-text text-sm">Docentes Tutores</span>
+                </a>
+            @endif
+
+            {{-- 6. Administrador / Usuarios y Roles (Solo con permiso de gestionar usuarios) --}}
+            @if(auth()->user()?->hasRole('Administrador') || auth()->user()?->can('gestionar_usuarios'))
+                <a
+                    href="{{ route('usuarios.index') }}"
+                    class="sidebar-nav-link {{ in_array($active, ['admin', 'usuarios']) ? 'bg-[#8B1D2D] text-white shadow-sm shadow-[#8B1D2D]/25 font-semibold' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium' }}"
+                    title="Usuarios y Roles"
+                >
+                    <div class="shrink-0 w-5 h-5 flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                    </div>
+                    <span class="sidebar-link-text text-sm">Usuarios y Roles</span>
+                </a>
+            @endif
         </nav>
     </div>
 

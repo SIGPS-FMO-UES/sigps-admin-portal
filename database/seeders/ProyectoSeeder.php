@@ -40,6 +40,10 @@ class ProyectoSeeder extends Seeder
             ProyectosAlumno::firstOrCreate(['id_alumno' => $alumnos[0]->id_usuario, 'id_proyecto' => $p1->id_proyecto]);
             ProyectosAlumno::firstOrCreate(['id_alumno' => $alumnos[1]->id_usuario, 'id_proyecto' => $p1->id_proyecto]);
         }
+        if ($alumnos->count() >= 12) {
+            ProyectosAlumno::firstOrCreate(['id_alumno' => $alumnos[10]->id_usuario, 'id_proyecto' => $p1->id_proyecto]);
+            ProyectosAlumno::firstOrCreate(['id_alumno' => $alumnos[11]->id_usuario, 'id_proyecto' => $p1->id_proyecto]);
+        }
         if (isset($docs['solicitud'])) {
             DocumentosProyecto::firstOrCreate(['id_proyecto' => $p1->id_proyecto, 'id_documento' => $docs['solicitud']->id_documento]);
         }
@@ -56,6 +60,10 @@ class ProyectoSeeder extends Seeder
         if ($alumnos->count() >= 3) {
             ProyectosAlumno::firstOrCreate(['id_alumno' => $alumnos[1]->id_usuario, 'id_proyecto' => $p2->id_proyecto]);
             ProyectosAlumno::firstOrCreate(['id_alumno' => $alumnos[2]->id_usuario, 'id_proyecto' => $p2->id_proyecto]);
+        }
+        if ($alumnos->count() >= 14) {
+            ProyectosAlumno::firstOrCreate(['id_alumno' => $alumnos[12]->id_usuario, 'id_proyecto' => $p2->id_proyecto]);
+            ProyectosAlumno::firstOrCreate(['id_alumno' => $alumnos[13]->id_usuario, 'id_proyecto' => $p2->id_proyecto]);
         }
         if (isset($docs['solicitud'])) {
             DocumentosProyecto::firstOrCreate(['id_proyecto' => $p2->id_proyecto, 'id_documento' => $docs['solicitud']->id_documento]);
@@ -78,6 +86,10 @@ class ProyectoSeeder extends Seeder
             ProyectosAlumno::firstOrCreate(['id_alumno' => $alumnos[4]->id_usuario, 'id_proyecto' => $p3->id_proyecto]);
             ProyectosAlumno::firstOrCreate(['id_alumno' => $alumnos[5]->id_usuario, 'id_proyecto' => $p3->id_proyecto]);
         }
+        if ($alumnos->count() >= 16) {
+            ProyectosAlumno::firstOrCreate(['id_alumno' => $alumnos[14]->id_usuario, 'id_proyecto' => $p3->id_proyecto]);
+            ProyectosAlumno::firstOrCreate(['id_alumno' => $alumnos[15]->id_usuario, 'id_proyecto' => $p3->id_proyecto]);
+        }
         if (isset($docs['solicitud'])) {
             DocumentosProyecto::firstOrCreate(['id_proyecto' => $p3->id_proyecto, 'id_documento' => $docs['solicitud']->id_documento]);
         }
@@ -98,6 +110,10 @@ class ProyectoSeeder extends Seeder
             ProyectosAlumno::firstOrCreate(['id_alumno' => $alumnos[6]->id_usuario, 'id_proyecto' => $p4->id_proyecto]);
             ProyectosAlumno::firstOrCreate(['id_alumno' => $alumnos[7]->id_usuario, 'id_proyecto' => $p4->id_proyecto]);
         }
+        if ($alumnos->count() >= 18) {
+            ProyectosAlumno::firstOrCreate(['id_alumno' => $alumnos[16]->id_usuario, 'id_proyecto' => $p4->id_proyecto]);
+            ProyectosAlumno::firstOrCreate(['id_alumno' => $alumnos[17]->id_usuario, 'id_proyecto' => $p4->id_proyecto]);
+        }
         if (isset($docs['mitad_proyecto'])) {
             DocumentosProyecto::firstOrCreate(['id_proyecto' => $p4->id_proyecto, 'id_documento' => $docs['mitad_proyecto']->id_documento]);
         }
@@ -114,6 +130,10 @@ class ProyectoSeeder extends Seeder
         if ($alumnos->count() >= 10) {
             ProyectosAlumno::firstOrCreate(['id_alumno' => $alumnos[8]->id_usuario, 'id_proyecto' => $p5->id_proyecto]);
             ProyectosAlumno::firstOrCreate(['id_alumno' => $alumnos[9]->id_usuario, 'id_proyecto' => $p5->id_proyecto]);
+        }
+        if ($alumnos->count() >= 20) {
+            ProyectosAlumno::firstOrCreate(['id_alumno' => $alumnos[18]->id_usuario, 'id_proyecto' => $p5->id_proyecto]);
+            ProyectosAlumno::firstOrCreate(['id_alumno' => $alumnos[19]->id_usuario, 'id_proyecto' => $p5->id_proyecto]);
         }
         if (isset($docs['memoria'])) {
             DocumentosProyecto::firstOrCreate(['id_proyecto' => $p5->id_proyecto, 'id_documento' => $docs['memoria']->id_documento]);

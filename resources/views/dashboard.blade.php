@@ -91,6 +91,30 @@
                 <!-- ========================================================= -->
                 <div class="xl:col-span-8 space-y-6">
 
+                    @hasrole('Estudiante')
+                        <!-- Banner informativo para estudiantes -->
+                        <div class="bg-gradient-to-r from-[#8B1D2D] to-[#721523] rounded-3xl p-6 text-white shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div class="space-y-1">
+                                <span class="px-2.5 py-0.5 bg-white/20 backdrop-blur-md rounded-md text-[11px] font-bold tracking-wide uppercase">
+                                    Portal del Estudiante
+                                </span>
+                                <h3 class="text-lg font-bold">¡Bienvenido/a, {{ $usuario->nombre_completo }}!</h3>
+                                <p class="text-xs text-rose-100 max-w-xl">
+                                    Consulta los datos de tu proyecto asignado, el avance de tus horas sociales y sube tus documentos oficiales exclusivamente en formato PDF.
+                                </p>
+                            </div>
+                            <a
+                                href="{{ route('estudiante.proyecto') }}"
+                                class="px-5 py-2.5 bg-white text-[#8B1D2D] hover:bg-rose-50 font-bold text-xs rounded-xl shadow-xs transition-colors shrink-0 flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
+                            >
+                                <span>Ir a Mi Proyecto</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                </svg>
+                            </a>
+                        </div>
+                    @endhasrole
+
                     <!-- FILA DE 3 TARJETAS DE ESTADÍSTICAS (KPIs) -->
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <!-- KPI 1: Expedientes pendientes -->

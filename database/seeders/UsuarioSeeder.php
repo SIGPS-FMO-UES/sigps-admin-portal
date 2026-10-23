@@ -13,10 +13,17 @@ class UsuarioSeeder extends Seeder
      */
     public function run(): void
     {
+        // Asegurar que los roles base y sus permisos existan
+        $this->call([
+            RolSeeder::class,
+            PermisoSeeder::class,
+            PermisosRolSeeder::class,
+        ]);
+
         $passwordHasheado = Hash::make('password123');
 
         // 1. Administrador General
-        Usuario::firstOrCreate(
+        $admin = Usuario::updateOrCreate(
             ['nombre_usuario' => 'admin'],
             [
                 'nombre_completo' => 'Administrador General UPS',
@@ -24,9 +31,10 @@ class UsuarioSeeder extends Seeder
                 'activo' => true,
             ]
         );
+        $admin->syncRoles(['Administrador']);
 
         // 2. Coordinador UPS
-        Usuario::firstOrCreate(
+        $coordUps = Usuario::updateOrCreate(
             ['nombre_usuario' => 'coord_ups'],
             [
                 'nombre_completo' => 'Lic. Juan Pérez - Coordinador UPS',
@@ -34,9 +42,10 @@ class UsuarioSeeder extends Seeder
                 'activo' => true,
             ]
         );
+        $coordUps->syncRoles(['Coordinador UPS']);
 
         // 3. Coordinador de Carrera
-        Usuario::firstOrCreate(
+        $coordIng = Usuario::updateOrCreate(
             ['nombre_usuario' => 'coord_ing'],
             [
                 'nombre_completo' => 'Ing. Carlos Martínez - Coordinador Ingeniería',
@@ -44,6 +53,7 @@ class UsuarioSeeder extends Seeder
                 'activo' => true,
             ]
         );
+        $coordIng->syncRoles(['Coordinador de Carrera']);
 
         // 4. Docentes Tutores
         $tutores = [
@@ -52,15 +62,16 @@ class UsuarioSeeder extends Seeder
             ['nombre_usuario' => 'tutor_garcia', 'nombre_completo' => 'MSc. Fernando García'],
         ];
 
-        foreach ($tutores as $tutor) {
-            Usuario::firstOrCreate(
-                ['nombre_usuario' => $tutor['nombre_usuario']],
+        foreach ($tutores as $tutorData) {
+            $tutor = Usuario::updateOrCreate(
+                ['nombre_usuario' => $tutorData['nombre_usuario']],
                 [
-                    'nombre_completo' => $tutor['nombre_completo'],
+                    'nombre_completo' => $tutorData['nombre_completo'],
                     'password' => $passwordHasheado,
                     'activo' => true,
                 ]
             );
+            $tutor->syncRoles(['Docente Tutor']);
         }
 
         // 5. Estudiantes
@@ -78,7 +89,7 @@ class UsuarioSeeder extends Seeder
         ];
 
         foreach ($estudiantesData as $est) {
-            Usuario::firstOrCreate(
+            $estudiante = Usuario::updateOrCreate(
                 ['nombre_usuario' => $est['carnet']],
                 [
                     'nombre_completo' => $est['nombre'],
@@ -86,11 +97,12 @@ class UsuarioSeeder extends Seeder
                     'activo' => true,
                 ]
             );
+            $estudiante->syncRoles(['Estudiante']);
         }
 
         for ($i = 1; $i <= 10; $i++) {
             $num = str_pad((string) $i, 2, '0', STR_PAD_LEFT);
-            Usuario::firstOrCreate(
+            $alumno = Usuario::updateOrCreate(
                 ['nombre_usuario' => "alumno_{$num}"],
                 [
                     'nombre_completo' => "Estudiante {$num} - Proyección Social",
@@ -98,6 +110,7 @@ class UsuarioSeeder extends Seeder
                     'activo' => true,
                 ]
             );
+            $alumno->syncRoles(['Estudiante']);
         }
     }
 }

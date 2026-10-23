@@ -84,6 +84,26 @@ class AuthController extends Controller
         $usuario = Auth::user();
         $usuario->load(['roles', 'proyectosComoTutor', 'proyectosComoAlumno']);
 
+        // Auto-asignación de seguridad si el rol no estuviera sincronizado en la sesión
+        if ($usuario->nombre_usuario === 'admin' && ! $usuario->hasRole('Administrador')) {
+            $usuario->assignRole('Administrador');
+            $usuario->load('roles');
+        }
+
+        // Si el usuario es un Estudiante, mostrar su dashboard personal con los datos de su proceso
+        $esEstudiante = $usuario->hasRole('Estudiante')
+            || str_starts_with($usuario->nombre_usuario, '2024-')
+            || str_starts_with($usuario->nombre_usuario, 'alumno_');
+
+        if ($esEstudiante) {
+            if (! $usuario->hasRole('Estudiante')) {
+                $usuario->assignRole('Estudiante');
+                $usuario->load('roles');
+            }
+
+            return app(EstudiantePortalController::class)->dashboard();
+        }
+
         $expedientes = [
             ['num' => '001', 'codigo' => '2024-0185', 'area' => 'Capacitación comunitaria', 'profesor' => 'Ana Pérez', 'fecha' => '25/09/2026'],
             ['num' => '002', 'codigo' => '2024-0192', 'area' => 'Alfabetización digital', 'profesor' => 'Luis Alvarez', 'fecha' => '28/09/2026'],
