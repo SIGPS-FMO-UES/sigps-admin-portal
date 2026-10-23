@@ -55,9 +55,20 @@ class CertificadoController extends Controller
             });
         }
 
+        // Si es Docente Tutor, filtrar únicamente documentos de sus proyectos tutelados (HU-65)
+        if ($currentUser->hasRole('Docente Tutor')) {
+            $query->whereHas('proyectos', function ($q) use ($currentUser): void {
+                $q->where('tutor_id', $currentUser->id_usuario);
+            });
+        }
+
         $documentos = $query->orderBy('id_documento', 'asc')->paginate(10)->withQueryString();
 
-        $proyectos = Proyecto::orderBy('nombre_proyecto')->get();
+        $proyectosQuery = Proyecto::query();
+        if ($currentUser->hasRole('Docente Tutor')) {
+            $proyectosQuery->where('tutor_id', $currentUser->id_usuario);
+        }
+        $proyectos = $proyectosQuery->orderBy('nombre_proyecto')->get();
 
         return view('certificados.index', [
             'currentUser' => $currentUser,
@@ -99,6 +110,7 @@ class CertificadoController extends Controller
             'nombre_documento' => trim($validated['nombre_documento']),
             'url_documento' => $url,
             'tipo' => $validated['tipo'],
+            'estado_revision' => 'pendiente_tutor',
         ]);
 
         if (! empty($validated['id_proyecto'])) {
@@ -208,6 +220,44 @@ class CertificadoController extends Controller
         return redirect()->route('certificados.show', $certificado)->with(
             'success',
             "Certificado '{$certificado->nombre_documento}' modificado exitosamente."
+        );
+    }
+
+    /**
+     * Auditoría documental visual de sellos y firmas en tinta azul por la UPS (RF-UPS-07, UI-02).
+     */
+    public function auditarSellos(Request $request, Documento $certificado): RedirectResponse
+    {
+        $certificado->update([
+            'estado_revision' => 'auditado_ups',
+            'fecha_dictamen' => now(),
+            'observaciones' => $request->input('observaciones') ?: 'Auditoría visual completada con éxito. Sellos institucionales de facultad y firmas en tinta azul verificadas conforme a la normativa.',
+        ]);
+
+        return back()->with(
+            'success',
+            "Auditoría visual completada para '{$certificado->nombre_documento}'. Sellos y firmas en tinta azul verificadas satisfactoriamente (RF-UPS-07)."
+        );
+    }
+
+    /**
+     * Emisión oficial de certificado con número de folio único por la UPS (HU-33, HU-34, RF-UPS-09).
+     */
+    public function emitirCertificado(Request $request, Documento $certificado): RedirectResponse
+    {
+        $num = str_pad((string) $certificado->id_documento, 4, '0', STR_PAD_LEFT);
+        $folio = "UES-UPS-2026-{$num}";
+
+        $certificado->update([
+            'estado_revision' => 'certificado_emitido',
+            'folio' => $folio,
+            'fecha_dictamen' => now(),
+            'observaciones' => 'Certificación oficial de servicio social emitida y registrada en el libro de folios de la UPS.',
+        ]);
+
+        return back()->with(
+            'success',
+            "Certificado oficial emitido exitosamente con Folio #{$folio} para '{$certificado->nombre_documento}' (HU-33)."
         );
     }
 

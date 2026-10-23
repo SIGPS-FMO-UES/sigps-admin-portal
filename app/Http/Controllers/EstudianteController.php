@@ -53,6 +53,13 @@ class EstudianteController extends Controller
             });
         }
 
+        // Si es Docente Tutor, mostrar únicamente los estudiantes bajo su tutela (HU-63)
+        if ($currentUser->hasRole('Docente Tutor')) {
+            $query->whereHas('proyectosComoAlumno', function ($q) use ($currentUser): void {
+                $q->where('tutor_id', $currentUser->id_usuario);
+            });
+        }
+
         $estudiantes = $query->orderBy('id_usuario', 'asc')->paginate(10)->withQueryString();
 
         $proyectos = Proyecto::orderBy('nombre_proyecto')->get();

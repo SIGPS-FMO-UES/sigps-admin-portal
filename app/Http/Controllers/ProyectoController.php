@@ -50,6 +50,11 @@ class ProyectoController extends Controller
             $query->where('tutor_id', (int) $request->input('tutor_id'));
         }
 
+        // Si es Docente Tutor, mostrar únicamente los proyectos bajo su tutela (HU-63)
+        if ($currentUser->hasRole('Docente Tutor')) {
+            $query->where('tutor_id', $currentUser->id_usuario);
+        }
+
         $proyectos = $query->orderBy('codigo_proyecto', 'asc')->paginate(10)->withQueryString();
 
         $tutores = Usuario::whereHas('roles', function ($q): void {

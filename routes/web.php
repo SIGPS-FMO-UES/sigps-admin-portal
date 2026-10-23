@@ -19,14 +19,17 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::middleware('auth')->group(function (): void {
     Route::get('/dashboard', [AuthController::class, 'dashboard'])->name('dashboard');
 
-    // 1. Módulo Estudiantes (Solo personal administrativo con permiso de inscribir alumnos)
-    Route::middleware('permission:inscribir_alumnos')->group(function (): void {
+    // 1. Módulo Estudiantes (Inscripción para personal administrativo; consulta para tutores con revisar_documentos)
+    Route::middleware('permission:inscribir_alumnos|revisar_documentos')->group(function (): void {
         Route::get('/estudiantes', [EstudianteController::class, 'index'])->name('estudiantes.index');
-        Route::post('/estudiantes', [EstudianteController::class, 'store'])->name('estudiantes.store');
         Route::get('/estudiantes/{estudiante}', [EstudianteController::class, 'show'])->name('estudiantes.show');
-        Route::get('/estudiantes/{estudiante}/edit', [EstudianteController::class, 'edit'])->name('estudiantes.edit');
-        Route::put('/estudiantes/{estudiante}', [EstudianteController::class, 'update'])->name('estudiantes.update');
-        Route::delete('/estudiantes/{estudiante}', [EstudianteController::class, 'destroy'])->name('estudiantes.destroy');
+
+        Route::middleware('permission:inscribir_alumnos')->group(function (): void {
+            Route::post('/estudiantes', [EstudianteController::class, 'store'])->name('estudiantes.store');
+            Route::get('/estudiantes/{estudiante}/edit', [EstudianteController::class, 'edit'])->name('estudiantes.edit');
+            Route::put('/estudiantes/{estudiante}', [EstudianteController::class, 'update'])->name('estudiantes.update');
+            Route::delete('/estudiantes/{estudiante}', [EstudianteController::class, 'destroy'])->name('estudiantes.destroy');
+        });
     });
 
     // 2. Módulo Certificados / Documentos (Solo usuarios con permiso de revisar documentos)
@@ -37,9 +40,14 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/certificados/{certificado}/edit', [CertificadoController::class, 'edit'])->name('certificados.edit');
         Route::put('/certificados/{certificado}', [CertificadoController::class, 'update'])->name('certificados.update');
         Route::delete('/certificados/{certificado}', [CertificadoController::class, 'destroy'])->name('certificados.destroy');
+
+        // Acciones específicas de flujo de revisión por roles
+        Route::post('/tutor/documentos/{documento}/dictamen', [\App\Http\Controllers\TutorPortalController::class, 'dictamen'])->name('tutor.dictamen');
+        Route::post('/coordinador/documentos/{documento}/aval', [\App\Http\Controllers\CoordinadorPortalController::class, 'emitirAval'])->name('coordinador.aval');
+        Route::post('/ups/documentos/{certificado}/auditar', [CertificadoController::class, 'auditarSellos'])->name('ups.auditar');
     });
 
-    // 3. Módulo Proyectos - Gestión Administrativa
+    // 3. Módulo Proyectos - Gestión Administrativa y Asignación de Tutores
     Route::middleware('permission:crear_proyectos|revisar_documentos')->group(function (): void {
         Route::get('/proyectos', [ProyectoController::class, 'index'])->name('proyectos.index');
         Route::post('/proyectos', [ProyectoController::class, 'store'])->name('proyectos.store');
@@ -47,6 +55,9 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/proyectos/{proyecto}/edit', [ProyectoController::class, 'edit'])->name('proyectos.edit');
         Route::put('/proyectos/{proyecto}', [ProyectoController::class, 'update'])->name('proyectos.update');
         Route::delete('/proyectos/{proyecto}', [ProyectoController::class, 'destroy'])->name('proyectos.destroy');
+
+        // Asignación y reasignación de tutor por Coordinador de Carrera (HU-61, HU-62)
+        Route::post('/coordinador/proyectos/{proyecto}/asignar-tutor', [\App\Http\Controllers\CoordinadorPortalController::class, 'asignarTutor'])->name('coordinador.asignarTutor');
     });
 
     // 4. Módulo Tutores (Solo con permiso de asignar tutores)
@@ -59,14 +70,19 @@ Route::middleware('auth')->group(function (): void {
         Route::delete('/tutores/{tutor}', [TutorController::class, 'destroy'])->name('tutores.destroy');
     });
 
-    // 5. Módulo Administración de Usuarios y Roles (Solo administradores)
+    // 5. Emisión de Certificado Oficial UPS (HU-33, HU-34)
+    Route::middleware('permission:finalizar_proyectos')->group(function (): void {
+        Route::post('/ups/documentos/{certificado}/emitir-certificado', [CertificadoController::class, 'emitirCertificado'])->name('ups.emitirCertificado');
+    });
+
+    // 6. Módulo Administración de Usuarios y Roles (Solo administradores)
     Route::middleware('permission:gestionar_usuarios')->group(function (): void {
         Route::get('/usuarios', [UsuarioController::class, 'index'])->name('usuarios.index');
         Route::post('/usuarios', [UsuarioController::class, 'store'])->name('usuarios.store');
         Route::put('/usuarios/{usuario}/roles', [UsuarioController::class, 'updateRoles'])->name('usuarios.updateRoles');
     });
 
-    // 6. Portal Estudiante: Mi Proyecto, Subida PDF, Formatos y Observaciones
+    // 7. Portal Estudiante: Mi Proyecto, Subida PDF, Formatos y Observaciones
     Route::middleware('permission:subir_documentos')->group(function (): void {
         Route::get('/mi-proyecto', [EstudiantePortalController::class, 'miProyecto'])->name('estudiante.proyecto');
         Route::post('/mi-proyecto/documentos', [EstudiantePortalController::class, 'subirDocumento'])->name('estudiante.subirDocumento');

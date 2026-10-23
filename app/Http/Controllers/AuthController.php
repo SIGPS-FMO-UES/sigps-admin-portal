@@ -90,7 +90,7 @@ class AuthController extends Controller
             $usuario->load('roles');
         }
 
-        // Si el usuario es un Estudiante, mostrar su dashboard personal con los datos de su proceso
+        // 1. Rol Estudiante: portal personal de horas y entregables
         $esEstudiante = $usuario->hasRole('Estudiante')
             || str_starts_with($usuario->nombre_usuario, '2024-')
             || str_starts_with($usuario->nombre_usuario, 'alumno_');
@@ -104,25 +104,62 @@ class AuthController extends Controller
             return app(EstudiantePortalController::class)->dashboard();
         }
 
-        $expedientes = [
-            ['num' => '001', 'codigo' => '2024-0185', 'area' => 'Capacitación comunitaria', 'profesor' => 'Ana Pérez', 'fecha' => '25/09/2026'],
-            ['num' => '002', 'codigo' => '2024-0192', 'area' => 'Alfabetización digital', 'profesor' => 'Luis Alvarez', 'fecha' => '28/09/2026'],
-            ['num' => '003', 'codigo' => '2024-0201', 'area' => 'Censo de salud', 'profesor' => 'Dra. López', 'fecha' => '30/09/2026'],
-            ['num' => '004', 'codigo' => '2024-0216', 'area' => 'Huerto escolar', 'profesor' => 'Ing. Marta Méndez', 'fecha' => '02/10/2026'],
-            ['num' => '005', 'codigo' => '2024-0223', 'area' => 'Apoyo jurídico', 'profesor' => 'Mg. Ricardo Ruiz', 'fecha' => '05/10/2026'],
-            ['num' => '006', 'codigo' => '2024-0237', 'area' => 'Ingeniería UES', 'profesor' => 'Arq. Elena Flores', 'fecha' => '08/10/2026'],
-            ['num' => '007', 'codigo' => '2024-0244', 'area' => 'Voluntariado ambiental', 'profesor' => 'Ing. Samuel Díaz', 'fecha' => '10/10/2026'],
-        ];
+        // 2. Rol Docente Tutor: bandeja de tutorados y dictamen técnico de 1er nivel (HU-63, HU-65)
+        if ($usuario->hasRole('Docente Tutor')) {
+            return app(TutorPortalController::class)->dashboard();
+        }
 
+        // 3. Rol Coordinador de Carrera: supervisión, asignación de tutores y aval académico (HU-61, RF-ACA-05)
+        if ($usuario->hasRole('Coordinador de Carrera')) {
+            return app(CoordinadorPortalController::class)->dashboard();
+        }
+
+        // 4. Coordinador UPS y Administrador General: Dashboard Operativo de Auditoría Visual y Certificación
+        return $this->upsDashboard($usuario);
+    }
+
+    /**
+     * Dashboard Operativo de la Unidad de Proyección Social (UPS) y Administrador.
+     */
+    protected function upsDashboard(Usuario $usuario): View
+    {
+        $documentosAuditoria = \App\Models\Documento::with(['proyectos.alumnos', 'proyectos.tutor'])
+            ->orderBy('id_documento', 'desc')
+            ->take(10)
+            ->get();
+
+        $totalPendientesAuditoria = \App\Models\Documento::whereIn('estado_revision', ['aval_carrera', 'pendiente_tutor'])->count();
+        $totalCertificadosListos = \App\Models\Documento::where('estado_revision', 'certificado_emitido')->count();
+        $totalProyectosActivos = \App\Models\Proyecto::count();
+
+        // Alertas normativas de la UPS (RN-03: 3 meses prórroga; RN-04: 18 meses Junta Directiva)
         $alertas = [
-            ['codigo' => 'Expediente 2024-118', 'plazo' => 'Vence en 5 días', 'dias' => 5],
-            ['codigo' => 'Expediente 2024-097', 'plazo' => 'Vence en 8 días', 'dias' => 8],
-            ['codigo' => 'Expediente 2024-083', 'plazo' => 'Vence en 12 días', 'dias' => 12],
+            [
+                'codigo' => 'Proyecto #101 - Archivo Histórico',
+                'plazo' => 'Alerta de Prórroga (3 meses cumplidos)',
+                'dias' => 3,
+                'norma' => 'RN-03',
+            ],
+            [
+                'codigo' => 'Proyecto #104 - Inventario Salud',
+                'plazo' => 'Próximo a límite de 18 meses (Junta Directiva)',
+                'dias' => 14,
+                'norma' => 'RN-04',
+            ],
+            [
+                'codigo' => 'Expediente Carnet 2024-0185',
+                'plazo' => 'Auditoría de Sellos y Firma Azul Pendiente',
+                'dias' => 5,
+                'norma' => 'RF-UPS-07',
+            ],
         ];
 
         return view('dashboard', [
             'usuario' => $usuario,
-            'expedientes' => $expedientes,
+            'documentosAuditoria' => $documentosAuditoria,
+            'totalPendientesAuditoria' => $totalPendientesAuditoria,
+            'totalCertificadosListos' => $totalCertificadosListos,
+            'totalProyectosActivos' => $totalProyectosActivos,
             'alertas' => $alertas,
         ]);
     }

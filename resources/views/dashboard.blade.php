@@ -115,9 +115,26 @@
                         </div>
                     @endhasrole
 
+                    @if(session('status'))
+                        <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center justify-between shadow-2xs">
+                            <div class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                <span>{{ session('status') }}</span>
+                            </div>
+                        </div>
+                    @endif
+                    @if(session('error'))
+                        <div class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center justify-between shadow-2xs">
+                            <div class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                                <span>{{ session('error') }}</span>
+                            </div>
+                        </div>
+                    @endif
+
                     <!-- FILA DE 3 TARJETAS DE ESTADÍSTICAS (KPIs) -->
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <!-- KPI 1: Expedientes pendientes -->
+                        <!-- KPI 1: Expedientes pendientes de auditoría -->
                         <div class="bg-white rounded-2xl p-5 border border-gray-200/80 shadow-2xs hover:shadow-xs transition-shadow flex items-center gap-4">
                             <div class="w-12 h-12 rounded-full bg-[#FFF1F2] text-[#8B1D2D] flex items-center justify-center shrink-0">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -125,37 +142,37 @@
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-3xl font-extrabold text-gray-900 tracking-tight leading-none">18</p>
-                                <p class="text-xs font-bold text-gray-800 mt-1">Expedientes pendientes</p>
-                                <p class="text-[11px] text-gray-400 mt-0.5">6 más que la semana pasada</p>
+                                <p class="text-3xl font-extrabold text-gray-900 tracking-tight leading-none">{{ $totalPendientesAuditoria ?? 0 }}</p>
+                                <p class="text-xs font-bold text-gray-800 mt-1">Expedientes en auditoría</p>
+                                <p class="text-[11px] text-gray-400 mt-0.5">Pendientes de sellos y firmas</p>
                             </div>
                         </div>
 
-                        <!-- KPI 2: Trámites en alerta -->
+                        <!-- KPI 2: Proyectos Activos -->
                         <div class="bg-white rounded-2xl p-5 border border-gray-200/80 shadow-2xs hover:shadow-xs transition-shadow flex items-center gap-4">
                             <div class="w-12 h-12 rounded-full bg-[#FFF5F2] text-[#E05238] flex items-center justify-center shrink-0">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-3xl font-extrabold text-gray-900 tracking-tight leading-none">7</p>
-                                <p class="text-xs font-bold text-gray-800 mt-1">Trámites en alerta</p>
-                                <p class="text-[11px] text-gray-400 mt-0.5">Próximos a vencer en 10 días</p>
+                                <p class="text-3xl font-extrabold text-gray-900 tracking-tight leading-none">{{ $totalProyectosActivos ?? 0 }}</p>
+                                <p class="text-xs font-bold text-gray-800 mt-1">Proyectos activos</p>
+                                <p class="text-[11px] text-gray-400 mt-0.5">En ejecución o trámite</p>
                             </div>
                         </div>
 
                         <!-- KPI 3: Certificaciones listas -->
                         <div class="bg-white rounded-2xl p-5 border border-gray-200/80 shadow-2xs hover:shadow-xs transition-shadow flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-full bg-[#FFF1F2] text-[#8B1D2D] flex items-center justify-center shrink-0">
+                            <div class="w-12 h-12 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-3xl font-extrabold text-gray-900 tracking-tight leading-none">24</p>
-                                <p class="text-xs font-bold text-gray-800 mt-1">Certificaciones listas</p>
-                                <p class="text-[11px] text-gray-400 mt-0.5">4 emitidas este mes</p>
+                                <p class="text-3xl font-extrabold text-emerald-700 tracking-tight leading-none">{{ $totalCertificadosListos ?? 0 }}</p>
+                                <p class="text-xs font-bold text-gray-800 mt-1">Certificados emitidos</p>
+                                <p class="text-[11px] text-gray-400 mt-0.5">Con folio UES oficial</p>
                             </div>
                         </div>
                     </div>
@@ -165,14 +182,17 @@
                         <!-- Cabecera de la sección -->
                         <div class="p-5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                             <div class="flex items-center gap-2">
-                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <svg class="w-4 h-4 text-[#8B1D2D]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
-                                <h2 class="text-sm font-bold text-gray-900 tracking-tight">
-                                    Expedientes en espera de auditoría de sellos y firma azul
-                                </h2>
+                                <div>
+                                    <h2 class="text-sm font-bold text-gray-900 tracking-tight">
+                                        Expedientes para Auditoría de Sellos y Emisión de Certificado (UPS)
+                                    </h2>
+                                    <p class="text-[11px] text-gray-400">Control normativo RF-UPS-07 (sellos y firma azul) y HU-33 (folio oficial)</p>
+                                </div>
                             </div>
-                            <a href="#ver-todos" class="text-xs font-bold text-[#8B1D2D] hover:underline flex items-center gap-1 transition-all">
+                            <a href="{{ route('certificados.index') }}" class="text-xs font-bold text-[#8B1D2D] hover:underline flex items-center gap-1 transition-all">
                                 <span>Ver todos</span>
                                 <span>&rarr;</span>
                             </a>
@@ -183,53 +203,126 @@
                             <table class="w-full text-left border-collapse text-xs">
                                 <thead>
                                     <tr class="border-b border-gray-100 text-gray-400 font-semibold bg-gray-50/40">
-                                        <th class="py-3 px-4 w-12 text-center">#</th>
-                                        <th class="py-3 px-4">Carnet / Código</th>
-                                        <th class="py-3 px-4">Área de conocimiento</th>
-                                        <th class="py-3 px-4">Profesor responsable</th>
-                                        <th class="py-3 px-4">Fecha de revisión</th>
-                                        <th class="py-3 px-4 text-center">Acciones</th>
+                                        <th class="py-3 px-4 w-10 text-center">#</th>
+                                        <th class="py-3 px-4">Carnet / Estudiante</th>
+                                        <th class="py-3 px-4">Proyecto & Tutor</th>
+                                        <th class="py-3 px-4">Documento / Tipo</th>
+                                        <th class="py-3 px-4">Estado</th>
+                                        <th class="py-3 px-4 text-center">Acciones Operativas</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-100 text-gray-700">
-                                    @foreach ($expedientes as $exp)
+                                    @forelse ($documentosAuditoria as $doc)
+                                        @php
+                                            $proyecto = $doc->proyectos->first();
+                                            $alumno = $proyecto?->alumnos->first();
+                                        @endphp
                                         <tr class="hover:bg-gray-50/70 transition-colors">
                                             <td class="py-3.5 px-4 text-center text-gray-400 font-medium">
-                                                {{ $exp['num'] }}
+                                                {{ $loop->iteration }}
                                             </td>
-                                            <td class="py-3.5 px-4 font-bold text-gray-900 tracking-tight whitespace-nowrap">
-                                                {{ $exp['codigo'] }}
+                                            <td class="py-3.5 px-4 whitespace-nowrap">
+                                                <div class="flex flex-col">
+                                                    <span class="font-bold text-gray-900 font-mono">{{ $alumno?->carnet ?? $alumno?->nombre_usuario ?? 'UES-EXP' }}</span>
+                                                    <span class="text-[11px] text-gray-500 max-w-[150px] truncate" title="{{ $alumno?->nombre_completo ?? 'Estudiante' }}">{{ $alumno?->nombre_completo ?? 'Estudiante Inscrito' }}</span>
+                                                </div>
                                             </td>
-                                            <td class="py-3.5 px-4 text-gray-600 whitespace-nowrap">
-                                                {{ $exp['area'] }}
+                                            <td class="py-3.5 px-4 whitespace-nowrap">
+                                                <div class="flex flex-col max-w-[190px]">
+                                                    <span class="font-semibold text-gray-900 truncate" title="{{ $proyecto?->nombre_proyecto ?? 'Sin proyecto' }}">
+                                                        {{ $proyecto?->nombre_proyecto ?? 'Sin proyecto' }}
+                                                    </span>
+                                                    <span class="text-[10px] text-gray-400 truncate">
+                                                        Tutor: {{ $proyecto?->tutor?->nombre_completo ?? 'Por asignar' }}
+                                                    </span>
+                                                </div>
                                             </td>
-                                            <td class="py-3.5 px-4 text-gray-700 whitespace-nowrap">
-                                                {{ $exp['profesor'] }}
+                                            <td class="py-3.5 px-4 whitespace-nowrap">
+                                                <div class="flex flex-col">
+                                                    <span class="font-semibold text-gray-800">{{ $doc->nombre_documento }}</span>
+                                                    <span class="text-[10px] text-gray-400 font-mono uppercase">{{ $doc->tipo }}</span>
+                                                </div>
                                             </td>
-                                            <td class="py-3.5 px-4 text-gray-500 whitespace-nowrap">
-                                                {{ $exp['fecha'] }}
+                                            <td class="py-3.5 px-4 whitespace-nowrap">
+                                                <div class="flex flex-col gap-1 items-start">
+                                                    {!! $doc->estado_revision_badge !!}
+                                                    @if($doc->folio)
+                                                        <span class="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                                                            {{ $doc->folio }}
+                                                        </span>
+                                                    @endif
+                                                </div>
                                             </td>
                                             <td class="py-3.5 px-4 text-center whitespace-nowrap">
-                                                <div class="flex items-center justify-center gap-2">
-                                                    <!-- Icono de ojo sutil -->
-                                                    <span class="text-gray-300">
-                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                        </svg>
-                                                    </span>
-                                                    <!-- Botón Revisar -->
-                                                    <button
-                                                        type="button"
-                                                        onclick="alert('Expediente {{ $exp['codigo'] }}: Auditoría y revisión de sellos activa.');"
-                                                        class="px-3 py-1 bg-[#FFF1F2] hover:bg-[#8B1D2D] text-[#8B1D2D] hover:text-white border border-[#FFE4E6] rounded-md font-semibold text-[11px] transition-all duration-150 cursor-pointer shadow-2xs"
-                                                    >
-                                                        Revisar
-                                                    </button>
+                                                <div class="flex items-center justify-center gap-1.5">
+                                                    <!-- Ver PDF -->
+                                                    @if($doc->url_archivo)
+                                                        <a
+                                                            href="{{ $doc->url_archivo }}"
+                                                            target="_blank"
+                                                            class="p-1.5 text-gray-400 hover:text-[#8B1D2D] hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+                                                            title="Visualizar documento PDF escaneado"
+                                                        >
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                            </svg>
+                                                        </a>
+                                                    @endif
+
+                                                    <!-- Botón Auditar Sellos (Tinta Azul) para Aval Carrera o Pendiente Tutor -->
+                                                    @if(in_array($doc->estado_revision, ['aval_carrera', 'pendiente_tutor', 'aprobado_tutor']))
+                                                        <form action="{{ route('ups.auditar', $doc->id_documento) }}" method="POST" class="inline" onsubmit="return confirm('¿Confirmar auditoría visual de sellos y firmas en tinta azul conforme a RF-UPS-07?');">
+                                                            @csrf
+                                                            <button
+                                                                type="submit"
+                                                                class="px-2.5 py-1 bg-amber-50 hover:bg-amber-600 text-amber-700 hover:text-white border border-amber-200 rounded-md font-semibold text-[11px] transition-all cursor-pointer flex items-center gap-1 shadow-2xs"
+                                                                title="Auditar Sellos y Firmas en Tinta Azul (RF-UPS-07)"
+                                                            >
+                                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                                </svg>
+                                                                <span>Auditar Sellos</span>
+                                                            </button>
+                                                        </form>
+                                                    @endif
+
+                                                    <!-- Botón Emitir Certificado si ya fue auditado -->
+                                                    @if($doc->estado_revision === 'auditado_ups')
+                                                        <form action="{{ route('ups.emitirCertificado', $doc->id_documento) }}" method="POST" class="inline" onsubmit="return confirm('¿Emitir certificación oficial institucional con Folio Único para este estudiante?');">
+                                                            @csrf
+                                                            <button
+                                                                type="submit"
+                                                                class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md font-semibold text-[11px] transition-all cursor-pointer flex items-center gap-1 shadow-2xs"
+                                                                title="Emitir Certificado Oficial con Folio (HU-33)"
+                                                            >
+                                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                                </svg>
+                                                                <span>Emitir Certificado</span>
+                                                            </button>
+                                                        </form>
+                                                    @endif
+
+                                                    <!-- Indicador de Finalizado / Certificado Emitido -->
+                                                    @if($doc->estado_revision === 'certificado_emitido')
+                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-md font-bold text-[10px]">
+                                                            <svg class="w-3 h-3 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                                            </svg>
+                                                            <span>Emitido</span>
+                                                        </span>
+                                                    @endif
                                                 </div>
                                             </td>
                                         </tr>
-                                    @endforeach
+                                    @empty
+                                        <tr>
+                                            <td colspan="6" class="py-8 text-center text-gray-400">
+                                                No hay documentos pendientes de auditoría o certificación en este momento.
+                                            </td>
+                                        </tr>
+                                    @endforelse
                                 </tbody>
                             </table>
                         </div>
@@ -254,17 +347,24 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                 </svg>
                             </span>
-                            <h3 class="text-xs font-bold text-gray-900 tracking-tight">Alertas de plazo</h3>
+                            <h3 class="text-xs font-bold text-gray-900 tracking-tight">Alertas de plazo normativo</h3>
                         </div>
 
                         <!-- Lista de Alertas -->
                         <div class="space-y-3 divide-y divide-gray-100">
                             @foreach ($alertas as $alerta)
                                 <div class="pt-2.5 first:pt-0">
-                                    <p class="text-xs font-bold text-[#8B1D2D] leading-tight">
-                                        {{ $alerta['codigo'] }}
-                                    </p>
-                                    <p class="text-[11px] @if($alerta['dias'] <= 5) text-red-600 font-semibold @else text-gray-400 @endif mt-0.5">
+                                    <div class="flex items-center justify-between">
+                                        <p class="text-xs font-bold text-[#8B1D2D] leading-tight">
+                                            {{ $alerta['codigo'] }}
+                                        </p>
+                                        @if(isset($alerta['norma']))
+                                            <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                                                {{ $alerta['norma'] }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <p class="text-[11px] @if($alerta['dias'] <= 5) text-red-600 font-semibold @else text-gray-500 @endif mt-0.5">
                                         {{ $alerta['plazo'] }}
                                     </p>
                                 </div>

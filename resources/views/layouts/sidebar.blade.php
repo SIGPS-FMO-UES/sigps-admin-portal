@@ -88,18 +88,26 @@
         <!-- Menú de Enlaces de Navegación (Desktop vertical, Mobile desplegable) -->
         <nav id="mobileNavMenu" class="hidden lg:flex lg:flex-col items-stretch w-full gap-2 lg:gap-3 lg:mt-6">
             @unlessrole('Estudiante')
-                <!-- 1. Dashboard Operativo (Administrativo) -->
+                <!-- 1. Dashboard Operativo (Administrativo / Tutor / Coordinación) -->
                 <a
                     href="{{ route('dashboard') }}"
                     class="sidebar-nav-link {{ $active === 'dashboard' ? 'bg-[#8B1D2D] text-white shadow-sm shadow-[#8B1D2D]/25 font-semibold' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium' }}"
-                    title="Dashboard Operativo"
+                    title="{{ auth()->user()?->hasRole('Docente Tutor') ? 'Tutoría y Dictamen' : (auth()->user()?->hasRole('Coordinador de Carrera') ? 'Supervisión de Carrera' : 'Dashboard Operativo') }}"
                 >
                     <div class="shrink-0 w-5 h-5 flex items-center justify-center">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M3 4a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V4zM3 12a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zm10 0a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1v-6z" />
                         </svg>
                     </div>
-                    <span class="sidebar-link-text text-sm">Dashboard</span>
+                    <span class="sidebar-link-text text-sm">
+                        @if(auth()->user()?->hasRole('Docente Tutor'))
+                            Tutoría
+                        @elseif(auth()->user()?->hasRole('Coordinador de Carrera'))
+                            Supervisión
+                        @else
+                            Dashboard
+                        @endif
+                    </span>
                 </a>
             @endunlessrole
 
@@ -176,19 +184,19 @@
                 </a>
             @endhasrole
 
-            {{-- 2. Estudiantes (Solo personal administrativo con permiso) --}}
-            @if(auth()->user()?->hasRole('Administrador') || auth()->user()?->can('inscribir_alumnos'))
+            {{-- 2. Estudiantes (Solo personal administrativo con permiso o tutor para consulta) --}}
+            @if(auth()->user()?->hasRole('Administrador') || auth()->user()?->can('inscribir_alumnos') || auth()->user()?->can('revisar_documentos'))
                 <a
                     href="{{ route('estudiantes.index') }}"
                     class="sidebar-nav-link {{ $active === 'estudiantes' ? 'bg-[#8B1D2D] text-white shadow-sm shadow-[#8B1D2D]/25 font-semibold' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium' }}"
-                    title="Estudiantes"
+                    title="{{ auth()->user()?->hasRole('Docente Tutor') ? 'Mis Estudiantes Tutorados' : 'Estudiantes' }}"
                 >
                     <div class="shrink-0 w-5 h-5 flex items-center justify-center">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                     </div>
-                    <span class="sidebar-link-text text-sm">Estudiantes</span>
+                    <span class="sidebar-link-text text-sm">{{ auth()->user()?->hasRole('Docente Tutor') ? 'Mis Estudiantes' : 'Estudiantes' }}</span>
                 </a>
             @endif
 
@@ -197,30 +205,30 @@
                 <a
                     href="{{ route('certificados.index') }}"
                     class="sidebar-nav-link {{ $active === 'certificados' ? 'bg-[#8B1D2D] text-white shadow-sm shadow-[#8B1D2D]/25 font-semibold' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium' }}"
-                    title="Certificados y Documentos"
+                    title="{{ auth()->user()?->hasRole('Docente Tutor') ? 'Revisión Documental' : 'Certificados y Documentos' }}"
                 >
                     <div class="shrink-0 w-5 h-5 flex items-center justify-center">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                     </div>
-                    <span class="sidebar-link-text text-sm">Certificados y Documentos</span>
+                    <span class="sidebar-link-text text-sm">{{ auth()->user()?->hasRole('Docente Tutor') ? 'Revisión Documental' : 'Certificados y Documentos' }}</span>
                 </a>
             @endif
 
             {{-- 4. Carpetas / Proyectos (Solo personal con permisos de gestión o revisión) --}}
-            @if(auth()->user()?->hasRole('Administrador') || auth()->user()?->can('crear_proyectos'))
+            @if(auth()->user()?->hasRole('Administrador') || auth()->user()?->can('crear_proyectos') || auth()->user()?->can('revisar_documentos'))
                 <a
                     href="{{ route('proyectos.index') }}"
                     class="sidebar-nav-link {{ $active === 'proyectos' ? 'bg-[#8B1D2D] text-white shadow-sm shadow-[#8B1D2D]/25 font-semibold' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium' }}"
-                    title="Proyectos"
+                    title="{{ auth()->user()?->hasRole('Docente Tutor') ? 'Mis Proyectos Asignados' : 'Proyectos' }}"
                 >
                     <div class="shrink-0 w-5 h-5 flex items-center justify-center">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                         </svg>
                     </div>
-                    <span class="sidebar-link-text text-sm">Proyectos</span>
+                    <span class="sidebar-link-text text-sm">{{ auth()->user()?->hasRole('Docente Tutor') ? 'Mis Proyectos' : 'Proyectos' }}</span>
                 </a>
             @endif
 
