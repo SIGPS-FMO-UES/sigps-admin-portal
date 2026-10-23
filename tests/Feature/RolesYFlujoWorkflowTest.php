@@ -81,6 +81,66 @@ class RolesYFlujoWorkflowTest extends TestCase
     }
 
     /**
+     * Verifica que el dashboard de tutor divida los proyectos en tutela,
+     * muestre en primer plano solo los documentos que falta aprobar,
+     * y oculte los aprobados/observados bajo 'Ver más'.
+     */
+    public function test_tutor_dashboard_divides_projects_and_separates_pending_from_approved_documents(): void
+    {
+        $tutor = Usuario::where('nombre_usuario', 'tutor_lopez')->first();
+        $this->assertNotNull($tutor);
+
+        // tutor_lopez tiene asignados los proyectos 102 y 105 según ProyectoSeeder
+        $p102 = Proyecto::where('codigo_proyecto', 102)->first();
+        $p105 = Proyecto::where('codigo_proyecto', 105)->first();
+        $this->assertNotNull($p102);
+        $this->assertNotNull($p105);
+
+        // Agregar un documento pendiente de dictamen al proyecto 102
+        $docPendiente = Documento::create([
+            'nombre_documento' => 'Plan de Trabajo F2 - Pendiente Tutor',
+            'url_documento' => 'storage/documentos/f2_plan.pdf',
+            'tipo' => 'anteproyecto',
+            'estado_revision' => 'pendiente_tutor',
+        ]);
+        $p102->documentos()->attach($docPendiente->id_documento);
+
+        // Acceder al dashboard como docente tutor
+        $response = $this->actingAs($tutor)->get(route('dashboard'));
+
+        $response->assertOk();
+        // Verificar cabecera y división de proyectos
+        $response->assertSee('Proyectos en Tutela');
+        $response->assertSee('#102');
+        $response->assertSee('#105');
+        $response->assertSee('Todos los proyectos (2)');
+
+        // Verificar que el documento pendiente aparezca en 'Documentos que Falta Aprobar'
+        $response->assertSee('Documentos que Falta Aprobar');
+        $response->assertSee('Plan de Trabajo F2 - Pendiente Tutor');
+
+        // Verificar que la opción 'Ver más' esté presente para consultar los otros documentos
+        $response->assertSee('Ver más');
+        $response->assertSee('Historial de Expedientes Aprobados y Observados');
+
+        // Verificar que se haya quitado el texto de 'Tutorados:' y el texto largo de la barra de filtros
+        $response->assertDontSee('Tutorados:');
+        $response->assertDontSee('Supervisión técnica dividida por proyecto');
+
+        // Verificar que el buscador esté presente
+        $response->assertSee('buscadorProyectosTutor');
+        $response->assertSee('Buscar por estudiante');
+
+        // Probar búsqueda filtrando por código de proyecto
+        $searchResponse = $this->actingAs($tutor)->get(route('dashboard', ['search' => '102']));
+        $searchResponse->assertOk();
+        $searchResponse->assertSee('#102');
+        $searchResponse->assertDontSee('#105');
+    }
+
+
+
+    /**
      * 2. Rol Coordinador de Carrera:
      * - Visualiza supervisión departamental y carga de tutores
      * - Asigna o reasigna docentes tutores a proyectos (HU-61, HU-62)

@@ -147,140 +147,442 @@
                 </div>
             </div>
 
-            <!-- 2. BANDEJA DE EXPEDIENTES Y DICTAMEN DOCUMENTAL (HU-65, HU-66, HU-67) -->
-            <div class="bg-white rounded-3xl border border-gray-200/80 shadow-2xs overflow-hidden">
-                <div class="p-5 sm:p-6 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                            <h2 class="text-base font-extrabold text-gray-900 tracking-tight">
-                                Expedientes Pendientes de Dictamen Técnico (HU-65)
-                            </h2>
+            <!-- 2. PROYECTOS EN TUTELA Y GESTIÓN DOCUMENTAL DIVIDIDA (HU-65, HU-66, HU-67) -->
+            <div class="space-y-4">
+                <!-- Cabecera de la sección con buscador -->
+                <div class="bg-white rounded-3xl border border-gray-200/80 p-5 sm:p-6 shadow-2xs">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <!-- Buscador por estudiante, nombre de proyecto y otros campos -->
+                        <div class="flex-1 max-w-2xl relative">
+                            <div class="relative flex items-center">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                </div>
+                                <input
+                                    type="text"
+                                    id="buscadorProyectosTutor"
+                                    name="search"
+                                    value="{{ $search ?? '' }}"
+                                    placeholder="Buscar por estudiante (carnet o nombre), proyecto (#código o título), o documento..."
+                                    oninput="buscarProyectosTutor(this.value)"
+                                    class="w-full pl-10 pr-10 py-2.5 bg-gray-50/80 hover:bg-gray-50 focus:bg-white text-xs text-gray-900 border border-gray-200/90 rounded-2xl focus:outline-none focus:border-[#8B1D2D] focus:ring-2 focus:ring-[#8B1D2D]/20 transition-all shadow-2xs"
+                                    autocomplete="off"
+                                >
+                                <button
+                                    type="button"
+                                    id="btnLimpiarBuscadorTutor"
+                                    onclick="limpiarBuscadorTutor()"
+                                    class="{{ empty($search) ? 'hidden' : '' }} absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-700 cursor-pointer"
+                                    title="Limpiar búsqueda"
+                                >
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
-                        <p class="text-xs text-gray-500 mt-0.5">
-                            Revisa el contenido de los documentos enviados por tus tutorados y emite tu aprobación o devolución justificada.
-                        </p>
+
+                        <!-- Contador global de pendientes -->
+                        <div class="flex items-center gap-2 self-start md:self-auto shrink-0">
+                            @if ($totalPendientes > 0)
+                                <span class="px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold inline-flex items-center gap-1.5 shadow-2xs">
+                                    <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                                    {{ $totalPendientes }} {{ $totalPendientes === 1 ? 'documento por dictaminar' : 'documentos por dictaminar' }}
+                                </span>
+                            @else
+                                <span class="px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold inline-flex items-center gap-1.5 shadow-2xs">
+                                    <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    0 pendientes
+                                </span>
+                            @endif
+                        </div>
                     </div>
-                    <span class="text-xs font-bold text-gray-400 font-mono">
-                        {{ $documentosPendientes->count() }} documentos vinculados
-                    </span>
+
+                    <!-- Pestañas/Filtros de proyectos si tiene más de 1 proyecto -->
+                    @if ($proyectos->count() > 1)
+                        <div class="mt-4 pt-4 border-t border-gray-100 flex items-center gap-2 overflow-x-auto pb-1" id="proyectosFiltrosBar">
+                            <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider shrink-0 mr-1">Filtrar:</span>
+                            <button
+                                type="button"
+                                onclick="filtrarProyectoTutor('todos', this)"
+                                class="btn-filtro-proyecto active px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer bg-[#8B1D2D] text-white shadow-2xs shrink-0"
+                            >
+                                Todos los proyectos ({{ $proyectos->count() }})
+                            </button>
+                            @foreach ($proyectos as $proy)
+                                <button
+                                    type="button"
+                                    onclick="filtrarProyectoTutor('{{ $proy->id_proyecto }}', this)"
+                                    class="btn-filtro-proyecto px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-700 shrink-0 inline-flex items-center gap-2"
+                                >
+                                    <span>#{{ $proy->codigo_proyecto }} &bull; {{ Str::limit($proy->nombre_proyecto, 22) }}</span>
+                                    @if ($proy->documentos_pendientes->count() > 0)
+                                        <span class="px-1.5 py-0.2 bg-amber-500 text-white rounded-full text-[10px] font-bold">
+                                            {{ $proy->documentos_pendientes->count() }}
+                                        </span>
+                                    @else
+                                        <span class="text-emerald-600 text-[10px] font-bold">✓</span>
+                                    @endif
+                                </button>
+                            @endforeach
+                        </div>
+                    @endif
                 </div>
 
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse text-xs">
-                        <thead>
-                            <tr class="border-b border-gray-100 bg-gray-50/50 text-gray-400 font-semibold uppercase tracking-wider text-[11px]">
-                                <th class="py-3 px-4">Documento</th>
-                                <th class="py-3 px-4">Tipo</th>
-                                <th class="py-3 px-4">Proyecto / Tutorados</th>
-                                <th class="py-3 px-4">Estado de Revisión</th>
-                                <th class="py-3 px-4">Observaciones / Dictamen</th>
-                                <th class="py-3 px-4 text-center">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100 text-gray-700">
-                            @forelse ($documentosPendientes as $doc)
-                                <tr class="hover:bg-gray-50/70 transition-colors">
-                                    <!-- Documento -->
-                                    <td class="py-3.5 px-4 font-bold text-gray-900">
-                                        <div class="flex items-center gap-2">
-                                            <svg class="w-4 h-4 text-red-600 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
+                <!-- LISTADO DE PROYECTOS EN TUTELA (DIVIDIDOS INDIVIDUALMENTE) -->
+                @forelse ($proyectos as $proyecto)
+                    @php
+                        $searchMetadata = strtolower(
+                            $proyecto->codigo_proyecto . ' ' .
+                            $proyecto->nombre_proyecto . ' ' .
+                            $proyecto->estado . ' ' .
+                            $proyecto->alumnos->pluck('nombre_completo')->join(' ') . ' ' .
+                            $proyecto->alumnos->pluck('nombre_usuario')->join(' ') . ' ' .
+                            $proyecto->alumnos->pluck('correo')->join(' ') . ' ' .
+                            $proyecto->documentos->pluck('nombre_documento')->join(' ') . ' ' .
+                            $proyecto->documentos->pluck('tipo')->join(' ')
+                        );
+                    @endphp
+                    <div
+                        class="proyecto-tutor-card bg-white rounded-3xl border border-gray-200/80 shadow-2xs overflow-hidden transition-all duration-200"
+                        data-proyecto-id="{{ $proyecto->id_proyecto }}"
+                        data-search-terms="{{ $searchMetadata }}"
+                    >
+                        <!-- ENCABEZADO INDIVIDUAL DEL PROYECTO -->
+                        <div class="p-5 sm:p-6 bg-gradient-to-r from-gray-50/80 via-white to-gray-50/50 border-b border-gray-100">
+                            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                                <div class="space-y-1.5">
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <span class="px-2.5 py-0.5 rounded-lg bg-[#8B1D2D] text-white font-mono font-black text-xs shadow-2xs">
+                                            #{{ $proyecto->codigo_proyecto }}
+                                        </span>
+                                        @php
+                                            $estadoProy = $proyecto->estado ?? 'en_proceso';
+                                            $badgeEstadoClass = match($estadoProy) {
+                                                'finalizado' => 'bg-purple-50 text-purple-700 border-purple-200',
+                                                'en_proceso' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                                                'en_inscripcion' => 'bg-blue-50 text-blue-700 border-blue-200',
+                                                'en_finalizacion' => 'bg-indigo-50 text-indigo-700 border-indigo-200',
+                                                default => 'bg-amber-50 text-amber-700 border-amber-200',
+                                            };
+                                        @endphp
+                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border {{ $badgeEstadoClass }}">
+                                            {{ ucfirst(str_replace('_', ' ', $estadoProy)) }}
+                                        </span>
+                                        <span class="text-[11px] text-gray-400 font-medium">
+                                            {{ $proyecto->alumnos->count() }} {{ $proyecto->alumnos->count() === 1 ? 'estudiante asignado' : 'estudiantes asignados' }}
+                                        </span>
+                                    </div>
+
+                                    <h3 class="text-base font-extrabold text-gray-900 tracking-tight">
+                                        {{ $proyecto->nombre_proyecto }}
+                                    </h3>
+                                </div>
+
+                                <!-- Acciones y contadores del proyecto -->
+                                <div class="flex flex-wrap items-center gap-2 self-start lg:self-auto shrink-0">
+                                    @if ($proyecto->documentos_pendientes->count() > 0)
+                                        <span class="px-2.5 py-1 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-[11px] font-bold inline-flex items-center gap-1">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                            {{ $proyecto->documentos_pendientes->count() }} por dictaminar
+                                        </span>
+                                    @else
+                                        <span class="px-2.5 py-1 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-bold">
+                                            ✓ 0 pendientes
+                                        </span>
+                                    @endif
+
+                                    <a
+                                        href="{{ route('proyectos.show', $proyecto) }}"
+                                        class="px-3 py-1.5 bg-gray-100 hover:bg-[#8B1D2D] hover:text-white text-gray-700 rounded-xl text-xs font-bold transition-all inline-flex items-center gap-1.5 shadow-2xs"
+                                        title="Ver detalles completos del proyecto"
+                                    >
+                                        <span>Expediente Proyecto</span>
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 1. TABLA DE DOCUMENTOS QUE FALTA APROBAR (SOLO PENDIENTES EN PRIMER PLANO) -->
+                        <div class="p-4 sm:p-6 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                                    <h4 class="text-xs font-extrabold uppercase tracking-wider text-gray-800">
+                                        Documentos que Falta Aprobar
+                                    </h4>
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                                        {{ $proyecto->documentos_pendientes->count() }}
+                                    </span>
+                                </div>
+                                <span class="text-[11px] text-gray-400 font-medium hidden sm:inline">
+                                    Requieren dictamen técnico de primer nivel (HU-65)
+                                </span>
+                            </div>
+
+                            @if ($proyecto->documentos_pendientes->isNotEmpty())
+                                <div class="overflow-x-auto rounded-2xl border border-amber-200/60 bg-amber-50/20">
+                                    <table class="w-full text-left border-collapse text-xs">
+                                        <thead>
+                                            <tr class="border-b border-amber-100 bg-amber-50/80 text-amber-900 font-bold uppercase tracking-wider text-[10px]">
+                                                <th class="py-3 px-4">Documento</th>
+                                                <th class="py-3 px-4">Tipo</th>
+                                                <th class="py-3 px-4">Estado Actual</th>
+                                                <th class="py-3 px-4">Observaciones Registradas</th>
+                                                <th class="py-3 px-4 text-center">Acciones de Dictamen</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-amber-100/70 text-gray-700 bg-white">
+                                            @foreach ($proyecto->documentos_pendientes as $doc)
+                                                <tr class="hover:bg-amber-50/40 transition-colors">
+                                                    <!-- Documento -->
+                                                    <td class="py-3.5 px-4 font-bold text-gray-900">
+                                                        <div class="flex items-center gap-2">
+                                                            <div class="w-7 h-7 rounded-lg bg-red-50 text-red-600 flex items-center justify-center shrink-0 border border-red-100">
+                                                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                                    <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
+                                                                </svg>
+                                                            </div>
+                                                            <span class="font-bold text-gray-900" title="{{ $doc->nombre_documento }}">{{ $doc->nombre_documento }}</span>
+                                                        </div>
+                                                    </td>
+
+                                                    <!-- Tipo -->
+                                                    <td class="py-3.5 px-4 whitespace-nowrap">
+                                                        <span class="px-2 py-0.5 bg-gray-100 rounded text-[10px] font-bold text-gray-700 uppercase">
+                                                            {{ $doc->tipo }}
+                                                        </span>
+                                                    </td>
+
+                                                    <!-- Estado -->
+                                                    <td class="py-3.5 px-4 whitespace-nowrap">
+                                                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold border {{ $doc->estado_revision_badge }}">
+                                                            {{ $doc->estado_revision_texto }}
+                                                        </span>
+                                                    </td>
+
+                                                    <!-- Observaciones -->
+                                                    <td class="py-3.5 px-4 text-gray-500 max-w-xs text-[11px]">
+                                                        {{ $doc->observaciones ?: 'Pendiente de emisión de dictamen técnico' }}
+                                                    </td>
+
+                                                    <!-- Acciones de Dictamen Inmediatas -->
+                                                    <td class="py-3.5 px-4 text-center whitespace-nowrap">
+                                                        <div class="flex items-center justify-center gap-1.5">
+                                                            <!-- Ver PDF -->
+                                                            <a
+                                                                href="{{ $doc->url_documento }}"
+                                                                target="_blank"
+                                                                class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-[11px] rounded-lg transition-colors inline-flex items-center gap-1"
+                                                                title="Ver PDF en navegador"
+                                                            >
+                                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                                </svg>
+                                                                <span>Ver</span>
+                                                            </a>
+
+                                                            <!-- Formulario Aprobar (HU-66) -->
+                                                            <form method="POST" action="{{ route('tutor.dictamen', $doc) }}" class="inline">
+                                                                @csrf
+                                                                <input type="hidden" name="accion" value="aprobar">
+                                                                <button
+                                                                    type="submit"
+                                                                    class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[11px] rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1 shadow-2xs"
+                                                                    title="Aprobar técnicamente y enviar a Coordinación de Carrera"
+                                                                >
+                                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                                                    </svg>
+                                                                    <span>Aprobar</span>
+                                                                </button>
+                                                            </form>
+
+                                                            <!-- Botón Modal Observar (HU-67) -->
+                                                            <button
+                                                                type="button"
+                                                                onclick="openObservarModal({{ $doc->id_documento }}, '{{ addslashes($doc->nombre_documento) }}')"
+                                                                class="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 font-semibold text-[11px] rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1"
+                                                                title="Observar o rechazar con motivo justificado"
+                                                            >
+                                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                                                </svg>
+                                                                <span>Observar</span>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <!-- Estado: Todo al día en este proyecto -->
+                                <div class="p-5 rounded-2xl bg-emerald-50/60 border border-emerald-100 flex items-center justify-between gap-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                                             </svg>
-                                            <span class="truncate max-w-xs" title="{{ $doc->nombre_documento }}">{{ $doc->nombre_documento }}</span>
                                         </div>
-                                    </td>
-
-                                    <!-- Tipo -->
-                                    <td class="py-3.5 px-4 whitespace-nowrap">
-                                        <span class="px-2 py-0.5 bg-gray-100 rounded text-[10px] font-bold text-gray-700 uppercase">
-                                            {{ $doc->tipo }}
-                                        </span>
-                                    </td>
-
-                                    <!-- Proyecto vinculado -->
-                                    <td class="py-3.5 px-4">
-                                        @if ($doc->proyectos->isNotEmpty())
-                                            @php $proy = $doc->proyectos->first(); @endphp
-                                            <p class="font-bold text-gray-900 leading-tight">#{{ $proy->codigo_proyecto }} &bull; {{ Str::limit($proy->nombre_proyecto, 30) }}</p>
-                                            <p class="text-[11px] text-gray-400">
-                                                {{ $proy->alumnos->pluck('nombre_completo')->join(', ') ?: 'Sin estudiantes asociados' }}
+                                        <div>
+                                            <p class="text-xs font-bold text-emerald-900 leading-tight">
+                                                ¡Al día! No hay documentos pendientes de dictamen en este proyecto
                                             </p>
-                                        @else
-                                            <span class="text-gray-400 italic">Sin proyecto</span>
-                                        @endif
-                                    </td>
-
-                                    <!-- Estado de Revisión -->
-                                    <td class="py-3.5 px-4 whitespace-nowrap">
-                                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold border {{ $doc->estado_revision_badge }}">
-                                            {{ $doc->estado_revision_texto }}
-                                        </span>
-                                    </td>
-
-                                    <!-- Observaciones -->
-                                    <td class="py-3.5 px-4 text-gray-500 max-w-xs text-[11px]">
-                                        {{ $doc->observaciones ?: 'Sin observaciones registradas' }}
-                                    </td>
-
-                                    <!-- Acciones de Dictamen -->
-                                    <td class="py-3.5 px-4 text-center whitespace-nowrap">
-                                        <div class="flex items-center justify-center gap-1.5">
-                                            <!-- Ver / Descargar PDF -->
-                                            <a
-                                                href="{{ $doc->url_documento }}"
-                                                target="_blank"
-                                                class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-[11px] rounded-lg transition-colors inline-flex items-center gap-1"
-                                                title="Ver PDF en navegador"
-                                            >
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                </svg>
-                                                <span>Ver</span>
-                                            </a>
-
-                                            <!-- Formulario Aprobar (HU-66) -->
-                                            <form method="POST" action="{{ route('tutor.dictamen', $doc) }}" class="inline">
-                                                @csrf
-                                                <input type="hidden" name="accion" value="aprobar">
-                                                <button
-                                                    type="submit"
-                                                    class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[11px] rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1 shadow-2xs"
-                                                    title="Aprobar documento y enviar a Coordinación de Carrera"
-                                                >
-                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                                                    </svg>
-                                                    <span>Aprobar</span>
-                                                </button>
-                                            </form>
-
-                                            <!-- Botón Modal Observar (HU-67) -->
-                                            <button
-                                                type="button"
-                                                onclick="openObservarModal({{ $doc->id_documento }}, '{{ addslashes($doc->nombre_documento) }}')"
-                                                class="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 font-semibold text-[11px] rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1"
-                                                title="Observar o rechazar con motivo justificado"
-                                            >
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                                </svg>
-                                                <span>Observar</span>
-                                            </button>
+                                            <p class="text-[11px] text-emerald-700 mt-0.5">
+                                                Todos los entregables de este proyecto se encuentran dictaminados o en fases posteriores de aval y certificación.
+                                            </p>
                                         </div>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="6" class="p-8 text-center text-gray-400">
-                                        <p class="font-bold text-gray-600">No hay documentos pendientes de revisión</p>
-                                        <p class="text-xs mt-1">Todos los expedientes de tus proyectos tutelados se encuentran dictaminados o en etapa posterior.</p>
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                                    </div>
+                                    @if ($proyecto->documentos_otros->isNotEmpty())
+                                        <span class="text-[11px] font-bold text-emerald-800 shrink-0 hidden sm:inline">
+                                            {{ $proyecto->documentos_otros->count() }} en historial
+                                        </span>
+                                    @endif
+                                </div>
+                            @endif
+
+                            <!-- 2. "VER MÁS": DOCUMENTOS APROBADOS O NO APROBADOS (EXPANDIBLE POR USABILIDAD) -->
+                            @if ($proyecto->documentos_otros->isNotEmpty())
+                                <div class="pt-2">
+                                    <div class="flex items-center justify-between gap-3 bg-gray-50/70 p-3 rounded-2xl border border-gray-200/70">
+                                        <div class="flex items-center gap-2">
+                                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                            </svg>
+                                            <span class="text-xs font-bold text-gray-700">Historial de Expedientes Aprobados y Observados</span>
+                                            <span class="text-[11px] text-gray-400 font-normal">({{ $proyecto->documentos_otros->count() }} documentos archivados)</span>
+                                        </div>
+
+                                        <button
+                                            type="button"
+                                            onclick="toggleOtrosDocumentos('otros-{{ $proyecto->id_proyecto }}', this)"
+                                            data-count="{{ $proyecto->documentos_otros->count() }}"
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-gray-100 border border-gray-200 text-gray-800 font-bold text-xs rounded-xl transition-all cursor-pointer shadow-2xs group shrink-0"
+                                        >
+                                            <svg class="w-3.5 h-3.5 text-gray-500 transition-transform duration-200 icon-arrow group-hover:text-gray-900" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                            <span class="btn-text">Ver más ({{ $proyecto->documentos_otros->count() }})</span>
+                                        </button>
+                                    </div>
+
+                                    <!-- Tabla desplegable de otros documentos -->
+                                    <div id="otros-{{ $proyecto->id_proyecto }}" class="hidden mt-3 overflow-x-auto rounded-2xl border border-gray-200/80 bg-white shadow-2xs transition-all">
+                                        <table class="w-full text-left border-collapse text-xs">
+                                            <thead>
+                                                <tr class="border-b border-gray-100 bg-gray-50/80 text-gray-500 font-semibold uppercase tracking-wider text-[10px]">
+                                                    <th class="py-2.5 px-4">Documento</th>
+                                                    <th class="py-2.5 px-4">Tipo</th>
+                                                    <th class="py-2.5 px-4">Estado del Dictamen</th>
+                                                    <th class="py-2.5 px-4">Observaciones / Dictamen Emitido</th>
+                                                    <th class="py-2.5 px-4">Fecha Dictamen</th>
+                                                    <th class="py-2.5 px-4 text-center">Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-gray-100 text-gray-700">
+                                                @foreach ($proyecto->documentos_otros as $otroDoc)
+                                                    <tr class="hover:bg-gray-50/60 transition-colors">
+                                                        <!-- Documento -->
+                                                        <td class="py-3 px-4 font-bold text-gray-900">
+                                                            <div class="flex items-center gap-2">
+                                                                <svg class="w-4 h-4 text-gray-400 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                                    <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
+                                                                </svg>
+                                                                <span class="truncate max-w-xs" title="{{ $otroDoc->nombre_documento }}">{{ $otroDoc->nombre_documento }}</span>
+                                                            </div>
+                                                        </td>
+
+                                                        <!-- Tipo -->
+                                                        <td class="py-3 px-4 whitespace-nowrap">
+                                                            <span class="px-2 py-0.5 bg-gray-100 rounded text-[10px] font-bold text-gray-600 uppercase">
+                                                                {{ $otroDoc->tipo }}
+                                                            </span>
+                                                        </td>
+
+                                                        <!-- Estado -->
+                                                        <td class="py-3 px-4 whitespace-nowrap">
+                                                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border {{ $otroDoc->estado_revision_badge }}">
+                                                                {{ $otroDoc->estado_revision_texto }}
+                                                            </span>
+                                                        </td>
+
+                                                        <!-- Observaciones -->
+                                                        <td class="py-3 px-4 text-gray-500 max-w-xs text-[11px]">
+                                                            {{ $otroDoc->observaciones ?: 'Sin observaciones adicionales' }}
+                                                        </td>
+
+                                                        <!-- Fecha -->
+                                                        <td class="py-3 px-4 whitespace-nowrap text-gray-400 text-[11px]">
+                                                            {{ $otroDoc->fecha_dictamen ? $otroDoc->fecha_dictamen->format('d/m/Y H:i') : '-' }}
+                                                        </td>
+
+                                                        <!-- Ver PDF -->
+                                                        <td class="py-3 px-4 text-center whitespace-nowrap">
+                                                            <a
+                                                                href="{{ $otroDoc->url_documento }}"
+                                                                target="_blank"
+                                                                class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-[11px] rounded-lg transition-colors inline-flex items-center gap-1"
+                                                                title="Ver documento PDF"
+                                                            >
+                                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                                </svg>
+                                                                <span>Ver PDF</span>
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                @empty
+                    <!-- Estado vacío si el tutor no tiene proyectos asignados -->
+                    <div class="bg-white rounded-3xl border border-gray-200/80 p-8 text-center text-gray-400 shadow-2xs">
+                        <div class="w-12 h-12 rounded-2xl bg-gray-100 text-gray-400 flex items-center justify-center mx-auto mb-3">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                            </svg>
+                        </div>
+                        <p class="font-bold text-gray-700 text-sm">No tienes proyectos asignados actualmente en tutela</p>
+                        <p class="text-xs text-gray-500 mt-1">
+                            Cuando la Coordinación de Carrera te asigne proyectos y estudiantes tutorados, aparecerán divididos en este panel para la revisión de sus expedientes.
+                        </p>
+                    </div>
+                @endforelse
+
+                <!-- Estado cuando la búsqueda no coincide con ningún proyecto -->
+                <div id="sinResultadosBusquedaTutor" class="hidden bg-white rounded-3xl border border-gray-200/80 p-8 text-center text-gray-400 shadow-2xs">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto mb-3">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <p class="font-bold text-gray-700 text-sm">No se encontraron proyectos o estudiantes</p>
+                    <p class="text-xs text-gray-500 mt-1">
+                        No hay coincidencias para "<span id="terminoBusquedaTexto" class="font-bold text-gray-700"></span>". Intenta buscar con otro carnet, nombre de estudiante o título de proyecto.
+                    </p>
+                    <button
+                        type="button"
+                        onclick="limpiarBuscadorTutor()"
+                        class="mt-3 px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-xs rounded-xl transition-colors cursor-pointer"
+                    >
+                        Limpiar búsqueda
+                    </button>
                 </div>
             </div>
 
@@ -471,7 +773,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT PARA EL MODAL DE OBSERVACIONES -->
+    <!-- SCRIPTS INTERACTIVOS DEL DASHBOARD DEL TUTOR -->
     <script>
         function openObservarModal(docId, docTitulo) {
             const modal = document.getElementById('observarModal');
@@ -485,6 +787,101 @@
 
         function closeObservarModal() {
             document.getElementById('observarModal').classList.add('hidden');
+        }
+
+        function toggleOtrosDocumentos(containerId, btnElement) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            const isHidden = container.classList.contains('hidden');
+            const count = btnElement.getAttribute('data-count') || '';
+            const btnText = btnElement.querySelector('.btn-text');
+            const iconArrow = btnElement.querySelector('.icon-arrow');
+
+            if (isHidden) {
+                container.classList.remove('hidden');
+                if (btnText) btnText.textContent = `Ocultar historial (${count})`;
+                if (iconArrow) iconArrow.classList.add('rotate-180');
+                btnElement.classList.add('bg-gray-100');
+            } else {
+                container.classList.add('hidden');
+                if (btnText) btnText.textContent = `Ver más (${count})`;
+                if (iconArrow) iconArrow.classList.remove('rotate-180');
+                btnElement.classList.remove('bg-gray-100');
+            }
+        }
+
+        let activeFiltroProyecto = 'todos';
+
+        function filtrarProyectoTutor(proyectoId, tabElement) {
+            activeFiltroProyecto = String(proyectoId);
+
+            // Actualizar estilos activos de los botones de filtro
+            const botones = document.querySelectorAll('.btn-filtro-proyecto');
+            botones.forEach(btn => {
+                btn.classList.remove('bg-[#8B1D2D]', 'text-white', 'shadow-2xs');
+                btn.classList.add('bg-gray-100', 'text-gray-700', 'hover:bg-gray-200');
+            });
+
+            tabElement.classList.remove('bg-gray-100', 'text-gray-700', 'hover:bg-gray-200');
+            tabElement.classList.add('bg-[#8B1D2D]', 'text-white', 'shadow-2xs');
+
+            aplicarFiltrosYBusqueda();
+        }
+
+        function buscarProyectosTutor(query) {
+            const btnLimpiar = document.getElementById('btnLimpiarBuscadorTutor');
+            if (btnLimpiar) {
+                if (query.trim() !== '') {
+                    btnLimpiar.classList.remove('hidden');
+                } else {
+                    btnLimpiar.classList.add('hidden');
+                }
+            }
+            aplicarFiltrosYBusqueda();
+        }
+
+        function limpiarBuscadorTutor() {
+            const input = document.getElementById('buscadorProyectosTutor');
+            if (input) {
+                input.value = '';
+                const btnLimpiar = document.getElementById('btnLimpiarBuscadorTutor');
+                if (btnLimpiar) btnLimpiar.classList.add('hidden');
+                aplicarFiltrosYBusqueda();
+                input.focus();
+            }
+        }
+
+        function aplicarFiltrosYBusqueda() {
+            const input = document.getElementById('buscadorProyectosTutor');
+            const term = (input ? input.value : '').toLowerCase().trim();
+            const tarjetas = document.querySelectorAll('.proyecto-tutor-card');
+            let visibles = 0;
+
+            tarjetas.forEach(card => {
+                const cardProjectId = card.getAttribute('data-proyecto-id');
+                const matchesTab = (activeFiltroProyecto === 'todos' || cardProjectId === activeFiltroProyecto);
+                const searchTerms = (card.getAttribute('data-search-terms') || '').toLowerCase();
+                const matchesSearch = (term === '' || searchTerms.includes(term));
+
+                if (matchesTab && matchesSearch) {
+                    card.classList.remove('hidden');
+                    visibles++;
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+
+            const noResultados = document.getElementById('sinResultadosBusquedaTutor');
+            if (noResultados) {
+                if (visibles === 0 && (term !== '' || tarjetas.length > 0)) {
+                    noResultados.classList.remove('hidden');
+                    const spanTerm = document.getElementById('terminoBusquedaTexto');
+                    if (spanTerm) spanTerm.textContent = term || 'el filtro seleccionado';
+                } else {
+                    noResultados.classList.add('hidden');
+                }
+            }
         }
     </script>
 </body>

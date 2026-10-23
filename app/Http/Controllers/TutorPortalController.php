@@ -16,18 +16,39 @@ class TutorPortalController extends Controller
      * Muestra el dashboard del Docente Tutor con sus estudiantes asignados,
      * expedientes pendientes de dictamen y trazabilidad de acompañamiento técnico.
      */
-    public function dashboard(): View
+    public function dashboard(?Request $request = null): View
     {
+        $request = $request ?? request();
+
         /** @var Usuario $usuario */
         $usuario = Auth::user();
         $usuario->load(['roles', 'proyectosComoTutor.alumnos', 'proyectosComoTutor.documentos']);
 
+        $search = trim((string) $request->input('search', ''));
+
         // Proyectos bajo la tutela formal de este docente
-        $proyectos = Proyecto::query()
+        $proyectosQuery = Proyecto::query()
             ->where('tutor_id', $usuario->id_usuario)
             ->with(['alumnos', 'documentos'])
-            ->orderBy('codigo_proyecto', 'asc')
-            ->get();
+            ->orderBy('codigo_proyecto', 'asc');
+
+        if ($search !== '') {
+            $proyectosQuery->where(function ($q) use ($search): void {
+                $q->where('nombre_proyecto', 'ilike', "%{$search}%")
+                    ->orWhere('codigo_proyecto', 'like', "%{$search}%")
+                    ->orWhereHas('alumnos', function ($qa) use ($search): void {
+                        $qa->where('nombre_completo', 'ilike', "%{$search}%")
+                            ->orWhere('nombre_usuario', 'ilike', "%{$search}%")
+                            ->orWhere('correo', 'ilike', "%{$search}%");
+                    })
+                    ->orWhereHas('documentos', function ($qd) use ($search): void {
+                        $qd->where('nombre_documento', 'ilike', "%{$search}%")
+                            ->orWhere('tipo', 'ilike', "%{$search}%");
+                    });
+            });
+        }
+
+        $proyectos = $proyectosQuery->get();
 
         // Estudiantes formalmente asignados al tutor
         $estudiantesIds = [];
@@ -55,10 +76,21 @@ class TutorPortalController extends Controller
             ->orderBy('id_documento', 'desc')
             ->get();
 
+        // Categorizar documentos por proyecto: los que falta aprobar vs otros (aprobados u observados)
+        foreach ($proyectos as $proyecto) {
+            $proyecto->documentos_pendientes = $proyecto->documentos->filter(function ($doc) {
+                return in_array($doc->estado_revision, ['pendiente_tutor', 'pendiente', null], true);
+            })->sortByDesc('id_documento')->values();
+
+            $proyecto->documentos_otros = $proyecto->documentos->filter(function ($doc) {
+                return ! in_array($doc->estado_revision, ['pendiente_tutor', 'pendiente', null], true);
+            })->sortByDesc('id_documento')->values();
+        }
+
         // Estadísticas KPI del Tutor
         $totalEstudiantes = $estudiantes->count();
         $totalProyectos = $proyectos->count();
-        $totalPendientes = $documentosPendientes->where('estado_revision', 'pendiente_tutor')->count();
+        $totalPendientes = $proyectos->sum(fn ($p) => $p->documentos_pendientes->count());
         $horasValidadas = $proyectos->where('estado', 'finalizado')->count() * 500
             + $proyectos->where('estado', 'en_proceso')->count() * 250;
 
@@ -71,6 +103,7 @@ class TutorPortalController extends Controller
             'totalProyectos' => $totalProyectos,
             'totalPendientes' => $totalPendientes,
             'horasValidadas' => $horasValidadas,
+            'search' => $search,
         ]);
     }
 

@@ -179,7 +179,7 @@ class AuthController extends Controller
 
         // 2. Rol Docente Tutor: bandeja de tutorados y dictamen técnico de 1er nivel (HU-63, HU-65)
         if ($usuario->hasRole('Docente Tutor')) {
-            return app(TutorPortalController::class)->dashboard();
+            return app(TutorPortalController::class)->dashboard(request());
         }
 
         // 3. Rol Coordinador de Carrera: supervisión, asignación de tutores y aval académico (HU-61, RF-ACA-05)
