@@ -44,6 +44,17 @@ class UsuarioSeeder extends Seeder
         );
         $coordUps->syncRoles(['Coordinador UPS']);
 
+        // 2b. Auxiliar / Secretaría UPS (ACT-AUX)
+        $auxUps = Usuario::updateOrCreate(
+            ['nombre_usuario' => 'aux_ups'],
+            [
+                'nombre_completo' => 'Licda. Patricia Gómez - Auxiliar UPS',
+                'password' => $passwordHasheado,
+                'activo' => true,
+            ]
+        );
+        $auxUps->syncRoles(['Auxiliar UPS']);
+
         // 3. Coordinador de Carrera
         $coordIng = Usuario::updateOrCreate(
             ['nombre_usuario' => 'coord_ing'],

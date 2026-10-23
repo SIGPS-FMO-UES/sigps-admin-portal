@@ -24,6 +24,12 @@ class RolesUsuarioSeeder extends Seeder
             $coordUps->syncRoles(['Coordinador UPS']);
         }
 
+        // 2b. Asignar Auxiliar UPS
+        $auxUps = Usuario::where('nombre_usuario', 'aux_ups')->first();
+        if ($auxUps) {
+            $auxUps->syncRoles(['Auxiliar UPS']);
+        }
+
         // 3. Asignar Coordinador Carrera
         $coordIng = Usuario::where('nombre_usuario', 'coord_ing')->first();
         if ($coordIng) {

@@ -15,6 +15,7 @@ class PermisosRolSeeder extends Seeder
     {
         $admin = Rol::where('name', 'Administrador')->first();
         $coordUps = Rol::where('name', 'Coordinador UPS')->first();
+        $auxUps = Rol::where('name', 'Auxiliar UPS')->first();
         $coordCarrera = Rol::where('name', 'Coordinador de Carrera')->first();
         $tutor = Rol::where('name', 'Docente Tutor')->first();
         $estudiante = Rol::where('name', 'Estudiante')->first();
@@ -34,6 +35,18 @@ class PermisosRolSeeder extends Seeder
                 'subir_documentos',
                 'revisar_documentos',
                 'finalizar_proyectos',
+                'ver_reportes',
+            ]);
+        }
+
+        // 2b. Auxiliar UPS (Secretaría / Operativo)
+        if ($auxUps) {
+            $auxUps->syncPermissions([
+                'crear_proyectos',
+                'asignar_tutor',
+                'inscribir_alumnos',
+                'subir_documentos',
+                'revisar_documentos',
                 'ver_reportes',
             ]);
         }

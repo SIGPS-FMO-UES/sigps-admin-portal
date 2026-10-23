@@ -18,6 +18,7 @@ class RolSeeder extends Seeder
             'Coordinador de Carrera',
             'Docente Tutor',
             'Estudiante',
+            'Auxiliar UPS',
         ];
 
         foreach ($roles as $nombre) {
