@@ -45,35 +45,35 @@ class EstudiantePortalController extends Controller
             1 => [
                 'numero' => 1,
                 'nombre' => 'Inscripción y Solicitud',
-                'codigo_formato' => 'F1 / F2',
+                'codigo_formato' => 'Etapa 1',
                 'descripcion' => 'Registro de datos personales y validación inicial de la solicitud.',
                 'tipo_doc' => 'solicitud',
             ],
             2 => [
                 'numero' => 2,
                 'nombre' => 'Anteproyecto Aprobado',
-                'codigo_formato' => 'F3',
+                'codigo_formato' => 'Etapa 2',
                 'descripcion' => 'Plan de trabajo, objetivos y cronograma consensuado con el tutor.',
                 'tipo_doc' => 'anteproyecto',
             ],
             3 => [
                 'numero' => 3,
                 'nombre' => 'Ejecución y Control 50%',
-                'codigo_formato' => 'F4 / F5',
+                'codigo_formato' => 'Etapa 3',
                 'descripcion' => 'Registro de asistencias y entrega de informe de avance al 50%.',
                 'tipo_doc' => 'mitad_proyecto',
             ],
             4 => [
                 'numero' => 4,
                 'nombre' => 'Memoria Final y Evaluación',
-                'codigo_formato' => 'F6 / F7 / F8',
+                'codigo_formato' => 'Etapa 4',
                 'descripcion' => 'Memoria técnica, evaluación de contraparte y finiquito de horas.',
                 'tipo_doc' => 'memoria',
             ],
             5 => [
                 'numero' => 5,
                 'nombre' => 'Certificación Emitida',
-                'codigo_formato' => 'Certificado UPS',
+                'codigo_formato' => 'Certificación',
                 'descripcion' => 'Aprobación definitiva y entrega de constancia oficial por la UPS.',
                 'tipo_doc' => 'certificado',
             ],
@@ -276,78 +276,7 @@ class EstudiantePortalController extends Controller
         ]);
     }
 
-    /**
-     * Muestra los formatos y guías oficiales institucionales (F1 a F8) para su descarga y consulta.
-     */
-    public function formatos(): View
-    {
-        /** @var Usuario $usuario */
-        $usuario = Auth::user();
 
-        $formatos = [
-            [
-                'codigo' => 'F1',
-                'nombre' => 'Ficha de Solicitud e Inscripción de Proyecto',
-                'descripcion' => 'Formato oficial para postularse e inscribir formalmente el proyecto de servicio social ante la coordinación.',
-                'fase' => 'Fase 1: Inscripción',
-                'archivo' => 'F1-Solicitud-Inscripcion.pdf',
-            ],
-            [
-                'codigo' => 'F2',
-                'nombre' => 'Carta de Aceptación Institucional',
-                'descripcion' => 'Modelo formal expedido por la institución contraparte que acoge al estudiante para sus horas sociales.',
-                'fase' => 'Fase 1: Inscripción',
-                'archivo' => 'F2-Carta-Aceptacion.pdf',
-            ],
-            [
-                'codigo' => 'F3',
-                'nombre' => 'Plan de Trabajo y Cronograma de Actividades',
-                'descripcion' => 'Matriz de metas semanales, entregables y cronograma acordado con el docente tutor asignado.',
-                'fase' => 'Fase 2: Anteproyecto',
-                'archivo' => 'F3-Plan-Trabajo-Cronograma.pdf',
-            ],
-            [
-                'codigo' => 'F4',
-                'nombre' => 'Hoja de Control de Asistencia y Registro de Horas',
-                'descripcion' => 'Bitácora oficial de registro diario de horas con firma y sello del responsable supervisor en campo.',
-                'fase' => 'Fase 3: Ejecución',
-                'archivo' => 'F4-Control-Asistencia-Horas.pdf',
-            ],
-            [
-                'codigo' => 'F5',
-                'nombre' => 'Informe de Avance del 50 % de Horas Sociales',
-                'descripcion' => 'Plantilla estructurada para reportar las actividades y evidencias acumuladas al alcanzar 250 horas.',
-                'fase' => 'Fase 3: Ejecución',
-                'archivo' => 'F5-Informe-Avance-50.pdf',
-            ],
-            [
-                'codigo' => 'F6',
-                'nombre' => 'Evaluación de Desempeño del Tutor Institucional',
-                'descripcion' => 'Rúbrica de evaluación emitida por la contraparte institucional al finalizar el servicio.',
-                'fase' => 'Fase 4: Finalización',
-                'archivo' => 'F6-Evaluacion-Desempeno.pdf',
-            ],
-            [
-                'codigo' => 'F7',
-                'nombre' => 'Constancia de Finiquito y Cierre de Horas',
-                'descripcion' => 'Constancia formal que acredita el cumplimiento satisfactorio del 100% de las horas requeridas.',
-                'fase' => 'Fase 4: Finalización',
-                'archivo' => 'F7-Finiquito-Horas.pdf',
-            ],
-            [
-                'codigo' => 'F8',
-                'nombre' => 'Guía de Estructura de Memoria Final de Servicio Social',
-                'descripcion' => 'Directrices oficiales de formato, capítulos, anexos y empaste digital de la memoria final consolidada.',
-                'fase' => 'Fase 4: Finalización',
-                'archivo' => 'F8-Guia-Memoria-Final.pdf',
-            ],
-        ];
-
-        return view('estudiante.formatos', [
-            'usuario' => $usuario,
-            'formatos' => $formatos,
-        ]);
-    }
 
     /**
      * Muestra el historial de dictámenes, observaciones y revisiones emitidas por el tutor o coordinador.

@@ -35,7 +35,7 @@
                         {{ ($active ?? 'mi-proyecto') === 'subir-documento' ? 'Subir Documento de Proyección Social' : 'Mi Trámite de Proyección Social' }}
                     </h1>
                     <p class="text-xs sm:text-[13px] text-gray-500 mt-0.5">
-                        {{ ($active ?? 'mi-proyecto') === 'subir-documento' ? 'Adjunta tus expedientes y formatos oficiales requeridos exclusivamente en formato PDF.' : 'Consulta el estado de tu proyecto y sube tus documentos oficiales exclusivamente en formato PDF.' }}
+                        {{ ($active ?? 'mi-proyecto') === 'subir-documento' ? 'Adjunta tus expedientes y documentos oficiales requeridos exclusivamente en formato PDF.' : 'Consulta el estado de tu proyecto y el expediente de documentos registrados.' }}
                     </p>
                 </div>
 
@@ -172,7 +172,8 @@
             <!-- ============================================================= -->
             <!-- SECCIÓN: SUBIR DOCUMENTO (EXCLUSIVAMENTE PDF)                  -->
             <!-- ============================================================= -->
-            <div id="subir-pdf" class="{{ ($active ?? 'mi-proyecto') === 'subir-documento' ? 'order-1' : 'order-2' }} bg-white rounded-3xl border border-gray-200/80 shadow-2xs p-6 sm:p-7">
+            @if (($active ?? 'mi-proyecto') === 'subir-documento')
+            <div id="subir-pdf" class="order-1 bg-white rounded-3xl border border-gray-200/80 shadow-2xs p-6 sm:p-7">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-gray-100">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center shrink-0">
@@ -185,7 +186,7 @@
                                 Subir Entrega de Documento
                             </h3>
                             <p class="text-xs text-gray-500">
-                                Adjunta tus expedientes y formatos oficiales requeridos para el avance de tus horas sociales.
+                                Adjunta tus expedientes y documentos oficiales requeridos para el avance de tus horas sociales.
                             </p>
                         </div>
                     </div>
@@ -309,6 +310,7 @@
                     </div>
                 </form>
             </div>
+            @endif
 
             <!-- ============================================================= -->
             <!-- SECCIÓN: DOCUMENTOS DEL PROYECTO Y EXPEDIENTE                 -->

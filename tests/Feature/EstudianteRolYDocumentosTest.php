@@ -64,7 +64,7 @@ class EstudianteRolYDocumentosTest extends TestCase
         // Debe ver los datos de su propio proceso
         $response->assertSee('Mi Avance de Proyección Social');
         $response->assertSee('Ruta del Proceso de Servicio Social');
-        $response->assertSee('Horas de Servicio Social');
+        $response->assertDontSee('Horas de Servicio Social:');
         $response->assertSee('Entregables Reglamentarios del Proyecto');
         $response->assertSee('2024-0185');
 
@@ -89,7 +89,7 @@ class EstudianteRolYDocumentosTest extends TestCase
         $response->assertSee('Mi Avance');
         $response->assertSee('Mi Proyecto');
         $response->assertSee('Subir Documento');
-        $response->assertSee('Formatos y Guías');
+        $response->assertDontSee('Formatos y Guías');
         $response->assertSee('Observaciones');
 
         // NO debe ver enlaces de gestión administrativa
@@ -99,23 +99,27 @@ class EstudianteRolYDocumentosTest extends TestCase
     }
 
     /**
-     * Verifica que el estudiante pueda acceder a la sección de formatos oficiales y observaciones.
+     * Verifica que el estudiante pueda acceder a observaciones y que formatos esté completamente removido.
      */
-    public function test_estudiante_can_access_formatos_and_observaciones(): void
+    public function test_estudiante_can_access_observaciones_and_formatos_is_removed(): void
     {
         $estudiante = Usuario::where('nombre_usuario', '2024-0185')->first();
 
-        // Formatos oficiales (F1 - F8)
-        $resFormatos = $this->actingAs($estudiante)->get(route('estudiante.formatos'));
-        $resFormatos->assertOk();
-        $resFormatos->assertSee('Formatos y Plantillas Oficiales (F1 - F8)');
-        $resFormatos->assertSee('F1');
-        $resFormatos->assertSee('F8');
+        // Ruta de formatos ya no debe existir
+        $resFormatos = $this->actingAs($estudiante)->get('/estudiante/formatos-guias');
+        $resFormatos->assertNotFound();
 
         // Observaciones y dictámenes
         $resObs = $this->actingAs($estudiante)->get(route('estudiante.observaciones'));
         $resObs->assertOk();
         $resObs->assertSee('Revisiones y Observaciones de Entregables');
+
+        // El dashboard no debe contener barras de progreso ni menciones a formatos F1-F8
+        $resDashboard = $this->actingAs($estudiante)->get(route('dashboard'));
+        $resDashboard->assertOk();
+        $resDashboard->assertDontSee('w-full h-3 bg-white/10 rounded-full');
+        $resDashboard->assertDontSee('Formatos Oficiales (F1 - F8)');
+        $resDashboard->assertDontSee('Plantillas y Formatos Oficiales');
     }
 
     /**
@@ -130,8 +134,9 @@ class EstudianteRolYDocumentosTest extends TestCase
         $response->assertOk();
         $response->assertSee('Mi Trámite de Proyección Social');
         $response->assertSee('2024-0185');
-        $response->assertSee('Subir Entrega de Documento');
-        $response->assertSee('Exclusivo: Formato PDF');
+        // 'Subir Entrega de Documento' NO debe mostrarse en la sección de Mi Proyecto
+        $response->assertDontSee('Subir Entrega de Documento');
+        $response->assertDontSee('Exclusivo: Formato PDF');
         // Mi Proyecto debe estar activo con bg-[#8B1D2D] en el menú lateral
         $html = $response->getContent();
         $this->assertMatchesRegularExpression('/id="sidebar-nav-mi-proyecto"[^>]*bg-\[#8B1D2D\]/', $html);
@@ -281,20 +286,19 @@ class EstudianteRolYDocumentosTest extends TestCase
     }
 
     /**
-     * Verifica que la sección de Horas de Servicio Social sea desplegable y esté plegada por defecto.
+     * Verifica que el dashboard de estudiante no muestre la sección de desglose ni horas de servicio social.
      */
-    public function test_estudiante_dashboard_collapsible_horas_sociales(): void
+    public function test_estudiante_dashboard_does_not_show_horas_sociales_nor_desglose(): void
     {
         $estudiante = Usuario::where('nombre_usuario', '2024-0185')->first();
 
         $response = $this->actingAs($estudiante)->get(route('dashboard'));
         $response->assertOk();
 
-        $response->assertSee('id="btnToggleHoras"', false);
-        $response->assertSee('id="contenedorDesplegableHoras"', false);
-        $response->assertSee('class="hidden mt-4', false);
-        $response->assertSee('toggleHorasSociales', false);
-        $response->assertSee('Ver desglose');
+        $response->assertDontSee('Horas de Servicio Social:');
+        $response->assertDontSee('id="btnToggleHoras"', false);
+        $response->assertDontSee('id="contenedorDesplegableHoras"', false);
+        $response->assertDontSee('Ver desglose');
     }
 
     /**

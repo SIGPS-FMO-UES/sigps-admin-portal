@@ -60,45 +60,45 @@
         <main class="flex-1 p-4 sm:p-6 lg:p-8 space-y-6">
 
             <!-- ============================================================= -->
-            <!-- 1. HERO BANNER: ESTADO GENERAL DEL PROYECTO Y AVANCE          -->
+            <!-- 1. HERO BANNER: ESTADO GENERAL DEL PROYECTO                   -->
             <!-- ============================================================= -->
             @if ($proyecto)
-                <div class="bg-gradient-to-r from-gray-950 via-gray-900 to-gray-800 rounded-3xl p-6 sm:p-7 text-white shadow-md relative overflow-hidden border border-gray-800">
-                    <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-red-600/10 rounded-full blur-3xl pointer-events-none"></div>
-
-                    <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div class="bg-white rounded-3xl p-6 sm:p-7 border border-gray-200/80 shadow-2xs relative overflow-hidden">
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                         <div class="space-y-2 max-w-2xl">
                             <div class="flex flex-wrap items-center gap-2">
-                                <span class="px-2.5 py-0.5 bg-white/10 rounded-md text-[11px] font-bold font-mono tracking-wide text-white border border-white/10">
+                                <span class="px-2.5 py-0.5 bg-gray-100 rounded-md text-[11px] font-bold font-mono tracking-wide text-gray-700 border border-gray-200/80">
                                     PROYECTO #{{ $proyecto->codigo_proyecto }}
                                 </span>
                                 @php
                                     $estadoBadge = [
-                                        'solicitado' => 'bg-amber-400 text-amber-950',
-                                        'en_inscripcion' => 'bg-blue-400 text-blue-950',
-                                        'en_proceso' => 'bg-emerald-400 text-emerald-950',
-                                        'finalizado' => 'bg-purple-400 text-purple-950',
+                                        'solicitado' => 'bg-amber-50 text-amber-800 border-amber-200/80',
+                                        'en_inscripcion' => 'bg-blue-50 text-blue-800 border-blue-200/80',
+                                        'en_proceso' => 'bg-emerald-50 text-emerald-800 border-emerald-200/80',
+                                        'en_finalizacion' => 'bg-purple-50 text-purple-800 border-purple-200/80',
+                                        'finalizado' => 'bg-emerald-100 text-emerald-900 border-emerald-300',
                                     ];
                                     $estadoTexto = [
                                         'solicitado' => 'Solicitud Registrada',
                                         'en_inscripcion' => 'En Proceso de Inscripción',
                                         'en_proceso' => 'En Ejecución de Horas',
+                                        'en_finalizacion' => 'En Fase de Finalización',
                                         'finalizado' => 'Servicio Social Finalizado',
                                     ];
                                 @endphp
-                                <span class="px-3 py-0.5 rounded-md text-[11px] font-extrabold {{ $estadoBadge[$proyecto->estado] ?? 'bg-gray-200 text-gray-800' }}">
+                                <span class="px-3 py-0.5 rounded-md text-[11px] font-extrabold border {{ $estadoBadge[$proyecto->estado] ?? 'bg-gray-100 text-gray-700 border-gray-200' }}">
                                     {{ $estadoTexto[$proyecto->estado] ?? ucfirst($proyecto->estado) }}
                                 </span>
                             </div>
 
-                            <h2 class="text-lg sm:text-2xl font-bold tracking-tight text-white leading-snug">
+                            <h2 class="text-lg sm:text-2xl font-bold tracking-tight text-gray-900 leading-snug">
                                 {{ $proyecto->nombre_proyecto }}
                             </h2>
 
-                            <p class="text-xs text-gray-300 flex flex-wrap items-center gap-x-4 gap-y-1">
-                                <span>Área: <strong class="text-white">{{ $proyecto->area }}</strong></span>
-                                <span>&bull;</span>
-                                <span>Tutor: <strong class="text-white">{{ $proyecto->tutor?->nombre_completo ?? 'Pendiente de asignación' }}</strong></span>
+                            <p class="text-xs text-gray-500 flex flex-wrap items-center gap-x-4 gap-y-1">
+                                <span>Área: <strong class="text-gray-800 font-semibold">{{ $proyecto->area }}</strong></span>
+                                <span class="text-gray-300">&bull;</span>
+                                <span>Tutor: <strong class="text-gray-800 font-semibold">{{ $proyecto->tutor?->nombre_completo ?? 'Pendiente de asignación' }}</strong></span>
                             </p>
                         </div>
 
@@ -106,9 +106,9 @@
                         <div class="flex flex-wrap items-center gap-2.5 self-start lg:self-auto shrink-0">
                             <a
                                 href="{{ route('estudiante.proyecto') }}"
-                                class="px-4 py-2.5 bg-white text-gray-900 hover:bg-gray-100 font-bold text-xs rounded-xl transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+                                class="px-4 py-2.5 bg-white hover:bg-gray-50 text-gray-800 font-bold text-xs rounded-xl transition-all shadow-2xs border border-gray-200/90 flex items-center gap-2 cursor-pointer"
                             >
-                                <svg class="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                 </svg>
@@ -117,78 +117,13 @@
 
                             <a
                                 href="{{ route('estudiante.subirView') }}"
-                                class="px-4 py-2.5 bg-[#8B1D2D] hover:bg-[#721523] active:bg-[#5E101D] text-white font-bold text-xs rounded-xl transition-all shadow-sm flex items-center gap-2 cursor-pointer"
+                                class="px-4 py-2.5 bg-[#8B1D2D] hover:bg-[#721523] active:bg-[#5E101D] text-white font-bold text-xs rounded-xl transition-all shadow-xs flex items-center gap-2 cursor-pointer"
                             >
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                                 </svg>
                                 <span>Subir PDF</span>
                             </a>
-                        </div>
-                    </div>
-
-                    <!-- BARRA DESPLEGABLE DE PROGRESO DE HORAS SOCIALES (PREDETERMINADO PLEGADO) -->
-                    <div class="mt-6 pt-5 border-t border-white/10">
-                        <button
-                            type="button"
-                            onclick="toggleHorasSociales()"
-                            id="btnToggleHoras"
-                            class="w-full flex items-center justify-between text-xs text-left group cursor-pointer focus:outline-none"
-                            aria-expanded="false"
-                        >
-                            <span class="text-gray-300 font-semibold flex items-center gap-2">
-                                <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span>Horas de Servicio Social: <strong class="text-white">{{ $horasAcumuladas }}</strong> de {{ $horasRequeridas }} horas</span>
-                            </span>
-
-                            <div class="flex items-center gap-3">
-                                <span class="font-extrabold text-emerald-400 text-sm font-mono">{{ $porcentajeAvance }}%</span>
-                                <span class="px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 text-[11px] font-bold transition-all inline-flex items-center gap-1.5 shadow-2xs">
-                                    <span id="textoToggleHoras">Ver desglose</span>
-                                    <svg id="iconoToggleHoras" class="w-3.5 h-3.5 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </span>
-                            </div>
-                        </button>
-
-                        <!-- CONTENIDO DESPLEGABLE (PLEGADO POR DEFECTO CON CLASE HIDDEN) -->
-                        <div id="contenedorDesplegableHoras" class="hidden mt-4 space-y-3 pt-3 border-t border-white/10 transition-all">
-                            <div>
-                                <div class="flex justify-between text-[11px] text-gray-300 mb-1.5 font-medium">
-                                    <span>Progreso reglamentario de horas:</span>
-                                    <span>{{ $horasAcumuladas }} / {{ $horasRequeridas }} hrs (Restan: {{ max(0, $horasRequeridas - $horasAcumuladas) }} hrs)</span>
-                                </div>
-                                <div class="w-full h-3 bg-white/10 rounded-full overflow-hidden p-0.5">
-                                    <div class="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-500" style="width: {{ $porcentajeAvance }}%"></div>
-                                </div>
-                            </div>
-
-                            <!-- Desglose por etapas normativas del servicio social -->
-                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-[11px]">
-                                <div class="bg-white/5 p-2.5 rounded-xl border border-white/10">
-                                    <span class="text-gray-400 block text-[10px] uppercase font-bold tracking-wider">Inscripción</span>
-                                    <span class="font-bold text-white text-xs">50 hrs</span>
-                                    <span class="text-[10px] text-emerald-400 block mt-0.5">Formatos F1/F2</span>
-                                </div>
-                                <div class="bg-white/5 p-2.5 rounded-xl border border-white/10">
-                                    <span class="text-gray-400 block text-[10px] uppercase font-bold tracking-wider">Plan Aprobado</span>
-                                    <span class="font-bold text-white text-xs">100 hrs</span>
-                                    <span class="text-[10px] text-emerald-400 block mt-0.5">Anteproyecto F3</span>
-                                </div>
-                                <div class="bg-white/5 p-2.5 rounded-xl border border-white/10">
-                                    <span class="text-gray-400 block text-[10px] uppercase font-bold tracking-wider">Avance 50%</span>
-                                    <span class="font-bold text-white text-xs">100 hrs</span>
-                                    <span class="text-[10px] text-emerald-400 block mt-0.5">Informe F4/F5</span>
-                                </div>
-                                <div class="bg-white/5 p-2.5 rounded-xl border border-white/10">
-                                    <span class="text-gray-400 block text-[10px] uppercase font-bold tracking-wider">Memoria Final</span>
-                                    <span class="font-bold text-white text-xs">250 hrs</span>
-                                    <span class="text-[10px] text-emerald-400 block mt-0.5">Finiquito F6/F8</span>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -548,7 +483,7 @@
 
                 </div>
 
-                <!-- COLUMNA DERECHA: ASESORÍA Y FORMATOS (4 / 12) -->
+                <!-- COLUMNA DERECHA: ASESORÍA Y REGLAMENTO (4 / 12) -->
                 <div class="xl:col-span-4 space-y-6">
 
                     <!-- TARJETA: TU DOCENTE TUTOR ASIGNADO -->
@@ -598,59 +533,6 @@
                         @endif
                     </div>
 
-                    <!-- TARJETA: FORMATOS INSTITUCIONALES RÁPIDOS -->
-                    <div class="bg-white rounded-3xl border border-gray-200/80 shadow-2xs p-5">
-                        <div class="flex items-center justify-between mb-3">
-                            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                Formatos Oficiales (F1 - F8)
-                            </h4>
-                            <a href="{{ route('estudiante.formatos') }}" class="text-[11px] text-[#8B1D2D] font-bold hover:underline cursor-pointer">
-                                Ver todos &rarr;
-                            </a>
-                        </div>
-
-                        <div class="space-y-2">
-                            <a
-                                href="{{ route('estudiante.formatos') }}"
-                                class="p-2.5 rounded-xl bg-gray-50 hover:bg-rose-50/50 border border-gray-100 flex items-center justify-between text-xs transition-colors cursor-pointer group"
-                            >
-                                <div class="flex items-center gap-2">
-                                    <span class="w-6 h-6 rounded-lg bg-red-100 text-[#8B1D2D] font-bold text-[10px] flex items-center justify-center">F1</span>
-                                    <span class="font-medium text-gray-800 group-hover:text-[#8B1D2D]">Ficha de Inscripción</span>
-                                </div>
-                                <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-[#8B1D2D]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                </svg>
-                            </a>
-
-                            <a
-                                href="{{ route('estudiante.formatos') }}"
-                                class="p-2.5 rounded-xl bg-gray-50 hover:bg-rose-50/50 border border-gray-100 flex items-center justify-between text-xs transition-colors cursor-pointer group"
-                            >
-                                <div class="flex items-center gap-2">
-                                    <span class="w-6 h-6 rounded-lg bg-red-100 text-[#8B1D2D] font-bold text-[10px] flex items-center justify-center">F3</span>
-                                    <span class="font-medium text-gray-800 group-hover:text-[#8B1D2D]">Plan y Cronograma</span>
-                                </div>
-                                <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-[#8B1D2D]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                </svg>
-                            </a>
-
-                            <a
-                                href="{{ route('estudiante.formatos') }}"
-                                class="p-2.5 rounded-xl bg-gray-50 hover:bg-rose-50/50 border border-gray-100 flex items-center justify-between text-xs transition-colors cursor-pointer group"
-                            >
-                                <div class="flex items-center gap-2">
-                                    <span class="w-6 h-6 rounded-lg bg-red-100 text-[#8B1D2D] font-bold text-[10px] flex items-center justify-center">F4</span>
-                                    <span class="font-medium text-gray-800 group-hover:text-[#8B1D2D]">Control de Asistencia</span>
-                                </div>
-                                <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-[#8B1D2D]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                </svg>
-                            </a>
-                        </div>
-                    </div>
-
                     <!-- TARJETA: RECORDATORIO DE REGLAMENTO -->
                     <div class="bg-gradient-to-br from-rose-50 to-red-50/40 rounded-3xl border border-rose-200/80 p-5 text-xs text-rose-950">
                         <div class="flex items-center gap-2 mb-2 font-bold text-[#8B1D2D]">
@@ -671,29 +553,5 @@
         </main>
     </div>
 
-    <!-- SCRIPT DE DESPLIEGUE DE HORAS SOCIALES -->
-    <script>
-        function toggleHorasSociales() {
-            const contenedor = document.getElementById('contenedorDesplegableHoras');
-            const icono = document.getElementById('iconoToggleHoras');
-            const texto = document.getElementById('textoToggleHoras');
-            const btn = document.getElementById('btnToggleHoras');
-
-            if (!contenedor) return;
-
-            const isHidden = contenedor.classList.contains('hidden');
-            if (isHidden) {
-                contenedor.classList.remove('hidden');
-                if (icono) icono.classList.add('rotate-180');
-                if (texto) texto.textContent = 'Ocultar desglose';
-                if (btn) btn.setAttribute('aria-expanded', 'true');
-            } else {
-                contenedor.classList.add('hidden');
-                if (icono) icono.classList.remove('rotate-180');
-                if (texto) texto.textContent = 'Ver desglose';
-                if (btn) btn.setAttribute('aria-expanded', 'false');
-            }
-        }
-    </script>
 </body>
 </html>

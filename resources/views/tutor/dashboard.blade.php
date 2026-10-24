@@ -704,35 +704,6 @@
                 </div>
             </div>
 
-            <!-- 4. GUÍAS Y FORMATOS OFICIALES PARA EL TUTOR (RF-ACA-04) -->
-            <div class="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 rounded-3xl p-6 text-white shadow-md">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                        <span class="px-2.5 py-0.5 bg-white/10 rounded-md text-[10px] font-bold tracking-wide uppercase text-rose-200">
-                            Reglamento de Proyección Social UES
-                        </span>
-                        <h3 class="text-base font-bold text-white mt-1">
-                            Plantillas y Formatos Oficiales de Supervisión (F1 a F8)
-                        </h3>
-                        <p class="text-xs text-gray-300 max-w-2xl mt-0.5">
-                            Coteja los planes de trabajo, informes de avance al 50% y memorias finales con los formatos normativos institucionales.
-                        </p>
-                    </div>
-
-                    <div class="flex items-center gap-2 shrink-0">
-                        <a
-                            href="{{ route('estudiante.formatos') }}"
-                            class="px-4 py-2 bg-white text-gray-900 hover:bg-gray-100 font-bold text-xs rounded-xl transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-sm"
-                        >
-                            <svg class="w-4 h-4 text-[#8B1D2D]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            <span>Descargar Formatos F1-F8</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
         </main>
     </div>
 

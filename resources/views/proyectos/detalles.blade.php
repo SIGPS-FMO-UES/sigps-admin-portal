@@ -206,13 +206,13 @@
                                     Solicitud Registrada (Fase 1: Inicial)
                                 </option>
                                 <option value="en_inscripcion" @selected(old('estado', $proyecto->estado) === 'en_inscripcion')>
-                                    En Inscripción (Fase 1: Formatos F1/F2)
+                                    En Inscripción (Fase 1: Registro e Inscripción)
                                 </option>
                                 <option value="en_proceso" @selected(old('estado', $proyecto->estado) === 'en_proceso')>
-                                    En Ejecución / Activo (Fase 2 y 3: Anteproyecto F3 y Avance F4/F5)
+                                    En Ejecución / Activo (Fase 2 y 3: Anteproyecto y Avance 50%)
                                 </option>
                                 <option value="en_finalizacion" @selected(old('estado', $proyecto->estado) === 'en_finalizacion')>
-                                    En Finalización / Cierre (Fase 4: Memoria Final F6/F7/F8)
+                                    En Finalización / Cierre (Fase 4: Memoria Técnica Final)
                                 </option>
                                 <option value="finalizado" @selected(old('estado', $proyecto->estado) === 'finalizado')>
                                     Finalizado (Fase 5: Certificación Oficial Emitida)
