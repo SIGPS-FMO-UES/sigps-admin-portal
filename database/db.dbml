@@ -1,0 +1,236 @@
+// ==============================================================================
+// SIGPS - Sistema de Administración, Portal Docente Tutor y Auditoría
+// Diagrama de Base de Datos DBML (Sincronizado con esquema real de Laravel)
+// ==============================================================================
+
+// ------------------------------------------------------------------------------
+// ENUMS
+// ------------------------------------------------------------------------------
+
+Enum estado_proyecto {
+  solicitado
+  en_inscripcion
+  en_proceso
+  en_finalizacion
+  finalizado
+}
+
+Enum tipo_documento {
+  solicitud
+  inscripcion
+  anteproyecto
+  mitad_proyecto
+  memoria
+  otro
+}
+
+// ------------------------------------------------------------------------------
+// TABLAS: USUARIOS Y AUTENTICACIÓN
+// ------------------------------------------------------------------------------
+
+Table usuarios {
+  id_usuario bigint [pk, increment]
+  nombre_usuario varchar [unique, not null]
+  nombre_completo varchar [not null]
+  correo varchar [unique, null]
+  password varchar [not null]
+  activo bool [default: true, not null]
+  remember_token varchar [null]
+}
+
+// ------------------------------------------------------------------------------
+// TABLAS: ROLES Y PERMISOS (SPATIE LARAVEL-PERMISSION)
+// ------------------------------------------------------------------------------
+
+Table roles {
+  id bigint [pk, increment]
+  name varchar [not null]
+  guard_name varchar [default: 'web', not null]
+  nombre_rol varchar [null, note: 'Compatibilidad de lectura institucional']
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    (name, guard_name) [unique]
+  }
+}
+
+Table permissions {
+  id bigint [pk, increment]
+  name varchar [not null]
+  guard_name varchar [default: 'web', not null]
+  nombre_permiso varchar [null, note: 'Compatibilidad de lectura institucional']
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    (name, guard_name) [unique]
+  }
+}
+
+Table model_has_roles {
+  role_id bigint [not null]
+  model_type varchar [not null]
+  model_id bigint [not null]
+
+  indexes {
+    (role_id, model_id, model_type) [pk]
+    (model_id, model_type)
+  }
+}
+
+Table model_has_permissions {
+  permission_id bigint [not null]
+  model_type varchar [not null]
+  model_id bigint [not null]
+
+  indexes {
+    (permission_id, model_id, model_type) [pk]
+    (model_id, model_type)
+  }
+}
+
+Table role_has_permissions {
+  permission_id bigint [not null]
+  role_id bigint [not null]
+
+  indexes {
+    (permission_id, role_id) [pk]
+  }
+}
+
+// ------------------------------------------------------------------------------
+// TABLAS: PROYECTOS Y ASIGNACIÓN DE ESTUDIANTES / TUTORES
+// ------------------------------------------------------------------------------
+
+Table proyectos {
+  id_proyecto bigint [pk, increment]
+  nombre_proyecto varchar [not null]
+  codigo_proyecto int [unique, not null]
+  estado estado_proyecto [not null]
+  tutor_id bigint [null, note: 'Docente tutor asignado, referencia usuarios.id_usuario']
+}
+
+Table proyectos_alumnos {
+  id_proyecto_alumno bigint [pk, increment]
+  id_alumno bigint [not null, note: 'Estudiante asignado al proyecto, referencia usuarios.id_usuario']
+  id_proyecto bigint [not null]
+
+  indexes {
+    (id_alumno, id_proyecto) [unique]
+  }
+}
+
+// ------------------------------------------------------------------------------
+// TABLAS: DOCUMENTOS DEL EXPEDIENTE Y ENTREGABLES
+// ------------------------------------------------------------------------------
+
+Table documentos {
+  id_documento bigint [pk, increment]
+  nombre_documento varchar [not null]
+  url_documento varchar [not null]
+  tipo tipo_documento [not null]
+  estado_revision varchar [default: 'pendiente_tutor', not null, note: 'Flujo: pendiente_tutor, aprobado_tutor, observado_tutor, aval_carrera, auditado_ups, certificado_emitido']
+  observaciones text [null]
+  fecha_dictamen timestamp [null]
+  folio varchar [null]
+  version int [default: 1, not null]
+  fecha_entrega timestamp [null]
+  motivo_rechazo text [null]
+}
+
+Table documentos_proyecto {
+  id_documento_proyecto bigint [pk, increment]
+  id_proyecto bigint [not null]
+  id_documento bigint [not null]
+
+  indexes {
+    (id_proyecto, id_documento) [unique]
+  }
+}
+
+// ------------------------------------------------------------------------------
+// TABLAS: AUDITORÍA Y TRAZABILIDAD (COO-E04 / COO-HU-11)
+// ------------------------------------------------------------------------------
+
+Table auditorias {
+  id_auditoria bigint [pk, increment]
+  id_usuario bigint [null, note: 'Usuario responsable que ejecutó la acción']
+  nombre_usuario varchar(100) [null]
+  nombre_persona varchar(200) [null]
+  rol varchar(80) [null]
+  modulo varchar(60) [not null]
+  id_entidad bigint [null, note: 'ID de la entidad afectada (documento, proyecto, usuario)']
+  tipo_entidad varchar(60) [null]
+  accion varchar(60) [not null]
+  titulo varchar(255) [not null]
+  detalles text [null, note: 'Observaciones y comentarios inmutables (nunca sobreescritos)']
+  estado_anterior varchar(80) [null]
+  estado_nuevo varchar(80) [null]
+  ip_address varchar(45) [null]
+  user_agent text [null]
+  metadatos json [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    nombre_usuario
+    rol
+    modulo
+    id_entidad
+    accion
+    (created_at, rol)
+    (modulo, id_entidad)
+  }
+}
+
+// ------------------------------------------------------------------------------
+// RELACIONES (FOREIGN KEYS)
+// ------------------------------------------------------------------------------
+
+// Relaciones Spatie Permission
+Ref: "roles"."id" < "role_has_permissions"."role_id" [delete: cascade]
+Ref: "permissions"."id" < "role_has_permissions"."permission_id" [delete: cascade]
+Ref: "roles"."id" < "model_has_roles"."role_id" [delete: cascade]
+Ref: "permissions"."id" < "model_has_permissions"."permission_id" [delete: cascade]
+Ref: "usuarios"."id_usuario" < "model_has_roles"."model_id"
+Ref: "usuarios"."id_usuario" < "model_has_permissions"."model_id"
+
+// Relaciones Proyectos, Alumnos y Tutores
+Ref: "usuarios"."id_usuario" < "proyectos"."tutor_id" [delete: set null]
+Ref: "usuarios"."id_usuario" < "proyectos_alumnos"."id_alumno" [delete: cascade]
+Ref: "proyectos"."id_proyecto" < "proyectos_alumnos"."id_proyecto" [delete: cascade]
+
+// Relaciones Documentos y Proyectos
+Ref: "proyectos"."id_proyecto" < "documentos_proyecto"."id_proyecto" [delete: cascade]
+Ref: "documentos"."id_documento" < "documentos_proyecto"."id_documento" [delete: cascade]
+
+// Relaciones Auditoría
+Ref: "usuarios"."id_usuario" < "auditorias"."id_usuario" [delete: set null]
+
+// ------------------------------------------------------------------------------
+// GRUPOS LÓGICOS DE TABLAS (TABLE GROUPS)
+// ------------------------------------------------------------------------------
+
+TableGroup seguridad_autenticacion {
+  usuarios
+  roles
+  permissions
+  model_has_roles
+  model_has_permissions
+  role_has_permissions
+}
+
+TableGroup gestion_proyectos {
+  proyectos
+  proyectos_alumnos
+}
+
+TableGroup expediente_documental {
+  documentos
+  documentos_proyecto
+}
+
+TableGroup auditoria_trazabilidad {
+  auditorias
+}
