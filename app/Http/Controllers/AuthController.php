@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Auditoria;
 use App\Models\Usuario;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -70,6 +71,20 @@ class AuthController extends Controller
         // Todo usuario registrado por este medio recibe automáticamente el rol de Estudiante
         $usuario->assignRole('Estudiante');
 
+        Auditoria::registrar([
+            'id_usuario' => $usuario->id_usuario,
+            'nombre_usuario' => $usuario->nombre_usuario,
+            'nombre_persona' => $usuario->nombre_completo,
+            'rol' => 'Estudiante',
+            'modulo' => 'autenticacion',
+            'id_entidad' => $usuario->id_usuario,
+            'tipo_entidad' => 'usuario',
+            'accion' => 'registro_cuenta',
+            'titulo' => "Auto-registro de estudiante: {$usuario->nombre_usuario}",
+            'detalles' => "Se creó y activó la cuenta para {$usuario->nombre_completo} ({$usuario->correo})",
+            'estado_nuevo' => 'activo',
+        ], $usuario);
+
         Auth::login($usuario);
         $request->session()->regenerate();
 
@@ -127,6 +142,21 @@ class AuthController extends Controller
         if (Auth::attempt(['nombre_usuario' => $nombreUsuario, 'password' => $password, 'activo' => true], $remember)) {
             $request->session()->regenerate();
 
+            /** @var Usuario $loggedUser */
+            $loggedUser = Auth::user();
+
+            Auditoria::registrar([
+                'id_usuario' => $loggedUser->id_usuario,
+                'nombre_usuario' => $loggedUser->nombre_usuario,
+                'nombre_persona' => $loggedUser->nombre_completo,
+                'modulo' => 'autenticacion',
+                'id_entidad' => $loggedUser->id_usuario,
+                'tipo_entidad' => 'usuario',
+                'accion' => 'inicio_sesion',
+                'titulo' => "Inicio de sesión: {$loggedUser->nombre_usuario}",
+                'detalles' => "Acceso exitoso al sistema vía credenciales",
+            ], $loggedUser);
+
             return redirect()->intended(route('dashboard'));
         }
 
@@ -140,6 +170,22 @@ class AuthController extends Controller
      */
     public function logout(Request $request): RedirectResponse
     {
+        if (Auth::check()) {
+            /** @var Usuario $loggedUser */
+            $loggedUser = Auth::user();
+            Auditoria::registrar([
+                'id_usuario' => $loggedUser->id_usuario,
+                'nombre_usuario' => $loggedUser->nombre_usuario,
+                'nombre_persona' => $loggedUser->nombre_completo,
+                'modulo' => 'autenticacion',
+                'id_entidad' => $loggedUser->id_usuario,
+                'tipo_entidad' => 'usuario',
+                'accion' => 'cierre_sesion',
+                'titulo' => "Cierre de sesión: {$loggedUser->nombre_usuario}",
+                'detalles' => "Cierre voluntario de sesión en el sistema",
+            ], $loggedUser);
+        }
+
         Auth::logout();
 
         $request->session()->invalidate();

@@ -388,6 +388,25 @@ class EstudiantePortalController extends Controller
             'id_documento' => $documento->id_documento,
         ]);
 
+        // Registrar auditoría de subida de documento (COO-HU-11)
+        \App\Models\Auditoria::registrar([
+            'modulo' => 'documentos',
+            'id_entidad' => $documento->id_documento,
+            'tipo_entidad' => 'Documento',
+            'accion' => 'subida_documento',
+            'titulo' => "Entrega de Documento: '{$documento->nombre_documento}' (v{$versionActual})",
+            'detalles' => "Estudiante subió entrega de {$documento->tipo} en formato PDF para el proyecto #{$proyecto->codigo_proyecto}.",
+            'estado_anterior' => null,
+            'estado_nuevo' => 'pendiente_tutor',
+            'metadatos' => [
+                'archivo' => $filename,
+                'version' => $versionActual,
+                'tipo' => $documento->tipo,
+                'codigo_proyecto' => $proyecto->codigo_proyecto,
+                'nombre_proyecto' => $proyecto->nombre_proyecto,
+            ],
+        ]);
+
         $proyecto->actualizarEstadoAutomatico();
 
         return redirect()->route('estudiante.proyecto')->with(

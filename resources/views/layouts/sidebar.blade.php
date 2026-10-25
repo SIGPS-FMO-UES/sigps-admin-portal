@@ -251,6 +251,23 @@
                     <span class="sidebar-link-text text-sm">Usuarios y Roles</span>
                 </a>
             @endif
+
+            {{-- 7. Auditoría del Sistema (Exclusivo para el rol Administrador) --}}
+            @if(auth()->user()?->hasRole('Administrador'))
+                <a
+                    href="{{ route('auditoria.index') }}"
+                    id="sidebar-nav-auditoria"
+                    class="sidebar-nav-link {{ $active === 'auditoria' ? 'bg-[#8B1D2D] text-white shadow-sm shadow-[#8B1D2D]/25 font-semibold' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium' }}"
+                    title="Auditoría y Trazabilidad del Sistema"
+                >
+                    <div class="shrink-0 w-5 h-5 flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <span class="sidebar-link-text text-sm">Auditoría</span>
+                </a>
+            @endif
         </nav>
     </div>
 

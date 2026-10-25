@@ -203,4 +203,14 @@ class Proyecto extends Model
 
         return $nuevoEstado;
     }
+
+    /**
+     * Historial de eventos y auditoría del proyecto (INT-HU-13, COO-HU-11).
+     */
+    public function historialAuditorias(): HasMany
+    {
+        return $this->hasMany(Auditoria::class, 'id_entidad', 'id_proyecto')
+            ->where('modulo', 'proyectos')
+            ->orderBy('id_auditoria', 'desc');
+    }
 }

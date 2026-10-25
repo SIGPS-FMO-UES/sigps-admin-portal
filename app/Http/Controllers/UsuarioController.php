@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Auditoria;
 use App\Models\Rol;
 use App\Models\Usuario;
 use Illuminate\Http\RedirectResponse;
@@ -105,6 +106,22 @@ class UsuarioController extends Controller
         // Sincronizar roles en Spatie Permission (asegurando tipos enteros)
         $roleIds = array_map('intval', $validated['roles']);
         $usuario->syncRoles($roleIds);
+        $usuario->load('roles');
+
+        Auditoria::registrar([
+            'modulo' => 'usuarios',
+            'id_entidad' => $usuario->id_usuario,
+            'tipo_entidad' => 'usuario',
+            'accion' => 'creacion_usuario',
+            'titulo' => "Creación de usuario: {$usuario->nombre_usuario}",
+            'detalles' => "Se dio de alta al usuario '{$usuario->nombre_completo}' con roles: " . $usuario->roles->pluck('name')->implode(', '),
+            'estado_nuevo' => $usuario->activo ? 'activo' : 'inactivo',
+            'metadatos' => [
+                'roles' => $usuario->roles->pluck('name')->toArray(),
+                'correo' => $usuario->correo,
+                'activo' => $usuario->activo,
+            ],
+        ]);
 
         return redirect()->route('usuarios.index')->with(
             'success',
@@ -127,6 +144,9 @@ class UsuarioController extends Controller
             'roles.*.exists' => 'Uno de los roles seleccionados no es válido.',
         ]);
 
+        $rolesPrevios = $usuario->roles->pluck('name')->implode(', ');
+        $estadoPrevio = $usuario->activo ? 'activo' : 'inactivo';
+
         // Actualizar roles asignados con Spatie (asegurando tipos enteros)
         $roleIds = array_map('intval', $validated['roles']);
         $usuario->syncRoles($roleIds);
@@ -134,6 +154,26 @@ class UsuarioController extends Controller
         // Actualizar estado si se envió
         $usuario->update([
             'activo' => $request->boolean('activo', false),
+        ]);
+        $usuario->load('roles');
+
+        $nuevosRoles = $usuario->roles->pluck('name')->implode(', ');
+        $nuevoEstado = $usuario->activo ? 'activo' : 'inactivo';
+
+        Auditoria::registrar([
+            'modulo' => 'usuarios',
+            'id_entidad' => $usuario->id_usuario,
+            'tipo_entidad' => 'usuario',
+            'accion' => 'actualizacion_roles',
+            'titulo' => "Actualización de roles/estado: {$usuario->nombre_usuario}",
+            'detalles' => "Roles anteriores: [{$rolesPrevios}] ➔ Nuevos roles: [{$nuevosRoles}] | Estado: {$nuevoEstado}",
+            'estado_anterior' => $estadoPrevio,
+            'estado_nuevo' => $nuevoEstado,
+            'metadatos' => [
+                'roles_anteriores' => $rolesPrevios,
+                'roles_nuevos' => $nuevosRoles,
+                'activo' => $usuario->activo,
+            ],
         ]);
 
         return redirect()->route('usuarios.index')->with(

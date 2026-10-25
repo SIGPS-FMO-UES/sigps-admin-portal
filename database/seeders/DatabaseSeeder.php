@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             RolesUsuarioSeeder::class,
             DocumentoSeeder::class,
             ProyectoSeeder::class,
+            AuditoriaSeeder::class,
         ]);
     }
 }

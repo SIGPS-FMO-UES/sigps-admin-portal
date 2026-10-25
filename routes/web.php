@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuditoriaController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CertificadoController;
 use App\Http\Controllers\EstudianteController;
@@ -84,7 +85,12 @@ Route::middleware('auth')->group(function (): void {
         Route::put('/usuarios/{usuario}/roles', [UsuarioController::class, 'updateRoles'])->name('usuarios.updateRoles');
     });
 
-    // 7. Portal Estudiante: Mi Proyecto, Subida PDF y Observaciones
+    // 7. Módulo Auditoría del Sistema y Trazabilidad (Exclusivo Administrador - COO-E04 / COO-HU-11)
+    Route::middleware('role:Administrador')->group(function (): void {
+        Route::get('/auditoria', [AuditoriaController::class, 'index'])->name('auditoria.index');
+    });
+
+    // 8. Portal Estudiante: Mi Proyecto, Subida PDF y Observaciones
     Route::middleware('permission:subir_documentos')->group(function (): void {
         Route::get('/mi-proyecto', [EstudiantePortalController::class, 'miProyecto'])->name('estudiante.proyecto');
         Route::get('/subir-documento', [EstudiantePortalController::class, 'subirDocumentoView'])->name('estudiante.subirView');

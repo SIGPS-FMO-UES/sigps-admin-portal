@@ -228,10 +228,25 @@ class CertificadoController extends Controller
      */
     public function auditarSellos(Request $request, Documento $certificado): RedirectResponse
     {
+        $estadoAnterior = $certificado->estado_revision;
+        $obs = $request->input('observaciones') ?: 'Auditoría visual completada con éxito. Sellos institucionales de facultad y firmas en tinta azul verificadas conforme a la normativa.';
+
         $certificado->update([
             'estado_revision' => 'auditado_ups',
             'fecha_dictamen' => now(),
-            'observaciones' => $request->input('observaciones') ?: 'Auditoría visual completada con éxito. Sellos institucionales de facultad y firmas en tinta azul verificadas conforme a la normativa.',
+            'observaciones' => $obs,
+        ]);
+
+        // Registrar auditoría permanente (COO-HU-11)
+        \App\Models\Auditoria::registrar([
+            'modulo' => 'certificados',
+            'id_entidad' => $certificado->id_documento,
+            'tipo_entidad' => 'Certificado',
+            'accion' => 'auditoria_ups',
+            'titulo' => "Auditoría de Sellos y Firmas UPS: '{$certificado->nombre_documento}'",
+            'detalles' => $obs,
+            'estado_anterior' => $estadoAnterior,
+            'estado_nuevo' => 'auditado_ups',
         ]);
 
         return back()->with(
@@ -245,6 +260,7 @@ class CertificadoController extends Controller
      */
     public function emitirCertificado(Request $request, Documento $certificado): RedirectResponse
     {
+        $estadoAnterior = $certificado->estado_revision;
         $num = str_pad((string) $certificado->id_documento, 4, '0', STR_PAD_LEFT);
         $folio = "UES-UPS-2026-{$num}";
 
@@ -253,6 +269,19 @@ class CertificadoController extends Controller
             'folio' => $folio,
             'fecha_dictamen' => now(),
             'observaciones' => 'Certificación oficial de servicio social emitida y registrada en el libro de folios de la UPS.',
+        ]);
+
+        // Registrar auditoría permanente (COO-HU-11)
+        \App\Models\Auditoria::registrar([
+            'modulo' => 'certificados',
+            'id_entidad' => $certificado->id_documento,
+            'tipo_entidad' => 'Certificado',
+            'accion' => 'emision_certificado',
+            'titulo' => "Certificado Oficial Emitido (Folio #{$folio}): '{$certificado->nombre_documento}'",
+            'detalles' => "Emisión reglamentaria de certificado con Folio #{$folio} por la Unidad de Proyección Social.",
+            'estado_anterior' => $estadoAnterior,
+            'estado_nuevo' => 'certificado_emitido',
+            'metadatos' => ['folio' => $folio],
         ]);
 
         return back()->with(

@@ -135,16 +135,38 @@ class TutorPortalController extends Controller
             'accion.in' => 'La acción seleccionada no es válida.',
         ]);
 
+        $estadoAnterior = $documento->estado_revision;
+
         if ($validated['accion'] === 'aprobar') {
+            $obs = $validated['observaciones'] ?? 'Dictamen técnico favorable emitido por el docente tutor. Cumple con los requisitos normativos.';
+
             $documento->update([
                 'estado_revision' => 'aprobado_tutor',
-                'observaciones' => $validated['observaciones'] ?? 'Dictamen técnico favorable emitido por el docente tutor. Cumple con los requisitos normativos.',
+                'observaciones' => $obs,
                 'motivo_rechazo' => null,
                 'fecha_dictamen' => now(),
             ]);
 
-            // Avanzar automáticamente el estado del proyecto según los entregables aprobados
             $documento->load('proyectos');
+
+            // Registrar auditoría permanente (COO-HU-11)
+            \App\Models\Auditoria::registrar([
+                'modulo' => 'documentos',
+                'id_entidad' => $documento->id_documento,
+                'tipo_entidad' => 'Documento',
+                'accion' => 'aprobacion_tutor',
+                'titulo' => "Dictamen Técnico Favorable: '{$documento->nombre_documento}'",
+                'detalles' => $obs,
+                'estado_anterior' => $estadoAnterior,
+                'estado_nuevo' => 'aprobado_tutor',
+                'metadatos' => [
+                    'version' => $documento->version,
+                    'tipo' => $documento->tipo,
+                    'proyectos' => $documento->proyectos->pluck('codigo_proyecto')->all(),
+                ],
+            ]);
+
+            // Avanzar automáticamente el estado del proyecto según los entregables aprobados
             foreach ($documento->proyectos as $proy) {
                 $proy->actualizarEstadoAutomatico();
             }
@@ -172,8 +194,26 @@ class TutorPortalController extends Controller
             'fecha_dictamen' => now(),
         ]);
 
-        // Sincronizar el estado del proyecto tras emitir dictamen
         $documento->load('proyectos');
+
+        // Registrar auditoría permanente (COO-HU-11)
+        \App\Models\Auditoria::registrar([
+            'modulo' => 'documentos',
+            'id_entidad' => $documento->id_documento,
+            'tipo_entidad' => 'Documento',
+            'accion' => 'observacion_tutor',
+            'titulo' => "Documento Observado en Dictamen: '{$documento->nombre_documento}'",
+            'detalles' => $motivo,
+            'estado_anterior' => $estadoAnterior,
+            'estado_nuevo' => 'observado_tutor',
+            'metadatos' => [
+                'version' => $documento->version,
+                'tipo' => $documento->tipo,
+                'proyectos' => $documento->proyectos->pluck('codigo_proyecto')->all(),
+            ],
+        ]);
+
+        // Sincronizar el estado del proyecto tras emitir dictamen
         foreach ($documento->proyectos as $proy) {
             $proy->actualizarEstadoAutomatico();
         }

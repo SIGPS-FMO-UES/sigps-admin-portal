@@ -12,6 +12,8 @@ class RolSeeder extends Seeder
      */
     public function run(): void
     {
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
         $roles = [
             'Administrador',
             'Coordinador UPS',

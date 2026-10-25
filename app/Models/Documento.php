@@ -150,4 +150,14 @@ class Documento extends Model
     {
         return $this->hasMany(DocumentosProyecto::class, 'id_documento', 'id_documento');
     }
+
+    /**
+     * Historial de auditoría y revisiones técnicas del documento (COO-HU-11).
+     */
+    public function historialRevisiones(): HasMany
+    {
+        return $this->hasMany(Auditoria::class, 'id_entidad', 'id_documento')
+            ->where('modulo', 'documentos')
+            ->orderBy('id_auditoria', 'desc');
+    }
 }
