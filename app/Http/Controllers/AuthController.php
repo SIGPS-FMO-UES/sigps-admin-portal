@@ -242,13 +242,43 @@ class AuthController extends Controller
      */
     protected function upsDashboard(Usuario $usuario): View
     {
-        $documentosAuditoria = \App\Models\Documento::with(['proyectos.alumnos', 'proyectos.tutor'])
+        $todosDocumentos = \App\Models\Documento::with(['proyectos.alumnos', 'proyectos.tutor'])
             ->orderBy('id_documento', 'desc')
-            ->take(10)
             ->get();
 
-        $totalPendientesAuditoria = \App\Models\Documento::whereIn('estado_revision', ['aval_carrera', 'pendiente_tutor'])->count();
-        $totalCertificadosListos = \App\Models\Documento::where('estado_revision', 'certificado_emitido')->count();
+        // 1. Prioridad 1: Enviados por los coordinadores para auditar sellos o emitir certificación
+        $documentosListosUPS = $todosDocumentos->filter(function ($doc) {
+            return in_array($doc->estado_revision, ['aval_carrera', 'auditado_ups'], true);
+        })->sortBy(function ($doc) {
+            return $doc->estado_revision === 'aval_carrera' ? 1 : 2;
+        })->values();
+
+        // 2. Prioridad 2: Expedientes en seguimiento / etapas previas (en camino a UPS)
+        $documentosEnSeguimiento = $todosDocumentos->filter(function ($doc) {
+            return in_array($doc->estado_revision, [
+                'aprobado_tutor',
+                'pendiente_tutor',
+                'pendiente',
+                'observado_carrera',
+                'observado_tutor',
+            ], true);
+        })->sortBy(function ($doc) {
+            return match ($doc->estado_revision) {
+                'aprobado_tutor' => 1,
+                'pendiente_tutor', 'pendiente' => 2,
+                'observado_carrera' => 3,
+                'observado_tutor' => 4,
+                default => 5,
+            };
+        })->values();
+
+        // 3. Ver más / Ocultos: Expedientes con certificado emitido y folio oficial
+        $documentosCertificadosUPS = $todosDocumentos->filter(function ($doc) {
+            return $doc->estado_revision === 'certificado_emitido';
+        })->values();
+
+        $totalPendientesAuditoria = $documentosListosUPS->count();
+        $totalCertificadosListos = $documentosCertificadosUPS->count();
         $totalProyectosActivos = \App\Models\Proyecto::count();
 
         // Alertas normativas de la UPS (RN-03: 3 meses prórroga; RN-04: 18 meses Junta Directiva)
@@ -275,7 +305,10 @@ class AuthController extends Controller
 
         return view('dashboard', [
             'usuario' => $usuario,
-            'documentosAuditoria' => $documentosAuditoria,
+            'documentosAuditoria' => $todosDocumentos,
+            'documentosListosUPS' => $documentosListosUPS,
+            'documentosEnSeguimiento' => $documentosEnSeguimiento,
+            'documentosCertificadosUPS' => $documentosCertificadosUPS,
             'totalPendientesAuditoria' => $totalPendientesAuditoria,
             'totalCertificadosListos' => $totalCertificadosListos,
             'totalProyectosActivos' => $totalProyectosActivos,

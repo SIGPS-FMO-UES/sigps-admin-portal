@@ -259,6 +259,66 @@ class RolesYFlujoWorkflowTest extends TestCase
     }
 
     /**
+     * Verifica la segmentación por prioridad y el desplegable 'Ver más' en el Dashboard de la UPS.
+     */
+    public function test_ups_dashboard_priority_segmentation_and_ver_mas(): void
+    {
+        $coordUps = Usuario::where('nombre_usuario', 'coord_ups')->first();
+        $this->assertNotNull($coordUps);
+
+        // Documentos de prueba para cada prioridad
+        $docP1Aval = Documento::create([
+            'nombre_documento' => 'Doc Test Aval Coordinador P1',
+            'url_documento' => 'storage/documentos/p1_aval.pdf',
+            'tipo' => 'memoria',
+            'estado_revision' => 'aval_carrera',
+        ]);
+
+        $docP1Auditado = Documento::create([
+            'nombre_documento' => 'Doc Test Auditado UPS P1',
+            'url_documento' => 'storage/documentos/p1_audit.pdf',
+            'tipo' => 'memoria',
+            'estado_revision' => 'auditado_ups',
+        ]);
+
+        $docP2Seguimiento = Documento::create([
+            'nombre_documento' => 'Doc Test Seguimiento Tutor P2',
+            'url_documento' => 'storage/documentos/p2_seg.pdf',
+            'tipo' => 'anteproyecto',
+            'estado_revision' => 'pendiente_tutor',
+        ]);
+
+        $docP3Certificado = Documento::create([
+            'nombre_documento' => 'Doc Test Ya Certificado P3',
+            'url_documento' => 'storage/documentos/p3_cert.pdf',
+            'tipo' => 'memoria',
+            'estado_revision' => 'certificado_emitido',
+            'folio' => 'UES-UPS-2026-9999',
+        ]);
+
+        $response = $this->actingAs($coordUps)->get(route('dashboard'));
+        $response->assertOk();
+
+        // 1. Prioridad 1: Documentos listos para trámite de UPS
+        $response->assertSee('Prioridad 1: Enviados por Coordinación');
+        $response->assertSee('Doc Test Aval Coordinador P1');
+        $response->assertSee('Auditar Sellos');
+        $response->assertSee('Doc Test Auditado UPS P1');
+        $response->assertSee('Emitir Certificado');
+        $response->assertSee('Retractar');
+
+        // 2. Prioridad 2: Documentos en seguimiento / etapas previas
+        $response->assertSee('Prioridad 2: Expedientes en Seguimiento');
+        $response->assertSee('Doc Test Seguimiento Tutor P2');
+
+        // 3. Ver más: Documentos certificados
+        $response->assertSee('Ver más: Expedientes con Certificación Emitida');
+        $response->assertSee('Doc Test Ya Certificado P3');
+        $response->assertSee('UES-UPS-2026-9999');
+        $response->assertSee('toggleCertificadosUPS');
+    }
+
+    /**
      * 4. Rol Administrador:
      * - Acceso irrestricto a todos los módulos y gobernanza de roles
      */

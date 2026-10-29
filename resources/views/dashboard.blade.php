@@ -180,11 +180,9 @@
                     <!-- TABLA: EXPEDIENTES EN ESPERA DE AUDITORÍA -->
                     <div class="bg-white rounded-2xl border border-gray-200/80 shadow-2xs overflow-hidden">
                         <!-- Cabecera de la sección -->
-                        <div class="p-5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <div class="p-5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                             <div class="flex items-center gap-2">
-                                <svg class="w-4 h-4 text-[#8B1D2D]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
+                                <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
                                 <div>
                                     <h2 class="text-sm font-bold text-gray-900 tracking-tight">
                                         Expedientes para Auditoría de Sellos y Emisión de Certificado (UPS)
@@ -192,140 +190,417 @@
                                     <p class="text-[11px] text-gray-400">Control normativo RF-UPS-07 (sellos y firma azul) y HU-33 (folio oficial)</p>
                                 </div>
                             </div>
-                            <a href="{{ route('certificados.index') }}" class="text-xs font-bold text-[#8B1D2D] hover:underline flex items-center gap-1 transition-all">
-                                <span>Ver todos</span>
-                                <span>&rarr;</span>
-                            </a>
+                            <div class="flex items-center gap-2">
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                                    {{ $documentosListosUPS->count() }} {{ $documentosListosUPS->count() === 1 ? 'pendiente de trámite' : 'pendientes de trámite' }}
+                                </span>
+                                <a href="{{ route('certificados.index') }}" class="text-xs font-bold text-[#8B1D2D] hover:underline flex items-center gap-1 transition-all">
+                                    <span>Ver todos</span>
+                                    <span>&rarr;</span>
+                                </a>
+                            </div>
                         </div>
 
-                        <!-- Contenedor responsivo con scroll horizontal para móviles -->
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse text-xs">
-                                <thead>
-                                    <tr class="border-b border-gray-100 text-gray-400 font-semibold bg-gray-50/40">
-                                        <th class="py-3 px-4 w-10 text-center">#</th>
-                                        <th class="py-3 px-4">Carnet / Estudiante</th>
-                                        <th class="py-3 px-4">Proyecto & Tutor</th>
-                                        <th class="py-3 px-4">Documento / Tipo</th>
-                                        <th class="py-3 px-4">Estado</th>
-                                        <th class="py-3 px-4 text-center">Acciones Operativas</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-100 text-gray-700">
-                                    @forelse ($documentosAuditoria as $doc)
-                                        @php
-                                            $proyecto = $doc->proyectos->first();
-                                            $alumno = $proyecto?->alumnos->first();
-                                        @endphp
-                                        <tr class="hover:bg-gray-50/70 transition-colors">
-                                            <td class="py-3.5 px-4 text-center text-gray-400 font-medium">
-                                                {{ $loop->iteration }}
-                                            </td>
-                                            <td class="py-3.5 px-4 whitespace-nowrap">
-                                                <div class="flex flex-col">
-                                                    <span class="font-bold text-gray-900 font-mono">{{ $alumno?->carnet ?? $alumno?->nombre_usuario ?? 'UES-EXP' }}</span>
-                                                    <span class="text-[11px] text-gray-500 max-w-[150px] truncate" title="{{ $alumno?->nombre_completo ?? 'Estudiante' }}">{{ $alumno?->nombre_completo ?? 'Estudiante Inscrito' }}</span>
-                                                </div>
-                                            </td>
-                                            <td class="py-3.5 px-4 whitespace-nowrap">
-                                                <div class="flex flex-col max-w-[190px]">
-                                                    <span class="font-semibold text-gray-900 truncate" title="{{ $proyecto?->nombre_proyecto ?? 'Sin proyecto' }}">
-                                                        {{ $proyecto?->nombre_proyecto ?? 'Sin proyecto' }}
-                                                    </span>
-                                                    <span class="text-[10px] text-gray-400 truncate">
-                                                        Tutor: {{ $proyecto?->tutor?->nombre_completo ?? 'Por asignar' }}
-                                                    </span>
-                                                </div>
-                                            </td>
-                                            <td class="py-3.5 px-4 whitespace-nowrap">
-                                                <div class="flex flex-col">
-                                                    <span class="font-semibold text-gray-800">{{ $doc->nombre_documento }}</span>
-                                                    <span class="text-[10px] text-gray-400 font-mono uppercase">{{ $doc->tipo }}</span>
-                                                </div>
-                                            </td>
-                                            <td class="py-3.5 px-4 whitespace-nowrap">
-                                                <div class="flex flex-col gap-1 items-start">
-                                                    {!! $doc->estado_revision_badge !!}
-                                                    @if($doc->folio)
-                                                        <span class="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
-                                                            {{ $doc->folio }}
+                        <!-- A. TABLA PRINCIPAL PRIORIDAD 1: ENVIADOS POR COORDINACIÓN (LISTOS PARA AUDITAR SELLOS O EMITIR CERTIFICADO) -->
+                        <div>
+                            <div class="px-5 py-3 bg-amber-50/40 border-b border-gray-100 flex items-center justify-between">
+                                <span class="text-xs font-bold text-amber-950 flex items-center gap-1.5 uppercase tracking-wider">
+                                    <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                    </svg>
+                                    Prioridad 1: Enviados por Coordinación &bull; Listos para Auditar Sellos o Emitir Certificado
+                                </span>
+                                <span class="text-[11px] text-amber-700 font-semibold hidden sm:inline">Acción inmediata requerida</span>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse text-xs">
+                                    <thead>
+                                        <tr class="border-b border-gray-100 bg-gray-50/50 text-gray-400 font-semibold uppercase tracking-wider text-[11px]">
+                                            <th class="py-3 px-4 w-10 text-center">#</th>
+                                            <th class="py-3 px-4">Carnet / Estudiante</th>
+                                            <th class="py-3 px-4">Proyecto & Tutor</th>
+                                            <th class="py-3 px-4">Documento / Tipo</th>
+                                            <th class="py-3 px-4">Estado</th>
+                                            <th class="py-3 px-4 text-center">Acciones Operativas UPS</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100 text-gray-700">
+                                        @forelse ($documentosListosUPS as $doc)
+                                            @php
+                                                $proyecto = $doc->proyectos->first();
+                                                $alumno = $proyecto?->alumnos->first();
+                                            @endphp
+                                            <tr
+                                                class="hover:bg-amber-50/30 transition-colors cursor-pointer group"
+                                                ondblclick="window.location.href='{{ route('certificados.show', $doc) }}'"
+                                                title="Doble clic para abrir revisión documental"
+                                            >
+                                                <td class="py-3.5 px-4 text-center text-gray-400 font-medium">
+                                                    {{ $loop->iteration }}
+                                                </td>
+                                                <td class="py-3.5 px-4 whitespace-nowrap">
+                                                    <div class="flex flex-col">
+                                                        <span class="font-bold text-gray-900 font-mono">{{ $alumno?->carnet ?? $alumno?->nombre_usuario ?? 'UES-EXP' }}</span>
+                                                        <span class="text-[11px] text-gray-500 max-w-[150px] truncate" title="{{ $alumno?->nombre_completo ?? 'Estudiante' }}">{{ $alumno?->nombre_completo ?? 'Estudiante Inscrito' }}</span>
+                                                    </div>
+                                                </td>
+                                                <td class="py-3.5 px-4 whitespace-nowrap">
+                                                    <div class="flex flex-col max-w-[190px]">
+                                                        <span class="font-semibold text-gray-900 truncate" title="{{ $proyecto?->nombre_proyecto ?? 'Sin proyecto' }}">
+                                                            {{ $proyecto?->nombre_proyecto ?? 'Sin proyecto' }}
                                                         </span>
-                                                    @endif
-                                                </div>
-                                            </td>
-                                            <td class="py-3.5 px-4 text-center whitespace-nowrap">
-                                                <div class="flex items-center justify-center gap-1.5">
-                                                    <!-- Ver PDF -->
-                                                    @if($doc->url_archivo)
+                                                        <span class="text-[10px] text-gray-400 truncate">
+                                                            Tutor: {{ $proyecto?->tutor?->nombre_completo ?? 'Por asignar' }}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td class="py-3.5 px-4 whitespace-nowrap">
+                                                    <div class="flex items-center gap-2">
+                                                        <div class="w-7 h-7 rounded-lg bg-red-50 text-[#8B1D2D] flex items-center justify-center shrink-0 font-mono text-[10px] font-bold">
+                                                            PDF
+                                                        </div>
+                                                        <div class="flex flex-col">
+                                                            <span class="font-semibold text-gray-800 truncate max-w-[170px]" title="{{ $doc->nombre_documento }}">{{ $doc->nombre_documento }}</span>
+                                                            <span class="text-[10px] text-gray-400 font-mono uppercase">{{ $doc->tipo }}</span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="py-3.5 px-4 whitespace-nowrap">
+                                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border {{ $doc->estado_revision_badge }}">
+                                                        {{ $doc->estado_revision_texto }}
+                                                    </span>
+                                                </td>
+                                                <td class="py-3.5 px-4 text-center whitespace-nowrap" onclick="event.stopPropagation();">
+                                                    <div class="flex items-center justify-center gap-1.5">
+                                                        <!-- Si tiene Aval de Carrera: Botón Auditar Sellos -->
+                                                        @if($doc->estado_revision === 'aval_carrera')
+                                                            <form action="{{ route('ups.auditar', $doc->id_documento) }}" method="POST" class="inline" onsubmit="return confirm('¿Confirmar auditoría visual de sellos y firmas en tinta azul conforme a RF-UPS-07?');">
+                                                                @csrf
+                                                                <button
+                                                                    type="submit"
+                                                                    class="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-600 text-amber-700 hover:text-white border border-amber-200 rounded-lg font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1 shadow-2xs"
+                                                                    title="Auditar Sellos y Firmas en Tinta Azul (RF-UPS-07)"
+                                                                >
+                                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                                    </svg>
+                                                                    <span>Auditar Sellos</span>
+                                                                </button>
+                                                            </form>
+                                                        @endif
+
+                                                        <!-- Si ya fue auditado: Botón Emitir Certificado con Folio y Botón Retractar -->
+                                                        @if($doc->estado_revision === 'auditado_ups')
+                                                            <form action="{{ route('ups.emitirCertificado', $doc->id_documento) }}" method="POST" class="inline" onsubmit="return confirm('¿Emitir certificación oficial institucional con Folio Único para este estudiante?');">
+                                                                @csrf
+                                                                <button
+                                                                    type="submit"
+                                                                    class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1 shadow-2xs"
+                                                                    title="Emitir Certificado Oficial con Folio (HU-33)"
+                                                                >
+                                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                                    </svg>
+                                                                    <span>Emitir Certificado</span>
+                                                                </button>
+                                                            </form>
+
+                                                            <form action="{{ route('ups.auditar', $doc->id_documento) }}" method="POST" class="inline" onsubmit="return confirm('¿Retractar auditoría de sellos y devolver a Aval de Carrera?');">
+                                                                @csrf
+                                                                <input type="hidden" name="accion" value="retractar">
+                                                                <button
+                                                                    type="submit"
+                                                                    class="px-2 py-1.5 bg-white hover:bg-gray-100 text-gray-600 border border-gray-200 rounded-lg font-semibold text-[11px] transition-colors cursor-pointer"
+                                                                    title="Retractar auditoría y devolver a Aval de Carrera"
+                                                                >
+                                                                    Retractar
+                                                                </button>
+                                                            </form>
+                                                        @endif
+
+                                                        <!-- Ver PDF -->
+                                                        @if($doc->url_documento)
+                                                            <a
+                                                                href="{{ $doc->url_documento }}"
+                                                                target="_blank"
+                                                                class="p-1.5 text-gray-500 hover:text-[#8B1D2D] hover:bg-gray-100 border border-gray-200 rounded-lg transition-colors cursor-pointer inline-flex items-center"
+                                                                title="Visualizar documento PDF"
+                                                            >
+                                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                                </svg>
+                                                            </a>
+
+                                                            <!-- Descargar PDF -->
+                                                            <a
+                                                                href="{{ $doc->url_documento }}"
+                                                                download
+                                                                class="p-1.5 text-gray-500 hover:text-[#8B1D2D] hover:bg-gray-100 border border-gray-200 rounded-lg transition-colors cursor-pointer inline-flex items-center"
+                                                                title="Descargar documento PDF"
+                                                            >
+                                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                                </svg>
+                                                            </a>
+                                                        @endif
+
+                                                        <!-- Revisar -->
                                                         <a
-                                                            href="{{ $doc->url_archivo }}"
-                                                            target="_blank"
-                                                            class="p-1.5 text-gray-400 hover:text-[#8B1D2D] hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
-                                                            title="Visualizar documento PDF escaneado"
+                                                            href="{{ route('certificados.show', $doc) }}"
+                                                            class="px-2 py-1.5 bg-red-50 hover:bg-[#8B1D2D] text-[#8B1D2D] hover:text-white rounded-lg font-bold text-[11px] transition-all cursor-pointer inline-flex items-center"
+                                                            title="Abrir revisión documental detallada"
                                                         >
-                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                            </svg>
+                                                            Revisar
                                                         </a>
-                                                    @endif
-
-                                                    <!-- Botón Auditar Sellos (Tinta Azul) para Aval Carrera o Pendiente Tutor -->
-                                                    @if(in_array($doc->estado_revision, ['aval_carrera', 'pendiente_tutor', 'aprobado_tutor']))
-                                                        <form action="{{ route('ups.auditar', $doc->id_documento) }}" method="POST" class="inline" onsubmit="return confirm('¿Confirmar auditoría visual de sellos y firmas en tinta azul conforme a RF-UPS-07?');">
-                                                            @csrf
-                                                            <button
-                                                                type="submit"
-                                                                class="px-2.5 py-1 bg-amber-50 hover:bg-amber-600 text-amber-700 hover:text-white border border-amber-200 rounded-md font-semibold text-[11px] transition-all cursor-pointer flex items-center gap-1 shadow-2xs"
-                                                                title="Auditar Sellos y Firmas en Tinta Azul (RF-UPS-07)"
-                                                            >
-                                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                                </svg>
-                                                                <span>Auditar Sellos</span>
-                                                            </button>
-                                                        </form>
-                                                    @endif
-
-                                                    <!-- Botón Emitir Certificado si ya fue auditado -->
-                                                    @if($doc->estado_revision === 'auditado_ups')
-                                                        <form action="{{ route('ups.emitirCertificado', $doc->id_documento) }}" method="POST" class="inline" onsubmit="return confirm('¿Emitir certificación oficial institucional con Folio Único para este estudiante?');">
-                                                            @csrf
-                                                            <button
-                                                                type="submit"
-                                                                class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md font-semibold text-[11px] transition-all cursor-pointer flex items-center gap-1 shadow-2xs"
-                                                                title="Emitir Certificado Oficial con Folio (HU-33)"
-                                                            >
-                                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                                </svg>
-                                                                <span>Emitir Certificado</span>
-                                                            </button>
-                                                        </form>
-                                                    @endif
-
-                                                    <!-- Indicador de Finalizado / Certificado Emitido -->
-                                                    @if($doc->estado_revision === 'certificado_emitido')
-                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-md font-bold text-[10px]">
-                                                            <svg class="w-3 h-3 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
-                                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                                                            </svg>
-                                                            <span>Emitido</span>
-                                                        </span>
-                                                    @endif
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="6" class="py-8 text-center text-gray-400">
-                                                No hay documentos pendientes de auditoría o certificación en este momento.
-                                            </td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="6" class="p-6 text-center text-gray-400 bg-white">
+                                                    <p class="font-bold text-gray-600 text-xs">No hay expedientes pendientes de auditoría o certificación en este momento</p>
+                                                    <p class="text-[11px] text-gray-400 mt-0.5">Los coordinadores de carrera deben emitir primero el aval institucional para trasladar los expedientes a UPS.</p>
+                                                </td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
+
+                        <!-- B. TABLA PRIORIDAD 2: EXPEDIENTES EN SEGUIMIENTO (EN ETAPAS PREVIAS DE LA CARRERA) -->
+                        @if ($documentosEnSeguimiento->isNotEmpty())
+                            <div class="border-t border-gray-100">
+                                <div class="px-5 py-3 bg-blue-50/40 border-b border-gray-100 flex items-center justify-between">
+                                    <span class="text-xs font-bold text-blue-950 flex items-center gap-1.5 uppercase tracking-wider">
+                                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        Prioridad 2: Expedientes en Seguimiento &bull; En Etapas Previas ({{ $documentosEnSeguimiento->count() }})
+                                    </span>
+                                    <span class="text-[11px] text-blue-700 font-semibold hidden sm:inline">En trámite de tutor o coordinación de carrera</span>
+                                </div>
+
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left border-collapse text-xs">
+                                        <thead>
+                                            <tr class="border-b border-gray-100 bg-gray-50/40 text-gray-400 font-semibold uppercase tracking-wider text-[11px]">
+                                                <th class="py-2.5 px-4">Carnet / Estudiante</th>
+                                                <th class="py-2.5 px-4">Proyecto & Tutor</th>
+                                                <th class="py-2.5 px-4">Documento</th>
+                                                <th class="py-2.5 px-4">Estado Actual</th>
+                                                <th class="py-2.5 px-4">Dictamen / Observaciones</th>
+                                                <th class="py-2.5 px-4 text-center">Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-100 text-gray-700 bg-white">
+                                            @foreach ($documentosEnSeguimiento as $docSeg)
+                                                @php
+                                                    $proySeg = $docSeg->proyectos->first();
+                                                    $alumnoSeg = $proySeg?->alumnos->first();
+                                                @endphp
+                                                <tr
+                                                    class="hover:bg-gray-50/60 transition-colors cursor-pointer"
+                                                    ondblclick="window.location.href='{{ route('certificados.show', $docSeg) }}'"
+                                                    title="Doble clic para abrir revisión documental"
+                                                >
+                                                    <td class="py-3 px-4 whitespace-nowrap">
+                                                        <div class="flex flex-col">
+                                                            <span class="font-bold text-gray-900 font-mono">{{ $alumnoSeg?->carnet ?? $alumnoSeg?->nombre_usuario ?? 'UES-EXP' }}</span>
+                                                            <span class="text-[11px] text-gray-500 max-w-[130px] truncate" title="{{ $alumnoSeg?->nombre_completo ?? 'Estudiante' }}">{{ $alumnoSeg?->nombre_completo ?? 'Estudiante' }}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td class="py-3 px-4 whitespace-nowrap">
+                                                        <div class="flex flex-col max-w-[180px]">
+                                                            <span class="font-medium text-gray-800 truncate" title="{{ $proySeg?->nombre_proyecto ?? 'Sin proyecto' }}">{{ $proySeg?->nombre_proyecto ?? 'Sin proyecto' }}</span>
+                                                            <span class="text-[10px] text-gray-400 truncate">Tutor: {{ $proySeg?->tutor?->nombre_completo ?? 'Por asignar' }}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td class="py-3 px-4 whitespace-nowrap">
+                                                        <div class="flex items-center gap-1.5">
+                                                            <span class="text-gray-400 font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-100">PDF</span>
+                                                            <span class="font-semibold text-gray-800 max-w-[150px] truncate" title="{{ $docSeg->nombre_documento }}">{{ $docSeg->nombre_documento }}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td class="py-3 px-4 whitespace-nowrap">
+                                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border {{ $docSeg->estado_revision_badge }}">
+                                                            {{ $docSeg->estado_revision_texto }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="py-3 px-4 text-gray-500 max-w-xs text-[11px] truncate">
+                                                        {{ $docSeg->observaciones ?: ($docSeg->motivo_rechazo ?: 'En espera de dictamen técnico o aval de carrera.') }}
+                                                    </td>
+                                                    <td class="py-3 px-4 text-center whitespace-nowrap" onclick="event.stopPropagation();">
+                                                        <div class="flex items-center justify-center gap-1.5">
+                                                            @if($docSeg->url_documento)
+                                                                <a
+                                                                    href="{{ $docSeg->url_documento }}"
+                                                                    target="_blank"
+                                                                    class="p-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg transition-colors inline-flex items-center"
+                                                                    title="Ver PDF"
+                                                                >
+                                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                                    </svg>
+                                                                </a>
+                                                                <a
+                                                                    href="{{ $docSeg->url_documento }}"
+                                                                    download
+                                                                    class="p-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg transition-colors inline-flex items-center"
+                                                                    title="Descargar PDF"
+                                                                >
+                                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                                    </svg>
+                                                                </a>
+                                                            @endif
+                                                            <a
+                                                                href="{{ route('certificados.show', $docSeg) }}"
+                                                                class="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold text-[11px] rounded-lg transition-colors"
+                                                                title="Revisar expediente"
+                                                            >
+                                                                Revisar
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        @endif
+
+                        <!-- C. DESPLEGABLE OCULTO: EXPEDIENTES YA CERTIFICADOS POR LA UPS (VER MÁS) -->
+                        @if ($documentosCertificadosUPS->isNotEmpty())
+                            <div class="border-t border-gray-100 bg-gray-50/50">
+                                <button
+                                    type="button"
+                                    onclick="toggleCertificadosUPS()"
+                                    id="btnToggleCertificadosUPS"
+                                    class="w-full p-4 flex items-center justify-between text-left hover:bg-gray-100/70 transition-colors cursor-pointer group"
+                                    aria-expanded="false"
+                                >
+                                    <div class="flex items-center gap-2.5">
+                                        <span class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">
+                                            ✓
+                                        </span>
+                                        <div>
+                                            <span class="text-xs font-bold text-gray-800 group-hover:text-emerald-950">
+                                                Ver más: Expedientes con Certificación Emitida y Folio UES ({{ $documentosCertificadosUPS->count() }})
+                                            </span>
+                                            <p class="text-[11px] text-gray-400">Expedientes finalizados con folio oficial registrado en el libro de Proyección Social</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xs font-semibold text-gray-500 group-hover:text-gray-800" id="textoToggleCertificadosUPS">
+                                            Mostrar certificados
+                                        </span>
+                                        <svg id="iconToggleCertificadosUPS" class="w-4 h-4 text-gray-400 group-hover:text-gray-700 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                                        </svg>
+                                    </div>
+                                </button>
+
+                                <div id="contenedorCertificadosUPS" class="hidden border-t border-gray-200/80 bg-white">
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full text-left border-collapse text-xs">
+                                            <thead>
+                                                <tr class="border-b border-gray-100 bg-emerald-50/30 text-emerald-900 font-semibold uppercase tracking-wider text-[10px]">
+                                                    <th class="py-2.5 px-4">Folio Oficial</th>
+                                                    <th class="py-2.5 px-4">Carnet / Estudiante</th>
+                                                    <th class="py-2.5 px-4">Proyecto</th>
+                                                    <th class="py-2.5 px-4">Documento</th>
+                                                    <th class="py-2.5 px-4">Estado</th>
+                                                    <th class="py-2.5 px-4 text-center">Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-gray-100 text-gray-700">
+                                                @foreach ($documentosCertificadosUPS as $docCert)
+                                                    @php
+                                                        $proyCert = $docCert->proyectos->first();
+                                                        $alumnoCert = $proyCert?->alumnos->first();
+                                                    @endphp
+                                                    <tr
+                                                        class="hover:bg-emerald-50/20 transition-colors cursor-pointer"
+                                                        ondblclick="window.location.href='{{ route('certificados.show', $docCert) }}'"
+                                                        title="Doble clic para abrir revisión documental"
+                                                    >
+                                                        <td class="py-3 px-4 whitespace-nowrap font-mono font-bold text-emerald-800">
+                                                            <span class="px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-[11px]">
+                                                                {{ $docCert->folio ?? 'FOLIO-PEND' }}
+                                                            </span>
+                                                        </td>
+                                                        <td class="py-3 px-4 whitespace-nowrap">
+                                                            <div class="flex flex-col">
+                                                                <span class="font-bold text-gray-900 font-mono">{{ $alumnoCert?->carnet ?? $alumnoCert?->nombre_usuario ?? 'UES-EXP' }}</span>
+                                                                <span class="text-[11px] text-gray-500 max-w-[130px] truncate" title="{{ $alumnoCert?->nombre_completo ?? 'Estudiante' }}">{{ $alumnoCert?->nombre_completo ?? 'Estudiante' }}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td class="py-3 px-4 whitespace-nowrap text-gray-700">
+                                                            <span class="truncate max-w-[180px] inline-block" title="{{ $proyCert?->nombre_proyecto ?? 'Sin proyecto' }}">{{ $proyCert?->nombre_proyecto ?? 'Sin proyecto' }}</span>
+                                                        </td>
+                                                        <td class="py-3 px-4 whitespace-nowrap">
+                                                            <div class="flex items-center gap-1.5">
+                                                                <span class="text-emerald-700 font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-50">PDF</span>
+                                                                <span class="font-semibold text-gray-800 max-w-[160px] truncate" title="{{ $docCert->nombre_documento }}">{{ $docCert->nombre_documento }}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td class="py-3 px-4 whitespace-nowrap">
+                                                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                                                                <svg class="w-3 h-3 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+                                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                                                </svg>
+                                                                <span>Certificado Emitido</span>
+                                                            </span>
+                                                        </td>
+                                                        <td class="py-3 px-4 text-center whitespace-nowrap" onclick="event.stopPropagation();">
+                                                            <div class="flex items-center justify-center gap-1.5">
+                                                                @if($docCert->url_documento)
+                                                                    <a
+                                                                        href="{{ $docCert->url_documento }}"
+                                                                        target="_blank"
+                                                                        class="p-1.5 bg-white hover:bg-emerald-50 text-emerald-800 border border-gray-200 rounded-lg transition-colors inline-flex items-center"
+                                                                        title="Ver PDF Certificado"
+                                                                    >
+                                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                                        </svg>
+                                                                    </a>
+                                                                    <a
+                                                                        href="{{ $docCert->url_documento }}"
+                                                                        download
+                                                                        class="p-1.5 bg-white hover:bg-emerald-50 text-emerald-800 border border-gray-200 rounded-lg transition-colors inline-flex items-center"
+                                                                        title="Descargar PDF"
+                                                                    >
+                                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                                        </svg>
+                                                                    </a>
+                                                                @endif
+                                                                <a
+                                                                    href="{{ route('certificados.show', $docCert) }}"
+                                                                    class="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold text-[11px] rounded-lg transition-colors"
+                                                                    title="Revisar expediente"
+                                                                >
+                                                                    Revisar
+                                                                </a>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
                     </div>
 
                 </div>
@@ -507,5 +782,28 @@
 
     </div>
 
+    <script>
+        function toggleCertificadosUPS() {
+            const contenedor = document.getElementById('contenedorCertificadosUPS');
+            const icon = document.getElementById('iconToggleCertificadosUPS');
+            const texto = document.getElementById('textoToggleCertificadosUPS');
+            const btn = document.getElementById('btnToggleCertificadosUPS');
+
+            if (!contenedor) return;
+
+            const isHidden = contenedor.classList.contains('hidden');
+            if (isHidden) {
+                contenedor.classList.remove('hidden');
+                if (icon) icon.classList.add('rotate-180');
+                if (texto) texto.innerText = 'Ocultar certificados';
+                if (btn) btn.setAttribute('aria-expanded', 'true');
+            } else {
+                contenedor.classList.add('hidden');
+                if (icon) icon.classList.remove('rotate-180');
+                if (texto) texto.innerText = 'Mostrar certificados';
+                if (btn) btn.setAttribute('aria-expanded', 'false');
+            }
+        }
+    </script>
 </body>
 </html>
