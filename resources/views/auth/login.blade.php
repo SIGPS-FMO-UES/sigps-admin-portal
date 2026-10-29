@@ -191,111 +191,82 @@
                         </p>
                     </form>
 
-                    <!-- CAJA DE ACCESO RÁPIDO PARA PRUEBAS (FACILITA LA REVISIÓN DE LOS 6 ROLES) -->
-                    <div class="mt-8 pt-5 border-t border-gray-100">
-                        <div class="flex items-center justify-between mb-3">
-                            <p class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-                                ⚡ Acceso rápido por rol (1 clic)
-                            </p>
-                            <span class="text-[10px] text-gray-400 font-medium">6 roles configurados</span>
+                    <!-- ACCESO RÁPIDO PARA TESTING (DESPLEGABLE AL PRESIONAR LA BARRA DIVISORIA) -->
+                    <div class="mt-8">
+                        <!-- Barra divisoria interactiva para testing -->
+                        <button
+                            type="button"
+                            id="toggleTestRolesBtn"
+                            onclick="toggleTestRoles()"
+                            class="w-full flex items-center justify-center py-2 group cursor-pointer border-none bg-transparent focus:outline-none"
+                            title="Opciones de testing"
+                            aria-expanded="false"
+                            aria-controls="testRolesContainer"
+                        >
+                            <div class="h-px bg-gray-200 group-hover:bg-gray-400 flex-1 transition-colors"></div>
+                            <span class="mx-3 w-8 h-1 bg-gray-200 group-hover:bg-gray-400 rounded-full transition-colors"></span>
+                            <div class="h-px bg-gray-200 group-hover:bg-gray-400 flex-1 transition-colors"></div>
+                        </button>
+
+                        <!-- Contenedor desplegable (oculto por defecto para pruebas) -->
+                        <div id="testRolesContainer" class="hidden pt-3 transition-all duration-200">
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                <!-- 1. Estudiante -->
+                                <button
+                                    type="button"
+                                    onclick="setCredentials('2024-0185', 'password123')"
+                                    class="py-2.5 px-3 bg-emerald-50/70 hover:bg-emerald-100/90 border border-emerald-200/80 hover:border-emerald-300 rounded-xl text-center text-xs font-medium text-emerald-800 transition-all duration-150 cursor-pointer shadow-2xs hover:shadow-xs"
+                                >
+                                    Estudiante
+                                </button>
+
+                                <!-- 2. Docente Tutor -->
+                                <button
+                                    type="button"
+                                    onclick="setCredentials('tutor_lopez', 'password123')"
+                                    class="py-2.5 px-3 bg-blue-50/70 hover:bg-blue-100/90 border border-blue-200/80 hover:border-blue-300 rounded-xl text-center text-xs font-medium text-blue-800 transition-all duration-150 cursor-pointer shadow-2xs hover:shadow-xs"
+                                >
+                                    Docente Tutor
+                                </button>
+
+                                <!-- 3. Coordinador de Carrera -->
+                                <button
+                                    type="button"
+                                    onclick="setCredentials('coord_ing', 'password123')"
+                                    class="py-2.5 px-3 bg-indigo-50/70 hover:bg-indigo-100/90 border border-indigo-200/80 hover:border-indigo-300 rounded-xl text-center text-xs font-medium text-indigo-800 transition-all duration-150 cursor-pointer shadow-2xs hover:shadow-xs"
+                                >
+                                    Coord. Carrera
+                                </button>
+
+                                <!-- 4. Coordinador UPS -->
+                                <button
+                                    type="button"
+                                    onclick="setCredentials('coord_ups', 'password123')"
+                                    class="py-2.5 px-3 bg-rose-50/70 hover:bg-rose-100/90 border border-rose-200/80 hover:border-rose-300 rounded-xl text-center text-xs font-medium text-[#8B1D2D] transition-all duration-150 cursor-pointer shadow-2xs hover:shadow-xs"
+                                >
+                                    Coord. UPS
+                                </button>
+
+                                <!-- 5. Auxiliar UPS -->
+                                <button
+                                    type="button"
+                                    onclick="setCredentials('aux_ups', 'password123')"
+                                    class="py-2.5 px-3 bg-amber-50/70 hover:bg-amber-100/90 border border-amber-200/80 hover:border-amber-300 rounded-xl text-center text-xs font-medium text-amber-900 transition-all duration-150 cursor-pointer shadow-2xs hover:shadow-xs"
+                                >
+                                    Auxiliar UPS
+                                </button>
+
+                                <!-- 6. Administrador -->
+                                <button
+                                    type="button"
+                                    onclick="setCredentials('admin', 'password123')"
+                                    class="py-2.5 px-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 hover:border-gray-300 rounded-xl text-center text-xs font-medium text-gray-800 transition-all duration-150 cursor-pointer shadow-2xs hover:shadow-xs"
+                                >
+                                    Administrador
+                                </button>
+                            </div>
                         </div>
-
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                        <!-- 1. Estudiante -->
-                        <button
-                            type="button"
-                            onclick="setCredentials('2024-0185', 'password123')"
-                            class="group p-2.5 bg-emerald-50/70 hover:bg-emerald-100/80 border border-emerald-200/80 hover:border-emerald-300 rounded-xl text-left transition-all duration-150 cursor-pointer shadow-2xs hover:shadow-xs flex flex-col justify-between"
-                            title="Ingresar como Estudiante (Portal de Horas y Subida PDF)"
-                        >
-                            <div class="flex items-center justify-between w-full mb-1">
-                                <span class="text-sm">🎒</span>
-                                <span class="text-[9px] font-bold text-emerald-700 uppercase tracking-wider bg-emerald-100 px-1.5 py-0.2 rounded font-mono">SYS-03</span>
-                            </div>
-                            <p class="text-xs font-bold text-gray-900 leading-tight group-hover:text-emerald-800 transition-colors">Estudiante</p>
-                            <p class="text-[10px] text-gray-400 font-mono mt-0.5">2024-0185</p>
-                        </button>
-
-                        <!-- 2. Docente Tutor -->
-                        <button
-                            type="button"
-                            onclick="setCredentials('tutor_lopez', 'password123')"
-                            class="group p-2.5 bg-blue-50/70 hover:bg-blue-100/80 border border-blue-200/80 hover:border-blue-300 rounded-xl text-left transition-all duration-150 cursor-pointer shadow-2xs hover:shadow-xs flex flex-col justify-between"
-                            title="Ingresar como Docente Tutor (Acompañamiento Técnico y Dictámenes)"
-                        >
-                            <div class="flex items-center justify-between w-full mb-1">
-                                <span class="text-sm">👨‍🏫</span>
-                                <span class="text-[9px] font-bold text-blue-700 uppercase tracking-wider bg-blue-100 px-1.5 py-0.2 rounded font-mono">SYS-02</span>
-                            </div>
-                            <p class="text-xs font-bold text-gray-900 leading-tight group-hover:text-blue-800 transition-colors">Docente Tutor</p>
-                            <p class="text-[10px] text-gray-400 font-mono mt-0.5">tutor_lopez</p>
-                        </button>
-
-                        <!-- 3. Coordinador de Carrera -->
-                        <button
-                            type="button"
-                            onclick="setCredentials('coord_ing', 'password123')"
-                            class="group p-2.5 bg-indigo-50/70 hover:bg-indigo-100/80 border border-indigo-200/80 hover:border-indigo-300 rounded-xl text-left transition-all duration-150 cursor-pointer shadow-2xs hover:shadow-xs flex flex-col justify-between"
-                            title="Ingresar como Coordinador de Carrera (Asignación de Tutores y Aval)"
-                        >
-                            <div class="flex items-center justify-between w-full mb-1">
-                                <span class="text-sm">🎓</span>
-                                <span class="text-[9px] font-bold text-indigo-700 uppercase tracking-wider bg-indigo-100 px-1.5 py-0.2 rounded font-mono">SYS-02</span>
-                            </div>
-                            <p class="text-xs font-bold text-gray-900 leading-tight group-hover:text-indigo-800 transition-colors">Coord. Carrera</p>
-                            <p class="text-[10px] text-gray-400 font-mono mt-0.5">coord_ing</p>
-                        </button>
-
-                        <!-- 4. Coordinador UPS -->
-                        <button
-                            type="button"
-                            onclick="setCredentials('coord_ups', 'password123')"
-                            class="group p-2.5 bg-rose-50/70 hover:bg-rose-100/80 border border-rose-200/80 hover:border-rose-300 rounded-xl text-left transition-all duration-150 cursor-pointer shadow-2xs hover:shadow-xs flex flex-col justify-between"
-                            title="Ingresar como Coordinador UPS (Auditoría de Sellos, Firma Azul y Certificados)"
-                        >
-                            <div class="flex items-center justify-between w-full mb-1">
-                                <span class="text-sm">🏛️</span>
-                                <span class="text-[9px] font-bold text-[#8B1D2D] uppercase tracking-wider bg-rose-100 px-1.5 py-0.2 rounded font-mono">SYS-01</span>
-                            </div>
-                            <p class="text-xs font-bold text-gray-900 leading-tight group-hover:text-[#8B1D2D] transition-colors">Coord. UPS</p>
-                            <p class="text-[10px] text-gray-400 font-mono mt-0.5">coord_ups</p>
-                        </button>
-
-                        <!-- 5. Auxiliar UPS / Personal UPS -->
-                        <button
-                            type="button"
-                            onclick="setCredentials('aux_ups', 'password123')"
-                            class="group p-2.5 bg-amber-50/70 hover:bg-amber-100/80 border border-amber-200/80 hover:border-amber-300 rounded-xl text-left transition-all duration-150 cursor-pointer shadow-2xs hover:shadow-xs flex flex-col justify-between"
-                            title="Ingresar como Auxiliar / Secretaría UPS (Gestión y Apoyo Operativo)"
-                        >
-                            <div class="flex items-center justify-between w-full mb-1">
-                                <span class="text-sm">📋</span>
-                                <span class="text-[9px] font-bold text-amber-800 uppercase tracking-wider bg-amber-100 px-1.5 py-0.2 rounded font-mono">SYS-01</span>
-                            </div>
-                            <p class="text-xs font-bold text-gray-900 leading-tight group-hover:text-amber-900 transition-colors">Auxiliar UPS</p>
-                            <p class="text-[10px] text-gray-400 font-mono mt-0.5">aux_ups</p>
-                        </button>
-
-                        <!-- 6. Administrador General -->
-                        <button
-                            type="button"
-                            onclick="setCredentials('admin', 'password123')"
-                            class="group p-2.5 bg-gray-50 hover:bg-gray-100/90 border border-gray-200 hover:border-gray-300 rounded-xl text-left transition-all duration-150 cursor-pointer shadow-2xs hover:shadow-xs flex flex-col justify-between"
-                            title="Ingresar como Administrador General (Control Global, Usuarios y Roles)"
-                        >
-                            <div class="flex items-center justify-between w-full mb-1">
-                                <span class="text-sm">👑</span>
-                                <span class="text-[9px] font-bold text-gray-700 uppercase tracking-wider bg-gray-200/70 px-1.5 py-0.2 rounded font-mono">SYS-01</span>
-                            </div>
-                            <p class="text-xs font-bold text-gray-900 leading-tight group-hover:text-black transition-colors">Administrador</p>
-                            <p class="text-[10px] text-gray-400 font-mono mt-0.5">admin</p>
-                        </button>
                     </div>
-
-                    <p class="text-[10px] text-gray-400 text-center mt-2.5">
-                        💡 Haz clic en cualquier rol para ingresar automáticamente y verificar sus permisos.
-                    </p>
-                </div>
             </div><!-- /#loginSection -->
 
             <!-- ================= VISTA DE REGISTRO ================= -->
@@ -454,6 +425,17 @@
                 showRegisterForm();
             }
         });
+
+        function toggleTestRoles() {
+            const container = document.getElementById('testRolesContainer');
+            const btn = document.getElementById('toggleTestRolesBtn');
+            if (container) {
+                const isHidden = container.classList.toggle('hidden');
+                if (btn) {
+                    btn.setAttribute('aria-expanded', !isHidden);
+                }
+            }
+        }
 
         function setCredentials(username, pass, autoSubmit = true) {
             const loginInput = document.getElementById('login');
