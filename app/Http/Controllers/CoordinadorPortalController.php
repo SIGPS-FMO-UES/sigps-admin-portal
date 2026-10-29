@@ -37,28 +37,43 @@ class CoordinadorPortalController extends Controller
             ->orderBy('nombre_completo', 'asc')
             ->get();
 
-        // Expedientes listos para revisión académica de segundo nivel (aprobados por tutor o en revisión)
-        $documentosSegundoNivel = Documento::query()
-            ->with('proyectos.tutor')
-            ->whereIn('estado_revision', ['aprobado_tutor', 'aval_carrera', 'observado_carrera'])
-            ->orWhere(function ($q): void {
-                $q->whereIn('tipo', ['anteproyecto', 'mitad_proyecto', 'memoria'])
-                    ->whereIn('estado_revision', ['aprobado_tutor', 'pendiente_tutor']);
-            })
+        // Todos los documentos registrados para supervisión académica y aval
+        $todosDocumentos = Documento::query()
+            ->with(['proyectos.tutor', 'proyectos.alumnos'])
             ->orderBy('id_documento', 'desc')
             ->get();
+
+        // 1. Prioridad Alta: Aprobados por tutor (listos para emitir aval y enviar a UPS)
+        $documentosListosParaAval = $todosDocumentos->filter(fn ($d) => $d->estado_revision === 'aprobado_tutor');
+
+        // 2. Prioridad Seguimiento: Pendientes de revisión del tutor u observados (ordenados por prioridad)
+        $documentosEnSeguimiento = $todosDocumentos->filter(fn ($d) => in_array($d->estado_revision, ['pendiente_tutor', 'pendiente', 'observado_tutor', 'observado_carrera'], true))
+            ->sortBy(function ($d) {
+                return match ($d->estado_revision) {
+                    'pendiente_tutor', 'pendiente' => 1,
+                    'observado_tutor' => 2,
+                    'observado_carrera' => 3,
+                    default => 4,
+                };
+            });
+
+        // 3. Ocultos en 'Ver más': Ya avalados y remitidos a UPS o certificados
+        $documentosAvaladosEnUPS = $todosDocumentos->filter(fn ($d) => in_array($d->estado_revision, ['aval_carrera', 'auditado_ups', 'certificado_emitido'], true));
 
         // Estadísticas KPI de la Coordinación de Carrera
         $totalProyectos = $proyectos->count();
         $totalTutores = $tutores->count();
-        $pendientesAval = $documentosSegundoNivel->where('estado_revision', 'aprobado_tutor')->count();
+        $pendientesAval = $documentosListosParaAval->count();
         $proyectosSinTutor = $proyectos->whereNull('tutor_id')->count();
 
         return view('coordinador.dashboard', [
             'usuario' => $usuario,
             'proyectos' => $proyectos,
             'tutores' => $tutores,
-            'documentosSegundoNivel' => $documentosSegundoNivel,
+            'documentosSegundoNivel' => $todosDocumentos,
+            'documentosListosParaAval' => $documentosListosParaAval,
+            'documentosEnSeguimiento' => $documentosEnSeguimiento,
+            'documentosAvaladosEnUPS' => $documentosAvaladosEnUPS,
             'totalProyectos' => $totalProyectos,
             'totalTutores' => $totalTutores,
             'pendientesAval' => $pendientesAval,

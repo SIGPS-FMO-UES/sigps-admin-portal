@@ -170,6 +170,9 @@ class RolesYFlujoWorkflowTest extends TestCase
         $response->assertOk();
         $response->assertSee('Panel de Asignación de Tutores y Aval Académico');
         $response->assertSee('Coordinación de Carrera / Escuela');
+        $response->assertSee('Expedientes para Aval Académico y Envío a UPS');
+        $response->assertSee('Prioridad 1: Aprobados por Tutor');
+        $response->assertSee('Ver más: Expedientes ya avalados y remitidos a UPS');
 
         // Asignación de tutor a proyecto (HU-61)
         $proyecto = Proyecto::first();

@@ -235,14 +235,18 @@
             </div>
 
             <!-- 3. BANDEJA DE REVISIÓN ACADÉMICA DE SEGUNDO NIVEL Y AVAL (HU-69, RF-ACA-05, HU-72) -->
-            <div class="bg-white rounded-3xl border border-gray-200/80 shadow-2xs overflow-hidden">
+            <div class="bg-white rounded-3xl border border-gray-200/80 shadow-2xs overflow-hidden space-y-0">
+                <!-- Cabecera de la sección -->
                 <div class="p-5 sm:p-6 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                         <div class="flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
                             <h2 class="text-base font-extrabold text-gray-900 tracking-tight">
                                 Expedientes para Aval Académico y Envío a UPS (HU-69, RF-ACA-05)
                             </h2>
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                {{ $documentosListosParaAval->count() }} {{ $documentosListosParaAval->count() === 1 ? 'listo para enviar a UPS' : 'listos para enviar a UPS' }}
+                            </span>
                         </div>
                         <p class="text-xs text-gray-500 mt-0.5">
                             Revisa los documentos con visto bueno del tutor. Emite el aval institucional que traslada el expediente a Proyección Social.
@@ -250,127 +254,364 @@
                     </div>
                 </div>
 
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse text-xs">
-                        <thead>
-                            <tr class="border-b border-gray-100 bg-gray-50/50 text-gray-400 font-semibold uppercase tracking-wider text-[11px]">
-                                <th class="py-3 px-4">Documento</th>
-                                <th class="py-3 px-4">Proyecto</th>
-                                <th class="py-3 px-4">Docente Tutor</th>
-                                <th class="py-3 px-4">Estado Actual</th>
-                                <th class="py-3 px-4">Dictamen de Tutor</th>
-                                <th class="py-3 px-4 text-center">Acciones de Coordinación</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100 text-gray-700">
-                            @forelse ($documentosSegundoNivel as $doc)
-                                <tr class="hover:bg-gray-50/70 transition-colors">
-                                    <td class="py-3.5 px-4 font-bold text-gray-900">
-                                        <div class="flex items-center gap-2">
-                                            <svg class="w-4 h-4 text-indigo-600 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
-                                            </svg>
-                                            <span class="truncate max-w-xs" title="{{ $doc->nombre_documento }}">{{ $doc->nombre_documento }}</span>
-                                        </div>
-                                    </td>
-                                    <td class="py-3.5 px-4 whitespace-nowrap">
-                                        @if ($doc->proyectos->isNotEmpty())
-                                            #{{ $doc->proyectos->first()->codigo_proyecto }} &bull; {{ Str::limit($doc->proyectos->first()->nombre_proyecto, 28) }}
-                                        @else
-                                            <span class="text-gray-400 italic">Sin proyecto</span>
-                                        @endif
-                                    </td>
-                                    <td class="py-3.5 px-4 whitespace-nowrap">
-                                        {{ $doc->proyectos->first()?->tutor?->nombre_completo ?? 'Sin tutor asignado' }}
-                                    </td>
-                                    <td class="py-3.5 px-4 whitespace-nowrap">
-                                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold border {{ $doc->estado_revision_badge }}">
-                                            {{ $doc->estado_revision_texto }}
-                                        </span>
-                                    </td>
-                                    <td class="py-3.5 px-4 text-gray-500 max-w-xs text-[11px]">
-                                        {{ $doc->observaciones ?: 'Aprobado favorablemente por el tutor.' }}
-                                    </td>
-                                    <td class="py-3.5 px-4 text-center whitespace-nowrap">
-                                        <div class="flex items-center justify-center gap-1.5">
-                                            <!-- Ver PDF -->
-                                            <a
-                                                href="{{ $doc->url_documento }}"
-                                                target="_blank"
-                                                class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-[11px] rounded-lg transition-colors inline-flex items-center gap-1"
-                                                title="Visualizar documento"
-                                            >
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                </svg>
-                                                <span>Ver</span>
-                                            </a>
+                <!-- A. TABLA PRINCIPAL PRIORITARIA: SOLO DOCUMENTOS APROBADOS POR EL TUTOR (LISTOS PARA AVAL) -->
+                <div>
+                    <div class="px-5 py-3 bg-emerald-50/40 border-b border-gray-100 flex items-center justify-between">
+                        <span class="text-xs font-bold text-emerald-950 flex items-center gap-1.5 uppercase tracking-wider">
+                            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Prioridad 1: Aprobados por Tutor &bull; Listos para Emitir Aval y Enviar a UPS
+                        </span>
+                        <span class="text-[11px] text-emerald-700 font-semibold hidden sm:inline">Acción directa requerida</span>
+                    </div>
 
-                                            <!-- Descargar PDF -->
-                                            <a
-                                                href="{{ $doc->url_documento }}"
-                                                download
-                                                class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-[11px] rounded-lg transition-colors inline-flex items-center gap-1"
-                                                title="Descargar documento PDF"
-                                            >
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                                </svg>
-                                                <span>Descargar</span>
-                                            </a>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="border-b border-gray-100 bg-gray-50/50 text-gray-400 font-semibold uppercase tracking-wider text-[11px]">
+                                    <th class="py-3 px-4">Documento</th>
+                                    <th class="py-3 px-4">Proyecto</th>
+                                    <th class="py-3 px-4">Docente Tutor</th>
+                                    <th class="py-3 px-4">Estado</th>
+                                    <th class="py-3 px-4">Dictamen de Tutor</th>
+                                    <th class="py-3 px-4 text-center">Acciones de Coordinación</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 text-gray-700">
+                                @forelse ($documentosListosParaAval as $doc)
+                                    <tr
+                                        class="hover:bg-emerald-50/30 transition-colors cursor-pointer group"
+                                        ondblclick="window.location.href='{{ route('certificados.show', $doc) }}'"
+                                        title="Doble clic para abrir revisión documental"
+                                    >
+                                        <td class="py-3.5 px-4 font-bold text-gray-900">
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 font-mono text-[10px] font-bold">
+                                                    PDF
+                                                </div>
+                                                <span class="truncate max-w-xs group-hover:text-emerald-900 transition-colors" title="{{ $doc->nombre_documento }}">{{ $doc->nombre_documento }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="py-3.5 px-4 whitespace-nowrap">
+                                            @if ($doc->proyectos->isNotEmpty())
+                                                #{{ $doc->proyectos->first()->codigo_proyecto }} &bull; {{ Str::limit($doc->proyectos->first()->nombre_proyecto, 26) }}
+                                            @else
+                                                <span class="text-gray-400 italic">Sin proyecto</span>
+                                            @endif
+                                        </td>
+                                        <td class="py-3.5 px-4 whitespace-nowrap font-medium text-gray-800">
+                                            {{ $doc->proyectos->first()?->tutor?->nombre_completo ?? 'Sin tutor' }}
+                                        </td>
+                                        <td class="py-3.5 px-4 whitespace-nowrap">
+                                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1 w-fit">
+                                                <span>✓</span> Aprobado por Tutor
+                                            </span>
+                                        </td>
+                                        <td class="py-3.5 px-4 text-gray-500 max-w-xs text-[11px] truncate">
+                                            {{ $doc->observaciones ?: 'Dictamen técnico favorable emitido por el tutor.' }}
+                                        </td>
+                                        <td class="py-3.5 px-4 text-center whitespace-nowrap" onclick="event.stopPropagation();">
+                                            <div class="flex items-center justify-center gap-1.5">
+                                                <!-- Emitir Aval y Enviar a UPS (Cambio de estado directo a aval_carrera) -->
+                                                <form method="POST" action="{{ route('coordinador.aval', $doc) }}" class="inline">
+                                                    @csrf
+                                                    <input type="hidden" name="accion" value="aval">
+                                                    <input type="hidden" name="observaciones" value="Aval Académico institucional otorgado. Remitido formalmente a la Unidad de Proyección Social (UPS).">
+                                                    <button
+                                                        type="submit"
+                                                        class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] rounded-xl transition-all shadow-2xs cursor-pointer inline-flex items-center gap-1"
+                                                        title="Emitir Aval Académico y trasladar estado a UPS"
+                                                    >
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                        </svg>
+                                                        <span>Emitir Aval &rarr; UPS</span>
+                                                    </button>
+                                                </form>
 
-                                            <!-- Revisión Documental -->
-                                            <a
-                                                href="{{ route('certificados.show', $doc) }}"
-                                                class="px-2 py-1 bg-red-50 hover:bg-[#8B1D2D] hover:text-white text-[#8B1D2D] font-bold text-[11px] rounded-lg transition-all inline-flex items-center gap-1"
-                                                title="Abrir revisión documental de este documento"
-                                            >
-                                                <span>Revisar</span>
-                                            </a>
-
-                                            <!-- Emitir Aval y Enviar a UPS (RF-ACA-05, HU-72) -->
-                                            <form method="POST" action="{{ route('coordinador.aval', $doc) }}" class="inline">
-                                                @csrf
-                                                <input type="hidden" name="accion" value="aval">
-                                                <button
-                                                    type="submit"
-                                                    class="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-[11px] rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1 shadow-2xs"
-                                                    title="Emitir Aval Digital y Remitir a la UPS"
+                                                <!-- Ver PDF -->
+                                                <a
+                                                    href="{{ $doc->url_documento }}"
+                                                    target="_blank"
+                                                    class="p-1.5 bg-white hover:bg-gray-100 text-gray-700 border border-gray-200 rounded-lg transition-colors inline-flex items-center"
+                                                    title="Ver documento"
                                                 >
-                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                                     </svg>
-                                                    <span>Emitir Aval &rarr; UPS</span>
-                                                </button>
-                                            </form>
+                                                </a>
 
-                                            <!-- Devolver con observaciones (HU-71) -->
-                                            <button
-                                                type="button"
-                                                onclick="openCoordObservarModal({{ $doc->id_documento }}, '{{ addslashes($doc->nombre_documento) }}')"
-                                                class="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 font-semibold text-[11px] rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1"
-                                                title="Devolver con observaciones de carrera"
-                                            >
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                                </svg>
-                                                <span>Devolver</span>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="6" class="p-8 text-center text-gray-400">
-                                        <p class="font-bold text-gray-600">No hay expedientes pendientes de aval académico</p>
-                                        <p class="text-xs mt-1">Los tutores deben aprobar primero los documentos para habilitar la emisión de aval de carrera.</p>
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                                                <!-- Descargar -->
+                                                <a
+                                                    href="{{ $doc->url_documento }}"
+                                                    download
+                                                    class="p-1.5 bg-white hover:bg-gray-100 text-gray-700 border border-gray-200 rounded-lg transition-colors inline-flex items-center"
+                                                    title="Descargar documento PDF"
+                                                >
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                    </svg>
+                                                </a>
+
+                                                <!-- Revisión Documental -->
+                                                <a
+                                                    href="{{ route('certificados.show', $doc) }}"
+                                                    class="px-2 py-1 bg-red-50 hover:bg-[#8B1D2D] hover:text-white text-[#8B1D2D] font-bold text-[11px] rounded-lg transition-all inline-flex items-center gap-1"
+                                                    title="Abrir revisión documental detallada"
+                                                >
+                                                    <span>Revisar</span>
+                                                </a>
+
+                                                <!-- Devolver con observaciones -->
+                                                <button
+                                                    type="button"
+                                                    onclick="openCoordObservarModal({{ $doc->id_documento }}, '{{ addslashes($doc->nombre_documento) }}')"
+                                                    class="px-2 py-1 bg-white hover:bg-red-50 text-red-700 border border-red-200 font-semibold text-[11px] rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1"
+                                                    title="Devolver con observaciones"
+                                                >
+                                                    <span>Devolver</span>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="6" class="p-6 text-center text-gray-400 bg-white">
+                                            <p class="font-bold text-gray-600 text-xs">No hay expedientes pendientes de aval en este momento</p>
+                                            <p class="text-[11px] text-gray-400 mt-0.5">Los tutores deben emitir primero su dictamen técnico favorable para habilitar el aval de carrera.</p>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
+
+                <!-- B. TABLA DE EXPEDIENTES EN SEGUIMIENTO (PENDIENTES DE REVISIÓN DEL TUTOR Y OBSERVADOS) -->
+                @if ($documentosEnSeguimiento->isNotEmpty())
+                    <div class="border-t border-gray-100">
+                        <div class="px-5 py-3 bg-amber-50/40 border-b border-gray-100 flex items-center justify-between">
+                            <span class="text-xs font-bold text-amber-950 flex items-center gap-1.5 uppercase tracking-wider">
+                                <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                Prioridad 2: Expedientes en Seguimiento &bull; Pendientes de Revisión del Tutor u Observados ({{ $documentosEnSeguimiento->count() }})
+                            </span>
+                            <span class="text-[11px] text-amber-800 font-medium hidden sm:inline">Esperando dictamen técnico del tutor antes del aval</span>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="border-b border-gray-100 bg-gray-50/40 text-gray-400 font-semibold uppercase tracking-wider text-[11px]">
+                                        <th class="py-2.5 px-4">Documento</th>
+                                        <th class="py-2.5 px-4">Proyecto</th>
+                                        <th class="py-2.5 px-4">Docente Tutor</th>
+                                        <th class="py-2.5 px-4">Estado</th>
+                                        <th class="py-2.5 px-4">Observaciones / Motivo</th>
+                                        <th class="py-2.5 px-4 text-center">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100 text-gray-700 bg-white">
+                                    @foreach ($documentosEnSeguimiento as $docSeg)
+                                        <tr
+                                            class="hover:bg-gray-50/60 transition-colors cursor-pointer"
+                                            ondblclick="window.location.href='{{ route('certificados.show', $docSeg) }}'"
+                                            title="Doble clic para abrir revisión documental"
+                                        >
+                                            <td class="py-3 px-4 font-bold text-gray-900 whitespace-nowrap">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="text-gray-400 font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-100">PDF</span>
+                                                    <span>{{ $docSeg->nombre_documento }}</span>
+                                                </div>
+                                            </td>
+                                            <td class="py-3 px-4 whitespace-nowrap text-gray-600">
+                                                @if ($docSeg->proyectos->isNotEmpty())
+                                                    #{{ $docSeg->proyectos->first()->codigo_proyecto }} &bull; {{ Str::limit($docSeg->proyectos->first()->nombre_proyecto, 24) }}
+                                                @else
+                                                    <span class="text-gray-400 italic">Sin proyecto</span>
+                                                @endif
+                                            </td>
+                                            <td class="py-3 px-4 whitespace-nowrap text-gray-700 font-medium">
+                                                {{ $docSeg->proyectos->first()?->tutor?->nombre_completo ?? 'Sin tutor asignado' }}
+                                            </td>
+                                            <td class="py-3 px-4 whitespace-nowrap">
+                                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border {{ $docSeg->estado_revision_badge }}">
+                                                    {{ $docSeg->estado_revision_texto }}
+                                                </span>
+                                            </td>
+                                            <td class="py-3 px-4 text-gray-500 max-w-xs text-[11px] truncate">
+                                                {{ $docSeg->observaciones ?: ($docSeg->motivo_rechazo ?: 'En espera de dictamen técnico del tutor.') }}
+                                            </td>
+                                            <td class="py-3 px-4 text-center whitespace-nowrap" onclick="event.stopPropagation();">
+                                                <div class="flex items-center justify-center gap-1.5">
+                                                    <a
+                                                        href="{{ $docSeg->url_documento }}"
+                                                        target="_blank"
+                                                        class="p-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg transition-colors inline-flex items-center"
+                                                        title="Ver PDF"
+                                                    >
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                        </svg>
+                                                    </a>
+                                                    <a
+                                                        href="{{ $docSeg->url_documento }}"
+                                                        download
+                                                        class="p-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg transition-colors inline-flex items-center"
+                                                        title="Descargar PDF"
+                                                    >
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                        </svg>
+                                                    </a>
+                                                    <a
+                                                        href="{{ route('certificados.show', $docSeg) }}"
+                                                        class="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold text-[11px] rounded-lg transition-colors"
+                                                        title="Revisar expediente"
+                                                    >
+                                                        Revisar
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                @endif
+
+                <!-- C. DESPLEGABLE OCULTO: EXPEDIENTES YA AVALADOS Y ENVIADOS A UPS (VER MÁS) -->
+                @if ($documentosAvaladosEnUPS->isNotEmpty())
+                    <div class="border-t border-gray-100 bg-gray-50/50">
+                        <button
+                            type="button"
+                            onclick="toggleExpedientesAvalados()"
+                            id="btnToggleAvalados"
+                            class="w-full p-4 flex items-center justify-between text-left hover:bg-gray-100/70 transition-colors cursor-pointer group"
+                            aria-expanded="false"
+                        >
+                            <div class="flex items-center gap-2.5">
+                                <span class="w-6 h-6 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold">
+                                    ✓
+                                </span>
+                                <div>
+                                    <span class="text-xs font-bold text-gray-800 group-hover:text-indigo-950">
+                                        Ver más: Expedientes ya avalados y remitidos a UPS ({{ $documentosAvaladosEnUPS->count() }})
+                                    </span>
+                                    <p class="text-[11px] text-gray-400">Expedientes con aval académico formal remitidos a la Unidad de Proyección Social</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-semibold text-gray-500 group-hover:text-gray-800" id="textoToggleAvalados">
+                                    Mostrar avalados
+                                </span>
+                                <svg id="iconToggleAvalados" class="w-4 h-4 text-gray-400 group-hover:text-gray-700 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </div>
+                        </button>
+
+                        <div id="contenedorExpedientesAvalados" class="hidden border-t border-gray-200/80 bg-white">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse text-xs">
+                                    <thead>
+                                        <tr class="border-b border-gray-100 bg-indigo-50/30 text-indigo-900 font-semibold uppercase tracking-wider text-[10px]">
+                                            <th class="py-2.5 px-4">Documento</th>
+                                            <th class="py-2.5 px-4">Proyecto</th>
+                                            <th class="py-2.5 px-4">Tutor</th>
+                                            <th class="py-2.5 px-4">Estado en UPS</th>
+                                            <th class="py-2.5 px-4">Observaciones Institucionales</th>
+                                            <th class="py-2.5 px-4 text-center">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100 text-gray-700">
+                                        @foreach ($documentosAvaladosEnUPS as $docAval)
+                                            <tr
+                                                class="hover:bg-gray-50/60 transition-colors cursor-pointer"
+                                                ondblclick="window.location.href='{{ route('certificados.show', $docAval) }}'"
+                                                title="Doble clic para abrir revisión documental"
+                                            >
+                                                <td class="py-3 px-4 font-bold text-gray-900 whitespace-nowrap">
+                                                    {{ $docAval->nombre_documento }}
+                                                </td>
+                                                <td class="py-3 px-4 whitespace-nowrap text-gray-600">
+                                                    @if ($docAval->proyectos->isNotEmpty())
+                                                        #{{ $docAval->proyectos->first()->codigo_proyecto }}
+                                                    @else
+                                                        -
+                                                    @endif
+                                                </td>
+                                                <td class="py-3 px-4 whitespace-nowrap text-gray-600">
+                                                    {{ $docAval->proyectos->first()?->tutor?->nombre_completo ?? '-' }}
+                                                </td>
+                                                <td class="py-3 px-4 whitespace-nowrap">
+                                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border {{ $docAval->estado_revision_badge }}">
+                                                        {{ $docAval->estado_revision_texto }}
+                                                    </span>
+                                                </td>
+                                                <td class="py-3 px-4 text-gray-500 max-w-xs text-[11px] truncate">
+                                                    {{ $docAval->observaciones ?: 'Aval institucional otorgado.' }}
+                                                </td>
+                                                <td class="py-3 px-4 text-center whitespace-nowrap" onclick="event.stopPropagation();">
+                                                    <div class="flex items-center justify-center gap-1.5">
+                                                        <a
+                                                            href="{{ $docAval->url_documento }}"
+                                                            target="_blank"
+                                                            class="p-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg transition-colors inline-flex items-center"
+                                                            title="Ver PDF"
+                                                        >
+                                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                            </svg>
+                                                        </a>
+                                                        <a
+                                                            href="{{ $docAval->url_documento }}"
+                                                            download
+                                                            class="p-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg transition-colors inline-flex items-center"
+                                                            title="Descargar PDF"
+                                                        >
+                                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                            </svg>
+                                                        </a>
+                                                        <a
+                                                            href="{{ route('certificados.show', $docAval) }}"
+                                                            class="px-2 py-1 bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-700 font-semibold text-[11px] rounded-lg transition-colors"
+                                                            title="Revisar expediente"
+                                                        >
+                                                            Revisar
+                                                        </a>
+                                                        @if ($docAval->estado_revision === 'aval_carrera')
+                                                            <form method="POST" action="{{ route('coordinador.aval', $docAval) }}" class="inline">
+                                                                @csrf
+                                                                <input type="hidden" name="accion" value="retractar">
+                                                                <button
+                                                                    type="submit"
+                                                                    onclick="return confirm('¿Retractar Aval Académico y devolver el documento a aprobación del tutor?');"
+                                                                    class="px-2 py-1 bg-white hover:bg-gray-100 text-gray-600 border border-gray-200 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer"
+                                                                    title="Retractar aval"
+                                                                >
+                                                                    Retractar
+                                                                </button>
+                                                            </form>
+                                                        @endif
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                @endif
             </div>
 
             <!-- 4. BALANCE DE CARGA DE TUTORES DEL DEPARTAMENTO -->
@@ -477,6 +718,17 @@
 
         function closeCoordObservarModal() {
             document.getElementById('coordObservarModal').classList.add('hidden');
+        }
+
+        function toggleExpedientesAvalados() {
+            const container = document.getElementById('contenedorExpedientesAvalados');
+            const texto = document.getElementById('textoToggleAvalados');
+            const icon = document.getElementById('iconToggleAvalados');
+            if (container) {
+                const isHidden = container.classList.toggle('hidden');
+                if (texto) texto.textContent = isHidden ? 'Mostrar avalados' : 'Ocultar avalados';
+                if (icon) icon.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
+            }
         }
     </script>
 </body>
