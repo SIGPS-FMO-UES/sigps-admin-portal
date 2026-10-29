@@ -228,8 +228,68 @@
                     @php
                         $docsValidos = $proyecto->documentos->filter(fn ($d) => $d->isAprobado());
                     @endphp
-                    <div class="pt-5 border-t border-gray-100 space-y-3.5">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div class="pt-5 border-t border-gray-100 space-y-4">
+
+                        <!-- Stepper Visual: Ruta del Proceso de Servicio Social (Trazabilidad) -->
+                        @if (!empty($fases))
+                            <div class="bg-gray-50/80 border border-gray-200/90 rounded-2xl p-4 sm:p-5 space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h4 class="text-xs sm:text-sm font-bold text-gray-900 tracking-tight flex items-center gap-2">
+                                            <span>Ruta del Proceso de Servicio Social</span>
+                                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold font-mono bg-gray-200/80 text-gray-800">
+                                                Fase {{ $faseActual ?? 1 }} de 5
+                                            </span>
+                                        </h4>
+                                        <p class="text-[11px] text-gray-400 mt-0.5">
+                                            Trazabilidad del avance reglamentario del proyecto según sus entregables.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
+                                    @foreach ($fases as $num => $fase)
+                                        @php
+                                            $isCompletada = $fase['completada'] ?? ($num < $faseActual);
+                                            $isActual = $fase['actual'] ?? ($num === $faseActual);
+                                            $badgeTipo = $fase['badge_tipo'] ?? ($isCompletada ? 'completada' : ($isActual ? 'actual' : 'inactiva'));
+                                        @endphp
+                                        <div class="p-3 rounded-xl border transition-all {{ $isCompletada ? 'bg-emerald-50/50 border-emerald-200' : ($badgeTipo === 'observado' ? 'bg-rose-50/50 border-rose-300 ring-1 ring-rose-300/30' : ($badgeTipo === 'pendiente' ? 'bg-amber-50/50 border-amber-300 ring-1 ring-amber-300/30' : ($isActual ? 'bg-red-50/50 border-[#8B1D2D]/40 ring-1 ring-[#8B1D2D]/20' : 'bg-white border-gray-200/60 opacity-60'))) }}">
+                                            <div class="flex items-center justify-between mb-1.5">
+                                                <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold {{ $isCompletada ? 'bg-emerald-600 text-white' : ($badgeTipo === 'observado' ? 'bg-rose-600 text-white' : ($badgeTipo === 'pendiente' ? 'bg-amber-600 text-white' : ($isActual ? 'bg-[#8B1D2D] text-white' : 'bg-gray-200 text-gray-600'))) }}">
+                                                    @if ($isCompletada)
+                                                        ✓
+                                                    @else
+                                                        {{ $num }}
+                                                    @endif
+                                                </span>
+                                                <span class="text-[9px] font-bold uppercase tracking-wider {{ $isCompletada ? 'text-emerald-700' : ($isActual ? 'text-[#8B1D2D]' : 'text-gray-400') }}">
+                                                    {{ $fase['codigo_formato'] }}
+                                                </span>
+                                            </div>
+                                            <p class="text-[11px] font-bold text-gray-900 leading-snug">
+                                                {{ $fase['nombre'] }}
+                                            </p>
+                                            <div class="mt-2 pt-1 border-t border-gray-100 flex items-center gap-1 text-[10px] font-semibold">
+                                                @if ($badgeTipo === 'completada')
+                                                    <span class="text-emerald-600 font-bold">Completada</span>
+                                                @elseif ($badgeTipo === 'observado')
+                                                    <span class="text-rose-600 font-bold">Observado</span>
+                                                @elseif ($badgeTipo === 'pendiente')
+                                                    <span class="text-amber-700 font-bold">En Revisión</span>
+                                                @elseif ($isActual)
+                                                    <span class="text-[#8B1D2D] font-bold">Fase Actual</span>
+                                                @else
+                                                    <span class="text-gray-400">Pendiente</span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
                             <div>
                                 <label class="text-xs sm:text-sm font-bold text-gray-800 flex items-center gap-2">
                                     <svg class="w-4 h-4 text-[#8B1D2D]" fill="currentColor" viewBox="0 0 20 20">

@@ -112,6 +112,7 @@ class ProyectoController extends Controller
         $currentUser = Auth::user();
 
         $proyecto->load(['tutor', 'alumnos', 'documentos']);
+        $trazabilidad = $proyecto->calcularFasesProceso();
 
         $tutores = Usuario::whereHas('roles', function ($q): void {
             $q->where('name', 'Docente Tutor')->orWhere('nombre_rol', 'Docente Tutor');
@@ -121,6 +122,10 @@ class ProyectoController extends Controller
             'currentUser' => $currentUser,
             'proyecto' => $proyecto,
             'tutores' => $tutores,
+            'fases' => $trazabilidad['fases'],
+            'faseActual' => $trazabilidad['faseActual'],
+            'porcentajeAvance' => $trazabilidad['porcentajeAvance'],
+            'horasAcumuladas' => $trazabilidad['horasAcumuladas'],
             'mode' => 'ver',
         ]);
     }
@@ -134,6 +139,7 @@ class ProyectoController extends Controller
         $currentUser = Auth::user();
 
         $proyecto->load(['tutor', 'alumnos', 'documentos']);
+        $trazabilidad = $proyecto->calcularFasesProceso();
 
         $tutores = Usuario::whereHas('roles', function ($q): void {
             $q->where('name', 'Docente Tutor')->orWhere('nombre_rol', 'Docente Tutor');
@@ -143,6 +149,10 @@ class ProyectoController extends Controller
             'currentUser' => $currentUser,
             'proyecto' => $proyecto,
             'tutores' => $tutores,
+            'fases' => $trazabilidad['fases'],
+            'faseActual' => $trazabilidad['faseActual'],
+            'porcentajeAvance' => $trazabilidad['porcentajeAvance'],
+            'horasAcumuladas' => $trazabilidad['horasAcumuladas'],
             'mode' => 'editar',
         ]);
     }

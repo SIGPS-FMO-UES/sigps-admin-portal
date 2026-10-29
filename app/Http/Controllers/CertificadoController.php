@@ -134,8 +134,15 @@ class CertificadoController extends Controller
         /** @var Usuario $currentUser */
         $currentUser = Auth::user();
 
-        $certificado->load('proyectos');
+        $certificado->load(['proyectos.documentos', 'proyectos.tutor', 'proyectos.alumnos']);
         $proyectos = Proyecto::orderBy('nombre_proyecto')->get();
+
+        $proyectoVinculado = $certificado->proyectos->first();
+        $trazabilidad = $proyectoVinculado ? $proyectoVinculado->calcularFasesProceso() : null;
+        $fases = $trazabilidad['fases'] ?? [];
+        $faseActual = $trazabilidad['faseActual'] ?? 1;
+        $documentosProyecto = $proyectoVinculado ? $proyectoVinculado->documentos : collect();
+        $docsValidosProyecto = $documentosProyecto->filter(fn ($d) => $d->isAprobado());
 
         $tipos = [
             'solicitud' => 'Solicitud de Proyecto',
@@ -150,6 +157,11 @@ class CertificadoController extends Controller
             'currentUser' => $currentUser,
             'certificado' => $certificado,
             'proyectos' => $proyectos,
+            'proyectoVinculado' => $proyectoVinculado,
+            'fases' => $fases,
+            'faseActual' => $faseActual,
+            'documentosProyecto' => $documentosProyecto,
+            'docsValidosProyecto' => $docsValidosProyecto,
             'tipos' => $tipos,
             'mode' => 'ver',
         ]);
@@ -163,8 +175,15 @@ class CertificadoController extends Controller
         /** @var Usuario $currentUser */
         $currentUser = Auth::user();
 
-        $certificado->load('proyectos');
+        $certificado->load(['proyectos.documentos', 'proyectos.tutor', 'proyectos.alumnos']);
         $proyectos = Proyecto::orderBy('nombre_proyecto')->get();
+
+        $proyectoVinculado = $certificado->proyectos->first();
+        $trazabilidad = $proyectoVinculado ? $proyectoVinculado->calcularFasesProceso() : null;
+        $fases = $trazabilidad['fases'] ?? [];
+        $faseActual = $trazabilidad['faseActual'] ?? 1;
+        $documentosProyecto = $proyectoVinculado ? $proyectoVinculado->documentos : collect();
+        $docsValidosProyecto = $documentosProyecto->filter(fn ($d) => $d->isAprobado());
 
         $tipos = [
             'solicitud' => 'Solicitud de Proyecto',
@@ -179,6 +198,11 @@ class CertificadoController extends Controller
             'currentUser' => $currentUser,
             'certificado' => $certificado,
             'proyectos' => $proyectos,
+            'proyectoVinculado' => $proyectoVinculado,
+            'fases' => $fases,
+            'faseActual' => $faseActual,
+            'documentosProyecto' => $documentosProyecto,
+            'docsValidosProyecto' => $docsValidosProyecto,
             'tipos' => $tipos,
             'mode' => 'editar',
         ]);

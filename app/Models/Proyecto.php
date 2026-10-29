@@ -205,6 +205,164 @@ class Proyecto extends Model
     }
 
     /**
+     * Calcula las 5 fases reglamentarias de Proyección Social en la UES
+     * y su trazabilidad para visualización tipo stepper.
+     *
+     * @return array{fases: array<int, array<string, mixed>>, faseActual: int, porcentajeAvance: int, horasAcumuladas: int}
+     */
+    public function calcularFasesProceso(): array
+    {
+        $fases = [
+            1 => [
+                'numero' => 1,
+                'nombre' => 'Inscripción y Solicitud',
+                'codigo_formato' => 'Etapa 1',
+                'descripcion' => 'Registro de datos personales y validación inicial de la solicitud.',
+                'tipo_doc' => 'solicitud',
+            ],
+            2 => [
+                'numero' => 2,
+                'nombre' => 'Anteproyecto Aprobado',
+                'codigo_formato' => 'Etapa 2',
+                'descripcion' => 'Plan de trabajo, objetivos y cronograma consensuado con el tutor.',
+                'tipo_doc' => 'anteproyecto',
+            ],
+            3 => [
+                'numero' => 3,
+                'nombre' => 'Ejecución y Control 50%',
+                'codigo_formato' => 'Etapa 3',
+                'descripcion' => 'Registro de asistencias y entrega de informe de avance al 50%.',
+                'tipo_doc' => 'mitad_proyecto',
+            ],
+            4 => [
+                'numero' => 4,
+                'nombre' => 'Memoria Final y Evaluación',
+                'codigo_formato' => 'Etapa 4',
+                'descripcion' => 'Memoria técnica, evaluación de contraparte y finiquito de horas.',
+                'tipo_doc' => 'memoria',
+            ],
+            5 => [
+                'numero' => 5,
+                'nombre' => 'Certificación Emitida',
+                'codigo_formato' => 'Certificación',
+                'descripcion' => 'Aprobación definitiva y entrega de constancia oficial por la UPS.',
+                'tipo_doc' => 'certificado',
+            ],
+        ];
+
+        $documentos = $this->relationLoaded('documentos') ? $this->documentos : $this->documentos()->get();
+
+        $docFase1 = $documentos->first(fn ($d) => in_array($d->tipo, ['solicitud', 'inscripcion'], true));
+        $docFase2 = $documentos->firstWhere('tipo', 'anteproyecto');
+        $docFase3 = $documentos->firstWhere('tipo', 'mitad_proyecto');
+        $docFase4 = $documentos->firstWhere('tipo', 'memoria');
+        $docFase5 = $documentos->first(fn ($d) => $d->tipo === 'certificado' || $d->folio !== null);
+
+        $estadoProy = $this->estado ?? 'solicitado';
+
+        $fase1Completada = ($docFase1 && $docFase1->isAprobado())
+            || in_array($estadoProy, ['en_proceso', 'en_finalizacion', 'finalizado'], true)
+            || ($docFase2 && $docFase2->isAprobado());
+
+        $fase2Completada = ($docFase2 && $docFase2->isAprobado())
+            || in_array($estadoProy, ['en_finalizacion', 'finalizado'], true)
+            || ($docFase3 && $docFase3->isAprobado());
+
+        $fase3Completada = ($docFase3 && $docFase3->isAprobado())
+            || in_array($estadoProy, ['en_finalizacion', 'finalizado'], true)
+            || ($docFase4 && $docFase4->isAprobado());
+
+        $fase4Completada = ($docFase4 && $docFase4->isAprobado())
+            || $estadoProy === 'finalizado'
+            || ($docFase5 && in_array($docFase5->estado_revision, ['certificado_emitido', 'auditado_ups'], true));
+
+        $fase5Completada = $estadoProy === 'finalizado'
+            || ($docFase5 && in_array($docFase5->estado_revision, ['certificado_emitido', 'auditado_ups'], true));
+
+        $completadas = [
+            1 => $fase1Completada,
+            2 => $fase2Completada,
+            3 => $fase3Completada,
+            4 => $fase4Completada,
+            5 => $fase5Completada,
+        ];
+
+        $faseActual = 1;
+        foreach ($completadas as $num => $isComp) {
+            if (! $isComp) {
+                $faseActual = $num;
+                break;
+            }
+            $faseActual = 5;
+        }
+
+        if ($fase5Completada) {
+            $faseActual = 5;
+        }
+
+        $horasAcumuladas = 0;
+        $horasRequeridas = 500;
+
+        if ($fase5Completada || $estadoProy === 'finalizado') {
+            $horasAcumuladas = 500;
+        } elseif ($fase4Completada || $estadoProy === 'en_finalizacion') {
+            $horasAcumuladas = 450;
+        } elseif ($fase3Completada) {
+            $horasAcumuladas = 250;
+        } elseif ($fase2Completada || $estadoProy === 'en_proceso') {
+            $horasAcumuladas = 150;
+        } elseif ($fase1Completada || $estadoProy === 'en_inscripcion') {
+            $horasAcumuladas = 50;
+        } else {
+            $horasAcumuladas = 0;
+        }
+
+        $porcentajeAvance = min(100, (int) round(($horasAcumuladas / $horasRequeridas) * 100));
+
+        $faseDocs = [
+            1 => $docFase1,
+            2 => $docFase2,
+            3 => $docFase3,
+            4 => $docFase4,
+            5 => $docFase5,
+        ];
+
+        foreach ($fases as $num => &$fase) {
+            $fase['completada'] = $completadas[$num];
+            $fase['actual'] = ($num === $faseActual && ! ($num === 5 && $fase5Completada));
+            $docAsoc = $faseDocs[$num];
+            $fase['doc'] = $docAsoc;
+
+            if ($fase['completada']) {
+                $fase['badge_estado'] = 'Completada';
+                $fase['badge_tipo'] = 'completada';
+            } elseif ($fase['actual']) {
+                if ($docAsoc && $docAsoc->isObservado()) {
+                    $fase['badge_estado'] = 'Observado - Corrección';
+                    $fase['badge_tipo'] = 'observado';
+                } elseif ($docAsoc && $docAsoc->isPendiente()) {
+                    $fase['badge_estado'] = 'En Revisión Tutor';
+                    $fase['badge_tipo'] = 'pendiente';
+                } else {
+                    $fase['badge_estado'] = 'Fase Actual';
+                    $fase['badge_tipo'] = 'actual';
+                }
+            } else {
+                $fase['badge_estado'] = 'Pendiente';
+                $fase['badge_tipo'] = 'inactiva';
+            }
+        }
+        unset($fase);
+
+        return [
+            'fases' => $fases,
+            'faseActual' => $faseActual,
+            'porcentajeAvance' => $porcentajeAvance,
+            'horasAcumuladas' => $horasAcumuladas,
+        ];
+    }
+
+    /**
      * Historial de eventos y auditoría del proyecto (INT-HU-13, COO-HU-11).
      */
     public function historialAuditorias(): HasMany
