@@ -78,6 +78,19 @@ class RolesYFlujoWorkflowTest extends TestCase
         $documento->refresh();
         $this->assertEquals('observado_tutor', $documento->estado_revision);
         $this->assertEquals('Falta detallar la sección de objetivos específicos.', $documento->observaciones);
+
+        // Retractar dictamen (HU-67, flujo de retractación y corrección)
+        $responseRetractar = $this->actingAs($tutor)->post(route('tutor.dictamen', $documento), [
+            '_token' => session('_token'),
+            'accion' => 'retractar',
+            'observaciones' => 'Se retira el dictamen para nueva evaluación.',
+        ]);
+        $responseRetractar->assertRedirect();
+        $responseRetractar->assertSessionHas('success');
+
+        $documento->refresh();
+        $this->assertEquals('pendiente_tutor', $documento->estado_revision);
+        $this->assertNull($documento->fecha_dictamen);
     }
 
     /**

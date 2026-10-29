@@ -290,6 +290,39 @@ class CertificadoController extends Controller
     public function auditarSellos(Request $request, Documento $certificado): RedirectResponse
     {
         $estadoAnterior = $certificado->estado_revision;
+
+        if ($request->input('accion') === 'retractar') {
+            $obs = $request->input('observaciones') ?: 'Auditoría de sellos retirada por la UPS. Expediente devuelto a fase de aval de carrera.';
+
+            $certificado->update([
+                'estado_revision' => 'aval_carrera',
+                'observaciones' => $obs,
+                'fecha_dictamen' => now(),
+            ]);
+
+            $certificado->load('proyectos');
+
+            \App\Models\Auditoria::registrar([
+                'modulo' => 'certificados',
+                'id_entidad' => $certificado->id_documento,
+                'tipo_entidad' => 'Certificado',
+                'accion' => 'retractar_auditoria_ups',
+                'titulo' => "Auditoría Retractada UPS: '{$certificado->nombre_documento}'",
+                'detalles' => $obs,
+                'estado_anterior' => $estadoAnterior,
+                'estado_nuevo' => 'aval_carrera',
+            ]);
+
+            foreach ($certificado->proyectos as $proy) {
+                $proy->actualizarEstadoAutomatico();
+            }
+
+            return back()->with(
+                'success',
+                "Se ha retirado la auditoría de sellos para '{$certificado->nombre_documento}'. El expediente regresa a Aval de Carrera."
+            );
+        }
+
         $obs = $request->input('observaciones') ?: 'Auditoría visual completada con éxito. Sellos institucionales de facultad y firmas en tinta azul verificadas conforme a la normativa.';
 
         $certificado->update([

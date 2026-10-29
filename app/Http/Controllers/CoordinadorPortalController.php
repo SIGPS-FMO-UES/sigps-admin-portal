@@ -121,7 +121,7 @@ class CoordinadorPortalController extends Controller
     public function emitirAval(Request $request, Documento $documento): RedirectResponse
     {
         $validated = $request->validate([
-            'accion' => ['required', 'string', 'in:aval,observar'],
+            'accion' => ['required', 'string', 'in:aval,observar,retractar'],
             'observaciones' => ['nullable', 'string', 'max:1000'],
         ], [
             'accion.required' => 'Debe indicar una acción de revisión.',
@@ -129,6 +129,42 @@ class CoordinadorPortalController extends Controller
         ]);
 
         $estadoAnterior = $documento->estado_revision;
+
+        if ($validated['accion'] === 'retractar') {
+            $obs = $validated['observaciones'] ?? 'Aval Académico retirado por la Coordinación de Carrera. Expediente devuelto a aprobación de tutor.';
+
+            $documento->update([
+                'estado_revision' => 'aprobado_tutor',
+                'observaciones' => $obs,
+                'fecha_dictamen' => now(),
+            ]);
+
+            $documento->load('proyectos');
+
+            \App\Models\Auditoria::registrar([
+                'modulo' => 'documentos',
+                'id_entidad' => $documento->id_documento,
+                'tipo_entidad' => 'Documento',
+                'accion' => 'retractar_aval_coordinador',
+                'titulo' => "Aval Académico Retractado: '{$documento->nombre_documento}'",
+                'detalles' => $obs,
+                'estado_anterior' => $estadoAnterior,
+                'estado_nuevo' => 'aprobado_tutor',
+                'metadatos' => [
+                    'version' => $documento->version,
+                    'tipo' => $documento->tipo,
+                ],
+            ]);
+
+            foreach ($documento->proyectos as $proy) {
+                $proy->actualizarEstadoAutomatico();
+            }
+
+            return back()->with(
+                'success',
+                "Se ha retirado el aval académico para '{$documento->nombre_documento}'. El expediente regresa al estado Aprobado por Tutor."
+            );
+        }
 
         if ($validated['accion'] === 'aval') {
             // Validación rígida: requiere dictamen favorable previo del tutor (COO-HU-10)
@@ -171,10 +207,10 @@ class CoordinadorPortalController extends Controller
 
         // Devolver con observaciones
         $request->validate([
-            'observaciones' => ['required', 'string', 'min:10', 'max:1000'],
+            'observaciones' => ['required', 'string', 'min:5', 'max:1000'],
         ], [
             'observaciones.required' => 'Debe ingresar las observaciones técnicas que justifican la devolución.',
-            'observaciones.min' => 'El motivo de observación debe contener al menos 10 caracteres.',
+            'observaciones.min' => 'El motivo de observación debe contener al menos 5 caracteres.',
         ]);
 
         $motivo = trim((string) $request->input('observaciones'));

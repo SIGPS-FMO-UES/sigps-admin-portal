@@ -124,11 +124,12 @@ class TutorPortalController extends Controller
      * Emite dictamen técnico sobre un documento de expediente (HU-66, HU-67).
      * - Aprobar: lo valida y traslada a Coordinación de Carrera para su aval académico.
      * - Observar / Rechazar: registra observaciones obligatorias y lo devuelve al estudiante.
+     * - Retractar: retira el dictamen emitido y regresa el documento a estado pendiente de revisión.
      */
     public function dictamen(Request $request, Documento $documento): RedirectResponse
     {
         $validated = $request->validate([
-            'accion' => ['required', 'string', 'in:aprobar,observar'],
+            'accion' => ['required', 'string', 'in:aprobar,observar,retractar,pendiente'],
             'observaciones' => ['nullable', 'string', 'max:1000'],
         ], [
             'accion.required' => 'Debe seleccionar una acción de dictamen.',
@@ -136,6 +137,45 @@ class TutorPortalController extends Controller
         ]);
 
         $estadoAnterior = $documento->estado_revision;
+
+        // Retractarse / Revertir dictamen a pendiente
+        if (in_array($validated['accion'], ['retractar', 'pendiente'], true)) {
+            $obs = $validated['observaciones'] ?? 'Dictamen técnico retirado por el docente tutor. Documento reabierto en estado pendiente de revisión.';
+
+            $documento->update([
+                'estado_revision' => 'pendiente_tutor',
+                'observaciones' => $obs,
+                'motivo_rechazo' => null,
+                'fecha_dictamen' => null,
+            ]);
+
+            $documento->load('proyectos');
+
+            \App\Models\Auditoria::registrar([
+                'modulo' => 'documentos',
+                'id_entidad' => $documento->id_documento,
+                'tipo_entidad' => 'Documento',
+                'accion' => 'retractar_dictamen_tutor',
+                'titulo' => "Dictamen Retractado: '{$documento->nombre_documento}'",
+                'detalles' => $obs,
+                'estado_anterior' => $estadoAnterior,
+                'estado_nuevo' => 'pendiente_tutor',
+                'metadatos' => [
+                    'version' => $documento->version,
+                    'tipo' => $documento->tipo,
+                    'proyectos' => $documento->proyectos->pluck('codigo_proyecto')->all(),
+                ],
+            ]);
+
+            foreach ($documento->proyectos as $proy) {
+                $proy->actualizarEstadoAutomatico();
+            }
+
+            return back()->with(
+                'success',
+                "Se ha retractado el dictamen técnico para '{$documento->nombre_documento}'. El documento vuelve al estado Pendiente de Revisión."
+            );
+        }
 
         if ($validated['accion'] === 'aprobar') {
             $obs = $validated['observaciones'] ?? 'Dictamen técnico favorable emitido por el docente tutor. Cumple con los requisitos normativos.';
@@ -179,10 +219,10 @@ class TutorPortalController extends Controller
 
         // Observar / Rechazar
         $request->validate([
-            'observaciones' => ['required', 'string', 'min:10', 'max:1000'],
+            'observaciones' => ['required', 'string', 'min:5', 'max:1000'],
         ], [
             'observaciones.required' => 'Debe indicar el motivo u observaciones para devolver el documento.',
-            'observaciones.min' => 'El motivo de observación debe contener al menos 10 caracteres.',
+            'observaciones.min' => 'El motivo de observación debe contener al menos 5 caracteres.',
         ]);
 
         $motivo = trim((string) $request->input('observaciones'));

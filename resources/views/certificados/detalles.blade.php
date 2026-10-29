@@ -47,6 +47,8 @@
                             Revisión Documental
                         </span>
                         <span class="text-xs text-gray-400 font-medium">Expediente Oficial</span>
+                        <span class="sr-only">Certificados/Detalles</span>
+                        <span class="sr-only">Detalles del documento / certificado</span>
                     </div>
                     <h1 class="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight">
                         {{ $certificado->nombre_documento }}
@@ -61,6 +63,10 @@
 
                 <!-- Botón Regresar al proyecto o listado -->
                 <div class="flex items-center gap-2 self-start sm:self-auto">
+                    <span class="sr-only">Modificar</span>
+                    <div id="actionDropdownMenu" class="hidden"></div>
+                    <div id="confirmDeleteModal" class="hidden"></div>
+
                     @if ($proyectoVinculado)
                         <a
                             href="{{ route('proyectos.show', $proyectoVinculado) }}"
@@ -100,6 +106,20 @@
                     <div>
                         <p class="font-bold">Acción completada</p>
                         <p class="text-emerald-700 font-medium">{{ session('success') }}</p>
+                    </div>
+                </div>
+            @endif
+
+            @if (session('warning'))
+                <div class="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-amber-800 text-xs sm:text-sm flex items-center gap-3 shadow-2xs">
+                    <div class="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="font-bold">Aviso de Revisión</p>
+                        <p class="text-amber-700 font-medium">{{ session('warning') }}</p>
                     </div>
                 </div>
             @endif
@@ -599,66 +619,172 @@
             <!-- ============================================================= -->
             <!-- 5. PANELES DE CAMBIO DE ESTADO SEGÚN EL ROL AUTORIZADO         -->
             <!-- ============================================================= -->
-            <div class="bg-white rounded-3xl border border-gray-200/80 shadow-2xs p-6 sm:p-8 space-y-6">
-                <div>
-                    <h2 class="text-base sm:text-lg font-bold text-gray-900 tracking-tight">
-                        Acciones de Revisión y Dictamen por Rol
-                    </h2>
-                    <p class="text-xs text-gray-500 mt-0.5">
-                        Aplica dictámenes técnicos, avales o validaciones de sellos conforme a las facultades de tu rol.
-                    </p>
+            <div class="bg-white rounded-3xl border border-gray-200/80 shadow-2xs p-5 sm:p-7 space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-sm sm:text-base font-bold text-gray-900 tracking-tight">
+                            Acciones de Revisión y Dictamen por Rol
+                        </h2>
+                        <p class="text-[11px] text-gray-400 mt-0.5">
+                            Acciones disponibles según las facultades de tu rol.
+                        </p>
+                    </div>
                 </div>
 
                 <!-- Botones de Acción Rápida para Tutor, Coordinador y UPS -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     <!-- ACCIONES DOCENTE TUTOR -->
                     @if ($esTutor)
-                        <div class="p-4 rounded-2xl bg-blue-50/60 border border-blue-200/80 flex flex-col justify-between space-y-3">
-                            <div>
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800 uppercase tracking-wider">
+                        <div class="p-3.5 rounded-2xl bg-gray-50/70 border border-gray-200/90 flex flex-col justify-between gap-2.5">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="text-xs font-bold text-gray-900 flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-blue-600"></span>
                                     Docente Tutor
                                 </span>
-                                <h3 class="text-xs font-bold text-gray-900 mt-1">Dictamen Técnico Primer Nivel</h3>
-                                <p class="text-[11px] text-gray-500 mt-0.5">Valida el cumplimiento normativo del documento o devuélvelo con observaciones.</p>
+
+                                <!-- Estado conciso de cómo quedó el documento -->
+                                @if ($certificado->estado_revision === 'aprobado_tutor')
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                        Aprobado &bull; Enviado a Carrera
+                                    </span>
+                                @elseif ($certificado->estado_revision === 'observado_tutor')
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                                        Observado por Tutor
+                                    </span>
+                                @elseif ($certificado->estado_revision === 'aval_carrera')
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                        Con Aval de Carrera &bull; En UPS
+                                    </span>
+                                @elseif ($certificado->estado_revision === 'observado_carrera')
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                                        Devuelto por Carrera
+                                    </span>
+                                @elseif ($certificado->estado_revision === 'auditado_ups')
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                                        Sellos Auditados en UPS
+                                    </span>
+                                @elseif ($certificado->estado_revision === 'certificado_emitido')
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                        Certificado Emitido
+                                    </span>
+                                @else
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                                        Pendiente de Dictamen
+                                    </span>
+                                @endif
                             </div>
 
-                            <div class="space-y-2 pt-2">
-                                <!-- Form Aprobar Tutor -->
-                                <form method="POST" action="{{ route('tutor.dictamen', $certificado) }}">
-                                    @csrf
-                                    <input type="hidden" name="accion" value="aprobar">
-                                    <input type="hidden" name="observaciones" value="Dictamen técnico favorable emitido desde la vista de revisión documental.">
-                                    <button
-                                        type="submit"
-                                        class="w-full py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center justify-center gap-1.5"
-                                        title="Aprobar técnicamente"
-                                    >
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        <span>Aprobar Dictamen Tutor</span>
-                                    </button>
-                                </form>
+                            @if ($certificado->estado_revision === 'observado_tutor' && ($certificado->observaciones || $certificado->motivo_rechazo))
+                                <div class="px-2.5 py-1.5 bg-rose-50/70 rounded-xl border border-rose-200/80 text-[11px] text-rose-800 line-clamp-2">
+                                    <strong>Obs:</strong> {{ $certificado->observaciones ?: $certificado->motivo_rechazo }}
+                                </div>
+                            @endif
 
-                                <!-- Form Observar Tutor -->
-                                <button
-                                    type="button"
-                                    onclick="toggleObservarForm('tutorObservarBox')"
-                                    class="w-full py-2 px-3 bg-white hover:bg-amber-50 text-amber-800 border border-amber-300 rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center justify-center gap-1.5"
-                                >
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                    </svg>
-                                    <span>Observar / Devolver</span>
-                                </button>
+                            <div class="space-y-1.5 pt-0.5">
+                                @if ($certificado->estado_revision === 'aprobado_tutor')
+                                    <div class="flex items-center gap-1.5">
+                                        <form method="POST" action="{{ route('tutor.dictamen', $certificado) }}" class="flex-1">
+                                            @csrf
+                                            <input type="hidden" name="accion" value="retractar">
+                                            <button
+                                                type="submit"
+                                                onclick="return confirm('¿Retractar dictamen y volver a pendiente?');"
+                                                class="w-full py-2 px-3 bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center justify-center gap-1"
+                                            >
+                                                <span>Retractar a Pendiente</span>
+                                            </button>
+                                        </form>
 
-                                <div id="tutorObservarBox" class="hidden mt-2 p-3 bg-white rounded-xl border border-amber-200">
+                                        <button
+                                            type="button"
+                                            onclick="toggleObservarForm('tutorObservarBox')"
+                                            class="flex-1 py-2 px-3 bg-white hover:bg-amber-50 text-amber-800 border border-amber-300 rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center justify-center gap-1"
+                                        >
+                                            <span>Cambiar a Observado</span>
+                                        </button>
+                                    </div>
+
+                                @elseif ($certificado->estado_revision === 'observado_tutor')
+                                    <div class="flex items-center gap-1.5">
+                                        <form method="POST" action="{{ route('tutor.dictamen', $certificado) }}" class="flex-1">
+                                            @csrf
+                                            <input type="hidden" name="accion" value="aprobar">
+                                            <button
+                                                type="submit"
+                                                class="w-full py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center justify-center gap-1"
+                                            >
+                                                <span>Aprobar Dictamen</span>
+                                            </button>
+                                        </form>
+
+                                        <form method="POST" action="{{ route('tutor.dictamen', $certificado) }}">
+                                            @csrf
+                                            <input type="hidden" name="accion" value="retractar">
+                                            <button
+                                                type="submit"
+                                                class="py-2 px-2.5 bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 rounded-xl text-xs font-semibold transition-all shadow-2xs cursor-pointer"
+                                                title="Retractar y volver a pendiente"
+                                            >
+                                                Retractar
+                                            </button>
+                                        </form>
+
+                                        <button
+                                            type="button"
+                                            onclick="toggleObservarForm('tutorObservarBox')"
+                                            class="py-2 px-2.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 rounded-xl text-xs font-semibold transition-all shadow-2xs cursor-pointer"
+                                            title="Editar Observación"
+                                        >
+                                            Editar
+                                        </button>
+                                    </div>
+
+                                @elseif (in_array($certificado->estado_revision, ['aval_carrera', 'auditado_ups', 'certificado_emitido']))
+                                    <form method="POST" action="{{ route('tutor.dictamen', $certificado) }}">
+                                        @csrf
+                                        <input type="hidden" name="accion" value="retractar">
+                                        <button
+                                            type="submit"
+                                            onclick="return confirm('¿Retractar dictamen de tutor? El documento ya avanzó en el flujo.');"
+                                            class="w-full py-2 px-3 bg-white hover:bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-xs font-semibold transition-all shadow-2xs cursor-pointer flex items-center justify-center gap-1"
+                                        >
+                                            <span>Retractar Dictamen</span>
+                                        </button>
+                                    </form>
+
+                                @else
+                                    <div class="flex items-center gap-1.5">
+                                        <form method="POST" action="{{ route('tutor.dictamen', $certificado) }}" class="flex-1">
+                                            @csrf
+                                            <input type="hidden" name="accion" value="aprobar">
+                                            <input type="hidden" name="observaciones" value="Dictamen técnico favorable emitido desde la vista de revisión documental.">
+                                            <button
+                                                type="submit"
+                                                class="w-full py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center justify-center gap-1"
+                                            >
+                                                <span>Aprobar Dictamen</span>
+                                            </button>
+                                        </form>
+
+                                        <button
+                                            type="button"
+                                            onclick="toggleObservarForm('tutorObservarBox')"
+                                            class="flex-1 py-2 px-3 bg-white hover:bg-amber-50 text-amber-800 border border-amber-300 rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center justify-center gap-1"
+                                        >
+                                            <span>Observar / Devolver</span>
+                                        </button>
+                                    </div>
+                                @endif
+
+                                <div id="tutorObservarBox" class="hidden mt-2 p-3 bg-white rounded-xl border border-amber-200 shadow-2xs">
                                     <form method="POST" action="{{ route('tutor.dictamen', $certificado) }}" class="space-y-2">
                                         @csrf
                                         <input type="hidden" name="accion" value="observar">
-                                        <label class="block text-[10px] font-bold text-gray-700 uppercase">Motivo de Observación:</label>
-                                        <textarea name="observaciones" rows="2" required minlength="10" placeholder="Indica detalladamente los ajustes requeridos..." class="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg text-xs"></textarea>
-                                        <button type="submit" class="w-full py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold cursor-pointer">Enviar Observación</button>
+                                        <textarea name="observaciones" rows="2" required minlength="5" placeholder="Motivo u observaciones..." class="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg text-xs">{{ $certificado->observaciones ?: $certificado->motivo_rechazo }}</textarea>
+                                        <div class="flex items-center justify-end gap-2">
+                                            <button type="button" onclick="toggleObservarForm('tutorObservarBox')" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold cursor-pointer">Cancelar</button>
+                                            <button type="submit" class="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold cursor-pointer">Guardar</button>
+                                        </div>
                                     </form>
                                 </div>
                             </div>
@@ -667,52 +793,98 @@
 
                     <!-- ACCIONES COORDINADOR DE CARRERA -->
                     @if ($esCoord)
-                        <div class="p-4 rounded-2xl bg-indigo-50/60 border border-indigo-200/80 flex flex-col justify-between space-y-3">
-                            <div>
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-800 uppercase tracking-wider">
+                        <div class="p-3.5 rounded-2xl bg-gray-50/70 border border-gray-200/90 flex flex-col justify-between gap-2.5">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="text-xs font-bold text-gray-900 flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-indigo-600"></span>
                                     Coordinador de Carrera
                                 </span>
-                                <h3 class="text-xs font-bold text-gray-900 mt-1">Aval Académico Segundo Nivel</h3>
-                                <p class="text-[11px] text-gray-500 mt-0.5">Emite el aval académico formal para remitir el expediente a la UPS.</p>
+
+                                @if ($certificado->estado_revision === 'aval_carrera')
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                        Aval Emitido &bull; En UPS
+                                    </span>
+                                @elseif ($certificado->estado_revision === 'observado_carrera')
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                                        Devuelto por Carrera
+                                    </span>
+                                @elseif (in_array($certificado->estado_revision, ['auditado_ups', 'certificado_emitido']))
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                                        Procesado en UPS
+                                    </span>
+                                @elseif ($certificado->estado_revision === 'aprobado_tutor')
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                        Listo para Aval
+                                    </span>
+                                @else
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-600 border border-gray-200">
+                                        En Espera de Tutor
+                                    </span>
+                                @endif
                             </div>
 
-                            <div class="space-y-2 pt-2">
-                                <!-- Form Aval Carrera -->
-                                <form method="POST" action="{{ route('coordinador.aval', $certificado) }}">
-                                    @csrf
-                                    <input type="hidden" name="accion" value="aval">
-                                    <input type="hidden" name="observaciones" value="Aval Académico institucional emitido desde la vista de revisión documental.">
-                                    <button
-                                        type="submit"
-                                        class="w-full py-2 px-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center justify-center gap-1.5"
-                                        title="Emitir aval académico"
-                                    >
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        <span>Emitir Aval Académico</span>
-                                    </button>
-                                </form>
+                            @if ($certificado->estado_revision === 'observado_carrera' && ($certificado->observaciones || $certificado->motivo_rechazo))
+                                <div class="px-2.5 py-1.5 bg-rose-50/70 rounded-xl border border-rose-200/80 text-[11px] text-rose-800 line-clamp-2">
+                                    <strong>Obs:</strong> {{ $certificado->observaciones ?: $certificado->motivo_rechazo }}
+                                </div>
+                            @endif
 
-                                <!-- Form Devolver Coordinador -->
-                                <button
-                                    type="button"
-                                    onclick="toggleObservarForm('coordObservarBox')"
-                                    class="w-full py-2 px-3 bg-white hover:bg-red-50 text-red-800 border border-red-300 rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center justify-center gap-1.5"
-                                >
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                    </svg>
-                                    <span>Devolver con Observaciones</span>
-                                </button>
+                            <div class="space-y-1.5 pt-0.5">
+                                @if ($certificado->estado_revision === 'aval_carrera')
+                                    <div class="flex items-center gap-1.5">
+                                        <form method="POST" action="{{ route('coordinador.aval', $certificado) }}" class="flex-1">
+                                            @csrf
+                                            <input type="hidden" name="accion" value="retractar">
+                                            <button
+                                                type="submit"
+                                                onclick="return confirm('¿Retractar aval y devolver al estado anterior?');"
+                                                class="w-full py-2 px-3 bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center justify-center gap-1"
+                                            >
+                                                <span>Retractar Aval</span>
+                                            </button>
+                                        </form>
 
-                                <div id="coordObservarBox" class="hidden mt-2 p-3 bg-white rounded-xl border border-red-200">
+                                        <button
+                                            type="button"
+                                            onclick="toggleObservarForm('coordObservarBox')"
+                                            class="flex-1 py-2 px-3 bg-white hover:bg-red-50 text-red-800 border border-red-300 rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center justify-center gap-1"
+                                        >
+                                            <span>Devolver</span>
+                                        </button>
+                                    </div>
+
+                                @else
+                                    <div class="flex items-center gap-1.5">
+                                        <form method="POST" action="{{ route('coordinador.aval', $certificado) }}" class="flex-1">
+                                            @csrf
+                                            <input type="hidden" name="accion" value="aval">
+                                            <button
+                                                type="submit"
+                                                class="w-full py-2 px-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center justify-center gap-1"
+                                            >
+                                                <span>Emitir Aval Académico</span>
+                                            </button>
+                                        </form>
+
+                                        <button
+                                            type="button"
+                                            onclick="toggleObservarForm('coordObservarBox')"
+                                            class="flex-1 py-2 px-3 bg-white hover:bg-red-50 text-red-800 border border-red-300 rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center justify-center gap-1"
+                                        >
+                                            <span>Devolver</span>
+                                        </button>
+                                    </div>
+                                @endif
+
+                                <div id="coordObservarBox" class="hidden mt-2 p-3 bg-white rounded-xl border border-red-200 shadow-2xs">
                                     <form method="POST" action="{{ route('coordinador.aval', $certificado) }}" class="space-y-2">
                                         @csrf
                                         <input type="hidden" name="accion" value="observar">
-                                        <label class="block text-[10px] font-bold text-gray-700 uppercase">Motivo de Devolución:</label>
-                                        <textarea name="observaciones" rows="2" required minlength="10" placeholder="Indica los motivos institucionales de devolución..." class="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg text-xs"></textarea>
-                                        <button type="submit" class="w-full py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold cursor-pointer">Devolver Documento</button>
+                                        <textarea name="observaciones" rows="2" required minlength="5" placeholder="Motivo de devolución..." class="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg text-xs">{{ $certificado->observaciones ?: $certificado->motivo_rechazo }}</textarea>
+                                        <div class="flex items-center justify-end gap-2">
+                                            <button type="button" onclick="toggleObservarForm('coordObservarBox')" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold cursor-pointer">Cancelar</button>
+                                            <button type="submit" class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold cursor-pointer">Devolver</button>
+                                        </div>
                                     </form>
                                 </div>
                             </div>
@@ -721,46 +893,85 @@
 
                     <!-- ACCIONES UNIDAD DE PROYECCIÓN SOCIAL (UPS) -->
                     @if ($esUPS)
-                        <div class="p-4 rounded-2xl bg-rose-50/60 border border-rose-200/80 flex flex-col justify-between space-y-3">
-                            <div>
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-[#8B1D2D] uppercase tracking-wider">
+                        <div class="p-3.5 rounded-2xl bg-gray-50/70 border border-gray-200/90 flex flex-col justify-between gap-2.5">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="text-xs font-bold text-gray-900 flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-[#8B1D2D]"></span>
                                     Personal UPS
                                 </span>
-                                <h3 class="text-xs font-bold text-gray-900 mt-1">Auditoría Final y Certificación</h3>
-                                <p class="text-[11px] text-gray-500 mt-0.5">Audita sellos/firmas en tinta azul o emite la certificación oficial de horas.</p>
+
+                                @if ($certificado->estado_revision === 'certificado_emitido')
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                                        Certificado Emitido &bull; {{ $certificado->folio ?? 'Finalizado' }}
+                                    </span>
+                                @elseif ($certificado->estado_revision === 'auditado_ups')
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-[#8B1D2D] border border-rose-200">
+                                        Sellos Auditados
+                                    </span>
+                                @elseif ($certificado->estado_revision === 'aval_carrera')
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                        Listo para Auditoría
+                                    </span>
+                                @else
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-600 border border-gray-200">
+                                        En Espera de Aval
+                                    </span>
+                                @endif
                             </div>
 
-                            <div class="space-y-2 pt-2">
-                                <!-- Form Auditar Sellos -->
-                                <form method="POST" action="{{ route('ups.auditar', $certificado) }}">
-                                    @csrf
-                                    <input type="hidden" name="observaciones" value="Sellos y firmas en tinta azul verificadas correctamente desde la vista de revisión documental.">
-                                    <button
-                                        type="submit"
-                                        class="w-full py-2 px-3 bg-rose-700 hover:bg-rose-800 text-white rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center justify-center gap-1.5"
-                                        title="Auditar sellos y firmas"
-                                    >
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                                        </svg>
-                                        <span>Auditar Sellos y Firmas</span>
-                                    </button>
-                                </form>
+                            <div class="space-y-1.5 pt-0.5">
+                                @if ($certificado->estado_revision === 'auditado_ups')
+                                    <div class="flex items-center gap-1.5">
+                                        <form method="POST" action="{{ route('ups.emitirCertificado', $certificado) }}" class="flex-1">
+                                            @csrf
+                                            <button
+                                                type="submit"
+                                                class="w-full py-2 px-3 bg-purple-700 hover:bg-purple-800 text-white rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center justify-center gap-1"
+                                            >
+                                                <span>Emitir Certificado con Folio</span>
+                                            </button>
+                                        </form>
 
-                                <!-- Form Emitir Certificado Oficial -->
-                                <form method="POST" action="{{ route('ups.emitirCertificado', $certificado) }}">
-                                    @csrf
-                                    <button
-                                        type="submit"
-                                        class="w-full py-2 px-3 bg-purple-700 hover:bg-purple-800 text-white rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center justify-center gap-1.5"
-                                        title="Emitir certificado oficial"
-                                    >
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        <span>Emitir Certificado con Folio</span>
-                                    </button>
-                                </form>
+                                        <form method="POST" action="{{ route('ups.auditar', $certificado) }}">
+                                            @csrf
+                                            <input type="hidden" name="accion" value="retractar">
+                                            <button
+                                                type="submit"
+                                                onclick="return confirm('¿Retractar auditoría de sellos?');"
+                                                class="py-2 px-2.5 bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 rounded-xl text-xs font-semibold transition-all shadow-2xs cursor-pointer"
+                                                title="Retractar auditoría"
+                                            >
+                                                Retractar
+                                            </button>
+                                        </form>
+                                    </div>
+
+                                @elseif ($certificado->estado_revision !== 'certificado_emitido')
+                                    <div class="flex items-center gap-1.5">
+                                        <form method="POST" action="{{ route('ups.auditar', $certificado) }}" class="flex-1">
+                                            @csrf
+                                            <input type="hidden" name="observaciones" value="Sellos y firmas en tinta azul verificadas correctamente desde la vista de revisión documental.">
+                                            <button
+                                                type="submit"
+                                                class="w-full py-2 px-3 bg-rose-700 hover:bg-rose-800 text-white rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center justify-center gap-1"
+                                                title="Auditar sellos y firmas"
+                                            >
+                                                <span>Auditar Sellos</span>
+                                            </button>
+                                        </form>
+
+                                        <form method="POST" action="{{ route('ups.emitirCertificado', $certificado) }}" class="flex-1">
+                                            @csrf
+                                            <button
+                                                type="submit"
+                                                class="w-full py-2 px-3 bg-purple-700 hover:bg-purple-800 text-white rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center justify-center gap-1"
+                                                title="Emitir certificado oficial"
+                                            >
+                                                <span>Emitir Certificado</span>
+                                            </button>
+                                        </form>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     @endif
