@@ -154,7 +154,11 @@
                         </thead>
                         <tbody class="divide-y divide-gray-100 text-gray-600">
                             @forelse ($documentos as $doc)
-                                <tr class="hover:bg-gray-50/70 transition-colors">
+                                <tr
+                                    class="hover:bg-gray-50/70 transition-colors cursor-pointer"
+                                    ondblclick="window.location.href='{{ route('certificados.show', $doc) }}'"
+                                    title="Doble clic para abrir revisión documental"
+                                >
                                     <!-- ID / Código -->
                                     <td class="py-3.5 px-4 font-semibold text-gray-900 whitespace-nowrap">
                                         DOC-{{ str_pad((string) $doc->id_documento, 3, '0', STR_PAD_LEFT) }}

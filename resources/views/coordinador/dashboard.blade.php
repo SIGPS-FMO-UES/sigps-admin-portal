@@ -307,6 +307,28 @@
                                                 <span>Ver</span>
                                             </a>
 
+                                            <!-- Descargar PDF -->
+                                            <a
+                                                href="{{ $doc->url_documento }}"
+                                                download
+                                                class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-[11px] rounded-lg transition-colors inline-flex items-center gap-1"
+                                                title="Descargar documento PDF"
+                                            >
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                </svg>
+                                                <span>Descargar</span>
+                                            </a>
+
+                                            <!-- Revisión Documental -->
+                                            <a
+                                                href="{{ route('certificados.show', $doc) }}"
+                                                class="px-2 py-1 bg-red-50 hover:bg-[#8B1D2D] hover:text-white text-[#8B1D2D] font-bold text-[11px] rounded-lg transition-all inline-flex items-center gap-1"
+                                                title="Abrir revisión documental de este documento"
+                                            >
+                                                <span>Revisar</span>
+                                            </a>
+
                                             <!-- Emitir Aval y Enviar a UPS (RF-ACA-05, HU-72) -->
                                             <form method="POST" action="{{ route('coordinador.aval', $doc) }}" class="inline">
                                                 @csrf

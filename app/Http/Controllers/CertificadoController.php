@@ -194,6 +194,8 @@ class CertificadoController extends Controller
             'url_documento' => ['nullable', 'string', 'max:500'],
             'tipo' => ['required', 'string', 'in:solicitud,inscripcion,anteproyecto,mitad_proyecto,memoria,otro'],
             'id_proyecto' => ['nullable', 'integer', 'exists:proyectos,id_proyecto'],
+            'estado_revision' => ['nullable', 'string', 'in:pendiente_tutor,aprobado_tutor,observado_tutor,aval_carrera,observado_carrera,auditado_ups,certificado_emitido'],
+            'observaciones' => ['nullable', 'string', 'max:1000'],
         ], [
             'nombre_documento.required' => 'El título o nombre del documento es obligatorio.',
             'tipo.required' => 'El tipo de documento es obligatorio.',
@@ -204,11 +206,28 @@ class CertificadoController extends Controller
             ? trim((string) $validated['url_documento'])
             : $certificado->url_documento;
 
-        $certificado->update([
+        $estadoAnterior = $certificado->estado_revision;
+        $nuevoEstado = $request->filled('estado_revision') ? $validated['estado_revision'] : $certificado->estado_revision;
+        $observaciones = $request->has('observaciones') ? trim((string) ($validated['observaciones'] ?? '')) : $certificado->observaciones;
+
+        $updateData = [
             'nombre_documento' => trim($validated['nombre_documento']),
             'url_documento' => $url,
             'tipo' => $validated['tipo'],
-        ]);
+            'estado_revision' => $nuevoEstado,
+            'observaciones' => $observaciones,
+        ];
+
+        if ($request->filled('estado_revision') && $nuevoEstado !== $estadoAnterior) {
+            $updateData['fecha_dictamen'] = now();
+            if (in_array($nuevoEstado, ['observado_tutor', 'observado_carrera'], true)) {
+                $updateData['motivo_rechazo'] = $observaciones;
+            } else {
+                $updateData['motivo_rechazo'] = null;
+            }
+        }
+
+        $certificado->update($updateData);
 
         // Sincronizar proyecto asociado
         if (! empty($validated['id_proyecto'])) {
@@ -217,9 +236,27 @@ class CertificadoController extends Controller
             $certificado->proyectos()->detach();
         }
 
+        if ($request->filled('estado_revision') && $nuevoEstado !== $estadoAnterior) {
+            $certificado->load('proyectos');
+            foreach ($certificado->proyectos as $proy) {
+                $proy->actualizarEstadoAutomatico();
+            }
+
+            \App\Models\Auditoria::registrar([
+                'modulo' => 'documentos',
+                'id_entidad' => $certificado->id_documento,
+                'tipo_entidad' => 'Documento',
+                'accion' => 'cambio_estado',
+                'titulo' => "Cambio de Estado de Revisión: '{$certificado->nombre_documento}'",
+                'detalles' => "Estado actualizado de '{$estadoAnterior}' a '{$nuevoEstado}'." . ($observaciones ? " Observaciones: {$observaciones}" : ''),
+                'estado_anterior' => $estadoAnterior,
+                'estado_nuevo' => $nuevoEstado,
+            ]);
+        }
+
         return redirect()->route('certificados.show', $certificado)->with(
             'success',
-            "Certificado '{$certificado->nombre_documento}' modificado exitosamente."
+            "Documento '{$certificado->nombre_documento}' actualizado exitosamente."
         );
     }
 

@@ -224,37 +224,242 @@
                         </div>
                     </div>
 
-                    <!-- Fila 7: Documento -->
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                        <label class="w-full sm:w-44 text-xs sm:text-sm font-semibold text-gray-700 shrink-0">
-                            Documento
-                        </label>
-                        <div class="flex flex-wrap items-center gap-2">
-                            <!-- Tag Documento.pdf con botón x -->
-                            @forelse ($proyecto->documentos as $doc)
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#8B1D2D] text-white rounded-md text-xs font-medium shadow-2xs">
-                                    <span>{{ $doc->nombre_documento }}.pdf</span>
-                                    <button type="button" class="hover:text-red-200 ml-1 font-bold cursor-pointer" title="Remover documento">✕</button>
-                                </span>
-                            @empty
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#8B1D2D] text-white rounded-md text-xs font-medium shadow-2xs">
-                                    <span>Documento.pdf</span>
-                                    <button type="button" class="hover:text-red-200 ml-1 font-bold cursor-pointer" title="Remover documento">✕</button>
-                                </span>
-                            @endforelse
-
-                            <!-- Botón Agregar docx -->
-                            <button
-                                type="button"
-                                onclick="alert('Seleccione un documento digital (.docx o .pdf) para adjuntarlo al expediente del proyecto.');"
-                                class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white hover:bg-gray-50 text-gray-800 border border-gray-300 rounded-md text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
-                            >
-                                <span>Agregar docx</span>
-                                <svg class="w-3.5 h-3.5 text-gray-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                </svg>
-                            </button>
+                    <!-- Fila 7: Expediente Documental del Proyecto -->
+                    @php
+                        $docsValidos = $proyecto->documentos->filter(fn ($d) => $d->isAprobado());
+                    @endphp
+                    <div class="pt-5 border-t border-gray-100 space-y-3.5">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div>
+                                <label class="text-xs sm:text-sm font-bold text-gray-800 flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-[#8B1D2D]" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" />
+                                    </svg>
+                                    <span>Documentos Válidos del Expediente</span>
+                                    <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                        {{ $docsValidos->count() }} {{ $docsValidos->count() === 1 ? 'válido' : 'válidos' }}
+                                    </span>
+                                </label>
+                                <p class="text-[11px] text-gray-400 mt-0.5">
+                                    Documentos reglamentarios vigentes y aprobados en el sistema. Doble clic para abrir revisión documental.
+                                </p>
+                            </div>
                         </div>
+
+                        <!-- Tarjetas Visuales de Documentos Válidos -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            @forelse ($docsValidos as $doc)
+                                <div
+                                    class="group p-3.5 bg-gray-50/80 hover:bg-white border border-gray-200/90 hover:border-[#8B1D2D]/40 rounded-2xl shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between cursor-pointer"
+                                    ondblclick="window.location.href='{{ route('certificados.show', $doc) }}'"
+                                    title="Doble clic para abrir la vista de revisión documental"
+                                >
+                                    <div class="flex items-start justify-between gap-2 mb-2.5">
+                                        <div class="flex items-center gap-2.5 min-w-0">
+                                            <div class="w-8 h-8 rounded-xl bg-red-100/80 text-red-700 flex items-center justify-center shrink-0">
+                                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" />
+                                                </svg>
+                                            </div>
+                                            <div class="min-w-0">
+                                                <p class="text-xs font-bold text-gray-900 truncate leading-tight group-hover:text-[#8B1D2D] transition-colors" title="{{ $doc->nombre_documento }}">
+                                                    {{ $doc->nombre_documento }}
+                                                </p>
+                                                <span class="text-[10px] text-gray-400 font-medium">
+                                                    {{ ucfirst($doc->tipo) }} &bull; ID #{{ $doc->id_documento }}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0">
+                                            Válido
+                                        </span>
+                                    </div>
+
+                                    <!-- Botones de Acción: Ver y Descargar (Sin opción de borrar, sin docx) -->
+                                    <div class="flex items-center justify-between pt-2 border-t border-gray-100 gap-1.5">
+                                        <div class="flex items-center gap-1.5">
+                                            <!-- Botoncito Ver -->
+                                            <a
+                                                href="{{ $doc->url_documento }}"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                onclick="event.stopPropagation();"
+                                                class="px-2.5 py-1 bg-white hover:bg-gray-100 text-gray-700 border border-gray-200 rounded-lg text-[11px] font-semibold transition-all inline-flex items-center gap-1 shadow-2xs"
+                                                title="Ver documento en el navegador"
+                                            >
+                                                <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                </svg>
+                                                <span>Ver</span>
+                                            </a>
+
+                                            <!-- Botoncito Descargar -->
+                                            <a
+                                                href="{{ $doc->url_documento }}"
+                                                download
+                                                target="_blank"
+                                                onclick="event.stopPropagation();"
+                                                class="px-2.5 py-1 bg-white hover:bg-gray-100 text-gray-700 border border-gray-200 rounded-lg text-[11px] font-semibold transition-all inline-flex items-center gap-1 shadow-2xs"
+                                                title="Descargar documento PDF"
+                                            >
+                                                <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                </svg>
+                                                <span>Descargar</span>
+                                            </a>
+                                        </div>
+
+                                        <!-- Botón Revisión Documental -->
+                                        <a
+                                            href="{{ route('certificados.show', $doc) }}"
+                                            onclick="event.stopPropagation();"
+                                            class="px-2.5 py-1 bg-red-50 hover:bg-[#8B1D2D] text-[#8B1D2D] hover:text-white rounded-lg text-[11px] font-bold transition-all inline-flex items-center gap-1"
+                                            title="Ir a revisión documental detallada"
+                                        >
+                                            <span>Revisar</span>
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </a>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="col-span-full p-4 rounded-2xl bg-amber-50/70 border border-amber-200/80 text-amber-900 text-xs flex items-center justify-between gap-3">
+                                    <div class="flex items-center gap-2.5">
+                                        <svg class="w-5 h-5 text-amber-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                        </svg>
+                                        <p class="font-medium">
+                                            No hay documentos marcados como aprobados o válidos aún en este proyecto.
+                                        </p>
+                                    </div>
+                                    <span class="text-[11px] text-amber-700 font-semibold hidden sm:inline">Despliega el historial abajo para consultar entregas</span>
+                                </div>
+                            @endforelse
+                        </div>
+
+                        <!-- Opción Desplegable para ver todos los documentos y estados -->
+                        @if ($proyecto->documentos->isNotEmpty())
+                            <div class="pt-1">
+                                <button
+                                    type="button"
+                                    onclick="toggleExpedienteDesplegable()"
+                                    id="btnToggleExpediente"
+                                    class="w-full flex items-center justify-between p-3 bg-gray-50/90 hover:bg-gray-100 border border-gray-200/90 rounded-2xl transition-all cursor-pointer text-left group"
+                                    aria-expanded="false"
+                                >
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-4 h-4 text-gray-500 group-hover:text-gray-800 transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                        </svg>
+                                        <span class="text-xs font-bold text-gray-800">
+                                            Historial completo de documentos subidos ({{ $proyecto->documentos->count() }})
+                                        </span>
+                                        <span class="text-[11px] text-gray-400 font-normal hidden sm:inline">
+                                            &bull; Aprobados, en revisión y pendientes
+                                        </span>
+                                    </div>
+
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-[11px] font-semibold text-gray-500 group-hover:text-gray-800" id="textoToggleExpediente">
+                                            Mostrar todos
+                                        </span>
+                                        <svg id="iconToggleExpediente" class="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
+                                </button>
+
+                                <!-- Contenedor Desplegable Compacto -->
+                                <div id="contenedorExpedienteCompleto" class="hidden mt-2 rounded-2xl border border-gray-200 overflow-hidden bg-white shadow-2xs transition-all">
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full text-left border-collapse text-xs">
+                                            <thead>
+                                                <tr class="border-b border-gray-100 bg-gray-50/70 text-gray-500 font-bold uppercase tracking-wider text-[10px]">
+                                                    <th class="py-2.5 px-3.5">Documento</th>
+                                                    <th class="py-2.5 px-3">Tipo</th>
+                                                    <th class="py-2.5 px-3">Estado</th>
+                                                    <th class="py-2.5 px-3">Observaciones</th>
+                                                    <th class="py-2.5 px-3 text-right">Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-gray-100 text-gray-700">
+                                                @foreach ($proyecto->documentos as $docItem)
+                                                    <tr
+                                                        class="hover:bg-gray-50/80 transition-colors cursor-pointer"
+                                                        ondblclick="window.location.href='{{ route('certificados.show', $docItem) }}'"
+                                                        title="Doble clic para abrir revisión documental"
+                                                    >
+                                                        <!-- Documento -->
+                                                        <td class="py-2.5 px-3.5 font-bold text-gray-900 whitespace-nowrap">
+                                                            <div class="flex items-center gap-2">
+                                                                <span class="text-red-600 font-mono text-[10px] font-bold px-1 py-0.2 rounded bg-red-50 border border-red-100">PDF</span>
+                                                                <span>{{ $docItem->nombre_documento }}</span>
+                                                            </div>
+                                                        </td>
+
+                                                        <!-- Tipo -->
+                                                        <td class="py-2.5 px-3 text-gray-600 whitespace-nowrap">
+                                                            {{ ucfirst($docItem->tipo) }}
+                                                        </td>
+
+                                                        <!-- Estado -->
+                                                        <td class="py-2.5 px-3 whitespace-nowrap">
+                                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border {{ $docItem->estado_revision_badge }}">
+                                                                {{ $docItem->estado_revision_texto }}
+                                                            </span>
+                                                        </td>
+
+                                                        <!-- Observaciones -->
+                                                        <td class="py-2.5 px-3 text-gray-500 max-w-xs truncate">
+                                                            {{ $docItem->observaciones ?: ($docItem->motivo_rechazo ?: 'Sin observaciones') }}
+                                                        </td>
+
+                                                        <!-- Acciones -->
+                                                        <td class="py-2.5 px-3 text-right whitespace-nowrap">
+                                                            <div class="inline-flex items-center gap-1.5" onclick="event.stopPropagation();">
+                                                                <a
+                                                                    href="{{ $docItem->url_documento }}"
+                                                                    target="_blank"
+                                                                    class="p-1 text-gray-500 hover:text-gray-900 rounded hover:bg-gray-100 transition-colors"
+                                                                    title="Ver documento"
+                                                                >
+                                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                                    </svg>
+                                                                </a>
+
+                                                                <a
+                                                                    href="{{ $docItem->url_documento }}"
+                                                                    download
+                                                                    class="p-1 text-gray-500 hover:text-gray-900 rounded hover:bg-gray-100 transition-colors"
+                                                                    title="Descargar documento"
+                                                                >
+                                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                                    </svg>
+                                                                </a>
+
+                                                                <a
+                                                                    href="{{ route('certificados.show', $docItem) }}"
+                                                                    class="px-2 py-0.5 bg-gray-100 hover:bg-[#8B1D2D] text-gray-700 hover:text-white rounded text-[10px] font-bold transition-all"
+                                                                    title="Abrir revisión documental"
+                                                                >
+                                                                    Revisar
+                                                                </a>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
                     </div>
 
                     <!-- ========================================================= -->
@@ -452,6 +657,19 @@
 
     <!-- SCRIPT CONTROLADOR DE ACCIONES Y MODAL -->
     <script>
+        function toggleExpedienteDesplegable() {
+            const cont = document.getElementById('contenedorExpedienteCompleto');
+            const texto = document.getElementById('textoToggleExpediente');
+            const icon = document.getElementById('iconToggleExpediente');
+            const btn = document.getElementById('btnToggleExpediente');
+            if (cont) {
+                const isHidden = cont.classList.toggle('hidden');
+                if (btn) btn.setAttribute('aria-expanded', !isHidden);
+                if (texto) texto.textContent = isHidden ? 'Mostrar todos' : 'Ocultar expediente';
+                if (icon) icon.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
+            }
+        }
+
         const actionMenu = document.getElementById('actionDropdownMenu');
         const verLink = document.getElementById('dropdownVerLink');
         const editarLink = document.getElementById('dropdownEditarLink');

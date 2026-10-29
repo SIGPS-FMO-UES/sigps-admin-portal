@@ -413,6 +413,28 @@
                                                                 <span>Ver</span>
                                                             </a>
 
+                                                            <!-- Descargar PDF -->
+                                                            <a
+                                                                href="{{ $doc->url_documento }}"
+                                                                download
+                                                                class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-[11px] rounded-lg transition-colors inline-flex items-center gap-1"
+                                                                title="Descargar documento PDF"
+                                                            >
+                                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                                </svg>
+                                                                <span>Descargar</span>
+                                                            </a>
+
+                                                            <!-- Revisión Documental -->
+                                                            <a
+                                                                href="{{ route('certificados.show', $doc) }}"
+                                                                class="px-2 py-1 bg-red-50 hover:bg-[#8B1D2D] hover:text-white text-[#8B1D2D] font-bold text-[11px] rounded-lg transition-all inline-flex items-center gap-1"
+                                                                title="Abrir revisión documental de este documento"
+                                                            >
+                                                                <span>Revisar</span>
+                                                            </a>
+
                                                             <!-- Formulario Aprobar (HU-66) -->
                                                             <form method="POST" action="{{ route('tutor.dictamen', $doc) }}" class="inline">
                                                                 @csrf
@@ -549,20 +571,42 @@
                                                             {{ $otroDoc->fecha_dictamen ? $otroDoc->fecha_dictamen->format('d/m/Y H:i') : '-' }}
                                                         </td>
 
-                                                        <!-- Ver PDF -->
+                                                        <!-- Ver, Descargar y Revisar -->
                                                         <td class="py-3 px-4 text-center whitespace-nowrap">
-                                                            <a
-                                                                href="{{ $otroDoc->url_documento }}"
-                                                                target="_blank"
-                                                                class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-[11px] rounded-lg transition-colors inline-flex items-center gap-1"
-                                                                title="Ver documento PDF"
-                                                            >
-                                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                                </svg>
-                                                                <span>Ver PDF</span>
-                                                            </a>
+                                                            <div class="inline-flex items-center gap-1.5">
+                                                                <a
+                                                                    href="{{ $otroDoc->url_documento }}"
+                                                                    target="_blank"
+                                                                    class="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-[11px] rounded-lg transition-colors inline-flex items-center gap-1"
+                                                                    title="Ver documento PDF"
+                                                                >
+                                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                                    </svg>
+                                                                    <span>Ver</span>
+                                                                </a>
+
+                                                                <a
+                                                                    href="{{ $otroDoc->url_documento }}"
+                                                                    download
+                                                                    class="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-[11px] rounded-lg transition-colors inline-flex items-center gap-1"
+                                                                    title="Descargar documento PDF"
+                                                                >
+                                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                                    </svg>
+                                                                    <span>Descargar</span>
+                                                                </a>
+
+                                                                <a
+                                                                    href="{{ route('certificados.show', $otroDoc) }}"
+                                                                    class="px-2 py-1 bg-red-50 hover:bg-[#8B1D2D] hover:text-white text-[#8B1D2D] font-bold text-[11px] rounded-lg transition-all inline-flex items-center gap-1"
+                                                                    title="Abrir revisión documental de este documento"
+                                                                >
+                                                                    <span>Revisar</span>
+                                                                </a>
+                                                            </div>
                                                         </td>
                                                     </tr>
                                                 @endforeach

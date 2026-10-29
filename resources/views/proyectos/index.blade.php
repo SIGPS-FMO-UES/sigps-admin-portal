@@ -155,7 +155,11 @@
                         </thead>
                         <tbody class="divide-y divide-gray-100 text-gray-600">
                             @forelse ($proyectos as $pry)
-                                <tr class="hover:bg-gray-50/70 transition-colors">
+                                <tr
+                                    class="hover:bg-gray-50/70 transition-colors cursor-pointer"
+                                    ondblclick="window.location.href='{{ route('proyectos.show', $pry) }}'"
+                                    title="Doble clic para ver detalles del proyecto"
+                                >
                                     <!-- Código -->
                                     <td class="py-3.5 px-4 font-bold text-gray-900 whitespace-nowrap">
                                         #{{ $pry->codigo_proyecto }}
